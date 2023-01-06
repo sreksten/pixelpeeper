@@ -108,7 +108,7 @@ public class ImageSliceImpl implements ImageSlice {
 
 			if (pictureWidth < width || pictureHeight < height) {
 				g2d.setColor(Color.GRAY);
-				g2d.drawRect(x, y, width, height);
+				g2d.drawRect(x, y, width - 1, height - 1);
 			}
 			g2d.drawImage(pictureData.getImage(), x + (width - pictureWidth) / 2, y + (height - pictureHeight) / 2,
 					null);
@@ -122,9 +122,7 @@ public class ImageSliceImpl implements ImageSlice {
 
 		if (selected) {
 			g2d.setColor(Color.RED);
-//			System.out.println("Slice " + imageData.getFilename() + " active: drawing rectangle "
-//					+ new Rectangle(x, y, x + width - 1, y + height - 1));
-			g2d.drawRect(x, y, x + width - 1, y + height - 1);
+			g2d.drawRect(x, y, width - 1, height - 1);
 		}
 
 		new TagsRenderHelper(g2d, x, y + height - 1, fontService, pictureData, tagPreferences).render();
