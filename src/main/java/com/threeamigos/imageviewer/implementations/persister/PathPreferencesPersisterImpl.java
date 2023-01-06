@@ -49,12 +49,12 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 			throw new IllegalArgumentException("Path " + path + " for " + getEntityDescription() + " cannot be read");
 		}
 
-		pathPreferences.setPath(path);
+		pathPreferences.setLastPath(path);
 	}
 
 	@Override
 	protected void saveImpl(PrintWriter writer, PathPreferences pathPreferences) throws IOException {
-		writer.write(pathPreferences.getPath());
+		writer.write(pathPreferences.getLastPath());
 	}
 
 }

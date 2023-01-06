@@ -3,18 +3,22 @@ package com.threeamigos.imageviewer.data;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
-public class ExifOrientationCorrector {
+public class ExifOrientation {
 
-	private static final int AS_IS = 1;
-	private static final int FLIP_HORIZONTALLY = 2;
-	private static final int CLOCKWISE_180 = 3;
-	private static final int FLIP_VERTICALLY = 4;
-	private static final int ANTICLOCKWISE_90_FLIP_VERTICALLY = 5;
-	private static final int ANTICLOCKWISE_90 = 6;
-	private static final int CLOCKWISE_90_FLIP_VERTICALLY = 7;
-	private static final int CLOCKWISE_90 = 8;
+	public static final int AS_IS = 1;
+	public static final int FLIP_HORIZONTALLY = 2;
+	public static final int CLOCKWISE_180 = 3;
+	public static final int FLIP_VERTICALLY = 4;
+	public static final int ANTICLOCKWISE_90_FLIP_VERTICALLY = 5;
+	public static final int ANTICLOCKWISE_90 = 6;
+	public static final int CLOCKWISE_90_FLIP_VERTICALLY = 7;
+	public static final int CLOCKWISE_90 = 8;
 
 	public static final BufferedImage correctOrientation(final BufferedImage original, final int orientation) {
+
+		if (orientation < 1 || orientation > 8) {
+			return original;
+		}
 
 		if (orientation == AS_IS) {
 			return original;
@@ -66,6 +70,10 @@ public class ExifOrientationCorrector {
 	}
 
 	public static final BufferedImage undoOrientationCorrection(final BufferedImage rotated, final int orientation) {
+
+		if (orientation < 1 || orientation > 8) {
+			return rotated;
+		}
 
 		if (orientation == AS_IS) {
 			return rotated;

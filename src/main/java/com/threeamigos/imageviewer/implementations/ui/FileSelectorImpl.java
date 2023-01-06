@@ -7,15 +7,15 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
-import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
 
 public class FileSelectorImpl implements FileSelector {
 
-	private final PathPreferences fileSelectorPreferences;
+	private final DataModel dataModel;
 
-	public FileSelectorImpl(PathPreferences fileSelectorPreferences) {
-		this.fileSelectorPreferences = fileSelectorPreferences;
+	public FileSelectorImpl(DataModel dataModel) {
+		this.dataModel = dataModel;
 	}
 
 	@Override
@@ -24,7 +24,7 @@ public class FileSelectorImpl implements FileSelector {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Select images");
 		fileChooser.setApproveButtonText("Load");
-		fileChooser.setCurrentDirectory(new File(fileSelectorPreferences.getPath()));
+		fileChooser.setCurrentDirectory(new File(dataModel.getLastPath()));
 		fileChooser.setApproveButtonMnemonic('L');
 		fileChooser.setMultiSelectionEnabled(true);
 
@@ -34,7 +34,7 @@ public class FileSelectorImpl implements FileSelector {
 			List<File> files = List.of(fileChooser.getSelectedFiles());
 			if (!files.isEmpty()) {
 				File firstFile = files.get(0);
-				fileSelectorPreferences.setPath(firstFile.getParentFile().getAbsolutePath());
+				dataModel.setLastPath(firstFile.getParentFile().getAbsolutePath());
 			}
 			return files;
 		}

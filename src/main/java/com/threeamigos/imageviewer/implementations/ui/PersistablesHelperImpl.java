@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
-import com.threeamigos.imageviewer.interfaces.ui.CleanupHelper;
+import com.threeamigos.imageviewer.interfaces.ui.PersistablesHelper;
 
-public class CleanupHelperImpl implements CleanupHelper {
+public class PersistablesHelperImpl implements PersistablesHelper {
 
 	private List<Persistable> persistables = new ArrayList<>();
 
+	@Override
 	public void addPersistable(Persistable persistable) {
 		if (!persistables.contains(persistable)) {
 			persistables.add(persistable);
@@ -17,11 +18,10 @@ public class CleanupHelperImpl implements CleanupHelper {
 	}
 
 	@Override
-	public void cleanUpAndExit() {
+	public void persist() {
 		for (Persistable persistable : persistables) {
 			persistable.persist();
 		}
-		System.exit(0);
 	}
 
 }

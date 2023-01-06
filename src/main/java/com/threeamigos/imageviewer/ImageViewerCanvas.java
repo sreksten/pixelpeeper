@@ -19,18 +19,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
-import com.threeamigos.imageviewer.interfaces.ui.CleanupHelper;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
-import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
 /**
  * The canvas on which we draw the various image slices
@@ -42,30 +35,21 @@ public class ImageViewerCanvas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private final transient ScreenOffsetTracker screenOffsetTracker;
-	private final transient ImageSlicesManager slicesManager;
-	private final transient ExifTagPreferences tagPreferences;
-	private final transient WindowPreferences windowPreferences;
-	private final transient CleanupHelper cleanupHelper;
+	private final transient DataModel dataModel;
 	private final transient FileSelector fileSelector;
 	private final transient AboutWindow aboutWindow;
 
 	private boolean showHelp = false;
 
-	public ImageViewerCanvas(MouseTracker mouseTracker, ScreenOffsetTracker screenOffsetTracker,
-			ImageSlicesManager slicesManager, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences,
-			CleanupHelper cleanupHelper, FileSelector fileSelector, AboutWindow aboutWindow) {
+	public ImageViewerCanvas(DataModel dataModel, MouseTracker mouseTracker, FileSelector fileSelector,
+			AboutWindow aboutWindow) {
 		super();
-		this.screenOffsetTracker = screenOffsetTracker;
-		this.slicesManager = slicesManager;
-		this.tagPreferences = tagPreferences;
-		this.windowPreferences = windowPreferences;
-		this.cleanupHelper = cleanupHelper;
+		this.dataModel = dataModel;
 		this.fileSelector = fileSelector;
 		this.aboutWindow = aboutWindow;
 
-		int width = windowPreferences.getWidth();
-		int height = windowPreferences.getHeight();
+		int width = dataModel.getPreferredWidth();
+		int height = dataModel.getPreferredHeight();
 
 		setSize(width, height);
 		setMinimumSize(getSize());
@@ -78,9 +62,9 @@ public class ImageViewerCanvas extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (!slicesManager.isEmpty()) {
+				if (dataModel.hasLoadedImages()) {
 					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					mouseTracker.mousePressed(e, slicesManager.findSlice(e.getX(), e.getY()));
+					mouseTracker.mousePressed(e, dataModel.findImageSlice(e.getX(), e.getY()));
 					repaint();
 				}
 			}
@@ -88,7 +72,7 @@ public class ImageViewerCanvas extends JPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				setCursor(Cursor.getDefaultCursor());
-				if (!slicesManager.isEmpty()) {
+				if (dataModel.hasLoadedImages()) {
 					mouseTracker.mouseReleased(e);
 					repaint();
 				}
@@ -100,7 +84,7 @@ public class ImageViewerCanvas extends JPanel {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				if (!slicesManager.isEmpty()) {
+				if (dataModel.hasLoadedImages()) {
 					mouseTracker.mouseDragged(e);
 					repaint();
 				}
@@ -112,17 +96,20 @@ public class ImageViewerCanvas extends JPanel {
 	public void addMenus(JMenuBar menuBar) {
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open", KeyEvent.VK_O, event -> load());
-		addCheckboxMenuItem(fileMenu, "Auto rotation", KeyEvent.VK_I, windowPreferences.isAutorotation(), event -> {
-			boolean autorotation = !windowPreferences.isAutorotation();
-			windowPreferences.setAutorotation(autorotation);
-			for (ImageSlice slice : slicesManager.getImageSlices()) {
-				slice.adjustRotation(autorotation);
+		addMenuItem(fileMenu, "Open", KeyEvent.VK_O, event -> {
+			List<File> selectedFiles = fileSelector.getSelectedFiles(this);
+			if (!selectedFiles.isEmpty()) {
+				dataModel.loadFiles(selectedFiles);
+				dataModel.reframe(getWidth(), getHeight());
+				repaint();
 			}
+		});
+		addCheckboxMenuItem(fileMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
+			dataModel.toggleAutorotation();
 			repaint();
 		});
-		addCheckboxMenuItem(fileMenu, "Show tags", KeyEvent.VK_I, tagPreferences.isTagsVisible(), event -> {
-			tagPreferences.setTagsVisible(!tagPreferences.isTagsVisible());
+		addCheckboxMenuItem(fileMenu, "Show tags", KeyEvent.VK_I, dataModel.isTagsVisible(), event -> {
+			dataModel.toggleTagsVisibility();
 			repaint();
 		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
@@ -134,13 +121,16 @@ public class ImageViewerCanvas extends JPanel {
 		addMenuItem(fileMenu, "About", KeyEvent.VK_S, event -> aboutWindow.about(this));
 
 		fileMenu.addSeparator();
-		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> cleanupHelper.cleanUpAndExit());
+		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> {
+			dataModel.savePreferences();
+			System.exit(0);
+		});
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
 		for (ExifTag exifTag : ExifTag.values()) {
-			addCheckboxMenuItem(tagsMenu, exifTag.getDescription(), -1, tagPreferences.isTagVisible(exifTag), event -> {
-				tagPreferences.toggle(exifTag);
+			addCheckboxMenuItem(tagsMenu, exifTag.getDescription(), -1, dataModel.isTagVisible(exifTag), event -> {
+				dataModel.toggleTagVisibility(exifTag);
 				repaint();
 			});
 		}
@@ -176,7 +166,7 @@ public class ImageViewerCanvas extends JPanel {
 		int width = getParent().getWidth();
 		int height = getParent().getHeight();
 		setSize(width, height);
-		slicesManager.reframeImageSlices(width, height);
+		dataModel.reframe(width, height);
 		repaint();
 	}
 
@@ -185,28 +175,6 @@ public class ImageViewerCanvas extends JPanel {
 		super.paintComponent(gfx);
 		Graphics2D graphics = (Graphics2D) gfx;
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		for (ImageSlice slice : slicesManager.getImageSlices()) {
-			slice.paint(graphics);
-		}
-	}
-
-	private void load() {
-
-		List<File> selectedFiles = fileSelector.getSelectedFiles(this);
-
-		if (!selectedFiles.isEmpty()) {
-			slicesManager.clear();
-			for (File file : selectedFiles) {
-				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences);
-				if (reader.readImage(file)) {
-					PictureData imageData = reader.getPictureData();
-					ImageSlice slice = slicesManager.createImageSlice(imageData);
-					slicesManager.add(slice);
-				}
-			}
-			slicesManager.reframeImageSlices(getWidth(), getHeight());
-			screenOffsetTracker.reset();
-			repaint();
-		}
+		dataModel.repaint(graphics);
 	}
 }

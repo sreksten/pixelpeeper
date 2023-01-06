@@ -56,7 +56,7 @@ public class PictureData {
 
 	public void correctOrientation() {
 		if (!orientationAdjusted) {
-			image = ExifOrientationCorrector.correctOrientation(image, orientation);
+			image = ExifOrientation.correctOrientation(image, orientation);
 			swapDimensionsIfNeeded();
 			orientationAdjusted = true;
 		}
@@ -64,7 +64,7 @@ public class PictureData {
 
 	public void undoOrientationCorrection() {
 		if (orientationAdjusted) {
-			image = ExifOrientationCorrector.undoOrientationCorrection(image, orientation);
+			image = ExifOrientation.undoOrientationCorrection(image, orientation);
 			swapDimensionsIfNeeded();
 			orientationAdjusted = false;
 		}

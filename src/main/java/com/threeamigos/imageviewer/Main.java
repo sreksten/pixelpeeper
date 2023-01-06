@@ -11,11 +11,11 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.persister.ExifTagPreferencesPersisterImpl;
 import com.threeamigos.imageviewer.implementations.persister.PathPreferencesPersisterImpl;
 import com.threeamigos.imageviewer.implementations.persister.WindowPreferencesPersisterImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
-import com.threeamigos.imageviewer.implementations.ui.CleanupHelperImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
@@ -25,7 +25,7 @@ import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.ScreenOffsetTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.WindowPreferencesImpl;
-import com.threeamigos.imageviewer.interfaces.ui.CleanupHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
@@ -57,36 +57,36 @@ public class Main {
 
 		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new ExifTagPreferencesPersisterImpl());
 
-		CleanupHelper cleanupHelper = new CleanupHelperImpl();
-		cleanupHelper.addPersistable(windowPreferences);
-		cleanupHelper.addPersistable(pathPreferences);
-		cleanupHelper.addPersistable(tagPreferences);
-
 		// --- End preferences
 
 		ScreenOffsetTracker screenOffsetTracker = new ScreenOffsetTrackerImpl();
 
-		MouseTracker mouseTracker = new MouseTrackerImpl(screenOffsetTracker);
-
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(
 				new ImageSliceFactoryImpl(screenOffsetTracker, tagPreferences, new FontServiceImpl()));
 
-		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
+		DataModel dataModel = new DataModelImpl(screenOffsetTracker, imageSlicesManager, tagPreferences,
+				windowPreferences, pathPreferences);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mouseTracker, screenOffsetTracker,
-				imageSlicesManager, tagPreferences, windowPreferences, cleanupHelper, fileSelector,
+		FileSelector fileSelector = new FileSelectorImpl(dataModel);
+
+		MouseTracker mouseTracker = new MouseTrackerImpl(screenOffsetTracker);
+
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(dataModel, mouseTracker, fileSelector,
 				new AboutWindowImpl());
 
-		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, cleanupHelper);
+		JFrame jframe = prepareFrame(imageViewerCanvas, dataModel);
 
-		imageViewerCanvas.addMenus(prepareMenu(jframe));
+		JMenuBar menuBar = new JMenuBar();
+
+		jframe.setJMenuBar(menuBar);
+
+		imageViewerCanvas.addMenus(menuBar);
 
 		jframe.setVisible(true);
 
 	}
 
-	private JFrame prepareFrame(ImageViewerCanvas canvas, WindowPreferences framePreferences,
-			CleanupHelper cleanupHelper) {
+	private JFrame prepareFrame(ImageViewerCanvas canvas, DataModel dataModel) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
 		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -94,13 +94,14 @@ public class Main {
 		jframe.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				cleanupHelper.cleanUpAndExit();
+				dataModel.savePreferences();
+				System.exit(0);
 			}
 		});
 
 		jframe.setLayout(null);
-		Container c = jframe.getContentPane();
-		c.setPreferredSize(new Dimension(canvas.getWidth(), canvas.getHeight()));
+		Container container = jframe.getContentPane();
+		container.setPreferredSize(new Dimension(canvas.getWidth(), canvas.getHeight()));
 		jframe.add(canvas);
 		canvas.setLocation(0, 0);
 
@@ -108,31 +109,25 @@ public class Main {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				framePreferences.setWidth(canvas.getWidth());
-				framePreferences.setHeight(canvas.getHeight());
+				dataModel.setPreferredWidth(canvas.getWidth());
+				dataModel.setPreferredHeight(canvas.getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				framePreferences.setX(jframe.getX());
-				framePreferences.setY(jframe.getY());
+				dataModel.setPreferredX(jframe.getX());
+				dataModel.setPreferredY(jframe.getY());
 			}
 		});
 
 		jframe.pack();
 		jframe.setResizable(true);
-		jframe.setLocation(framePreferences.getX(), framePreferences.getY());
+		jframe.setLocation(dataModel.getPreferredX(), dataModel.getPreferredY());
 
 		return jframe;
 	}
 
-	private JMenuBar prepareMenu(JFrame jframe) {
-		JMenuBar menuBar = new JMenuBar();
-		jframe.setJMenuBar(menuBar);
-		return menuBar;
-	}
-
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		new Main();
 	}
 

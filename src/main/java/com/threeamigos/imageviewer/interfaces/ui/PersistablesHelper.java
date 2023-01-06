@@ -9,10 +9,10 @@ import com.threeamigos.imageviewer.interfaces.persister.Persistable;
  * @author Stefano Reksten
  *
  */
-public interface CleanupHelper {
+public interface PersistablesHelper {
 
 	public void addPersistable(Persistable persistable);
 
-	public void cleanUpAndExit();
+	public void persist();
 
 }

@@ -10,8 +10,8 @@ import com.threeamigos.imageviewer.interfaces.persister.Persistable;
  */
 public interface PathPreferences extends Persistable {
 
-	public void setPath(String path);
+	public void setLastPath(String path);
 
-	public String getPath();
+	public String getLastPath();
 
 }

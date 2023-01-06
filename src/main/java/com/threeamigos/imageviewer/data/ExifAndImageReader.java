@@ -24,9 +24,7 @@ public class ExifAndImageReader {
 	private final WindowPreferences windowPreferences;
 
 	private ExifMap exifMap = new ExifMap();
-	private int pictureWidth;
-	private int pictureHeight;
-	private int pictureOrientation = 0;
+	private int pictureOrientation = ExifOrientation.AS_IS;
 
 	private PictureData pictureData;
 
@@ -60,8 +58,8 @@ public class ExifAndImageReader {
 
 			BufferedImage bufferedImage = ImageIO.read(file);
 
-			pictureData = new PictureData(pictureWidth, pictureHeight, pictureOrientation, exifMap, bufferedImage,
-					file);
+			pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(), pictureOrientation,
+					exifMap, bufferedImage, file);
 
 			if (windowPreferences.isAutorotation()) {
 				pictureData.correctOrientation();
@@ -69,6 +67,7 @@ public class ExifAndImageReader {
 
 			return true;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -78,9 +77,8 @@ public class ExifAndImageReader {
 	}
 
 	private void consumeJpeg(JpegDirectory jpegDirectory) throws MetadataException {
-		pictureWidth = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_WIDTH);
-		pictureHeight = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
-
+		int pictureWidth = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+		int pictureHeight = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
 		String dimensions = pictureWidth + "x" + pictureHeight;
 		exifMap.setIfAbsent(ExifTag.IMAGE_DIMENSIONS, dimensions, dimensions);
 	}

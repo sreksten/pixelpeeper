@@ -19,12 +19,12 @@ public class PathPreferencesImpl extends AbstractPreferencesImpl<PathPreferences
 	}
 
 	@Override
-	public void setPath(String path) {
+	public void setLastPath(String path) {
 		this.path = path;
 	}
 
 	@Override
-	public String getPath() {
+	public String getLastPath() {
 		return path;
 	}
 

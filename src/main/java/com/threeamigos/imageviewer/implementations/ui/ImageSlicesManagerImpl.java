@@ -27,12 +27,12 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return slices.isEmpty();
+	public boolean hasLoadedImages() {
+		return !slices.isEmpty();
 	}
 
 	@Override
-	public void add(ImageSlice slice) {
+	public void addImageSlice(ImageSlice slice) {
 		slices.add(slice);
 	}
 
@@ -42,7 +42,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 	}
 
 	@Override
-	public ImageSlice findSlice(int x, int y) {
+	public ImageSlice findImageSlice(int x, int y) {
 		for (ImageSlice slice : slices) {
 			if (slice.contains(x, y)) {
 				return slice;

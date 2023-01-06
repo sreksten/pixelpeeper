@@ -15,14 +15,9 @@ public interface ImageSlicesManager extends ImageSliceFactory {
 	 */
 	public void clear();
 
-	/**
-	 * Do we have any slice yet
-	 *
-	 * @return
-	 */
-	public boolean isEmpty();
+	public boolean hasLoadedImages();
 
-	public void add(ImageSlice slice);
+	public void addImageSlice(ImageSlice slice);
 
 	public Collection<ImageSlice> getImageSlices();
 
@@ -33,7 +28,7 @@ public interface ImageSlicesManager extends ImageSliceFactory {
 	 * @param y mouse coordinate
 	 * @return the slice on which the mouse is hovering, if any
 	 */
-	public ImageSlice findSlice(int x, int y);
+	public ImageSlice findImageSlice(int x, int y);
 
 	/**
 	 * To be used when the main window is resized
