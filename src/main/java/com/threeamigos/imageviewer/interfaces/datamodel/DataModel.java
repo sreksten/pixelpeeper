@@ -5,7 +5,6 @@ import java.io.File;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 
 public interface DataModel {
 
@@ -35,6 +34,15 @@ public interface DataModel {
 
 	public void toggleAutorotation();
 
+	public boolean isMovementAppliedToAllImages();
+
+	public void toggleMovementAppliedToAllImages();
+
+	public boolean isMovementAppliedToAllImagesTemporarilyInverted();
+
+	public void setMovementAppliedToAllImagesTemporarilyInverted(
+			boolean isMovementAppliedToAllImagesTemporarilyInverted);
+
 	public boolean isTagsVisible();
 
 	public void toggleTagsVisibility();
@@ -51,7 +59,15 @@ public interface DataModel {
 
 	public void repaint(Graphics2D graphics);
 
-	public ImageSlice findImageSlice(int mouseX, int mouseY);
+	public void setMovementAppliedToAllImages(boolean movementAppliesToAllFrames);
+
+	public void move(int deltaX, int deltaY);
+
+	public void resetMovement();
+
+	public void setActiveSlice(int x, int y);
+
+	public void resetActiveSlice();
 
 	// Data part
 

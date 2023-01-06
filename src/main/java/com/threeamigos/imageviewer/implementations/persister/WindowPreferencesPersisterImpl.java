@@ -21,6 +21,7 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 	private static final String Y = "y";
 	private static final String AUTOROTATION = "autorotation";
 	private static final String TAGS_VISIBLE = "tags";
+	private static final String MOVEMENT_APPLIED_TO_ALL_IMAGES = "movement_applied_to_all_images";
 
 	@Override
 	public String getNamePart() {
@@ -41,6 +42,7 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		int y = -1;
 		boolean autorotation = WindowPreferences.AUTOROTATION_DEFAULT;
 		boolean tagsVisible = WindowPreferences.TAGS_VISIBLE_DEFAULT;
+		boolean movementAppliesToAllImages = WindowPreferences.MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
 
 		String line;
 		while ((line = reader.readLine()) != null) {
@@ -60,6 +62,8 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 					autorotation = Boolean.valueOf(value);
 				} else if (TAGS_VISIBLE.equals(key)) {
 					tagsVisible = Boolean.valueOf(value);
+				} else if (MOVEMENT_APPLIED_TO_ALL_IMAGES.equals(key)) {
+					movementAppliesToAllImages = Boolean.valueOf(value);
 				}
 			}
 		}
@@ -72,8 +76,7 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		windowPreferences.setY(y);
 		windowPreferences.setAutorotation(autorotation);
 		windowPreferences.setTagsVisible(tagsVisible);
-
-		windowPreferences.setAutorotation(true);
+		windowPreferences.setMovementAppliedToAllImages(movementAppliesToAllImages);
 	}
 
 	private void checkBoundaries(int width, int height, int x, int y) throws IllegalArgumentException {
@@ -110,6 +113,7 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		writer.println(Y + "=" + windowPreferences.getY());
 		writer.println(AUTOROTATION + "=" + windowPreferences.isAutorotation());
 		writer.println(TAGS_VISIBLE + "=" + windowPreferences.isTagsVisible());
+		writer.println(MOVEMENT_APPLIED_TO_ALL_IMAGES + "=" + windowPreferences.isMovementAppliedToAllImages());
 	}
 
 }

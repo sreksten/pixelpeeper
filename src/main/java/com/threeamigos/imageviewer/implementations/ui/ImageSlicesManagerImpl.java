@@ -7,57 +7,47 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSliceFactory;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 
 public class ImageSlicesManagerImpl implements ImageSlicesManager {
 
-	private final ImageSliceFactory sliceFactory;
+	private final ExifTagPreferences tagPreferences;
+	private final FontService fontService;
 
-	private List<ImageSlice> slices = new ArrayList<>();
+	private List<ImageSlice> imageSlices = new ArrayList<>();
 
-	public ImageSlicesManagerImpl(ImageSliceFactory sliceFactory) {
-		this.sliceFactory = sliceFactory;
+	private ImageSlice activeSlice;
+
+	public ImageSlicesManagerImpl(ExifTagPreferences tagPreferences, FontService fontService) {
+		this.tagPreferences = tagPreferences;
+		this.fontService = fontService;
 	}
 
 	@Override
 	public void clear() {
-		slices.clear();
+		imageSlices.clear();
 	}
 
 	@Override
 	public boolean hasLoadedImages() {
-		return !slices.isEmpty();
-	}
-
-	@Override
-	public void addImageSlice(ImageSlice slice) {
-		slices.add(slice);
+		return !imageSlices.isEmpty();
 	}
 
 	@Override
 	public Collection<ImageSlice> getImageSlices() {
-		return Collections.unmodifiableCollection(slices);
-	}
-
-	@Override
-	public ImageSlice findImageSlice(int x, int y) {
-		for (ImageSlice slice : slices) {
-			if (slice.contains(x, y)) {
-				return slice;
-			}
-		}
-		return null;
+		return Collections.unmodifiableCollection(imageSlices);
 	}
 
 	@Override
 	public void reframeImageSlices(int panelWidth, int panelHeight) {
-		if (!slices.isEmpty()) {
-			int sliceWidth = panelWidth / slices.size();
+		if (!imageSlices.isEmpty()) {
+			int sliceWidth = panelWidth / imageSlices.size();
 			int sliceHeight = panelHeight;
 			int currentScreenOffsetX = 0;
-			for (ImageSlice slice : slices) {
+			for (ImageSlice slice : imageSlices) {
 				Rectangle sliceRectangle = new Rectangle(currentScreenOffsetX, 0, sliceWidth, sliceHeight);
 				slice.setLocation(sliceRectangle);
 				currentScreenOffsetX += sliceWidth;
@@ -67,7 +57,47 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
-		return sliceFactory.createImageSlice(pictureData);
+		ImageSlice imageSlice = new ImageSliceImpl(pictureData, tagPreferences, fontService);
+		imageSlices.add(imageSlice);
+		return imageSlice;
 	}
 
+	@Override
+	public void move(int deltaX, int deltaY, boolean movementAppliesToAllImages) {
+		if (movementAppliesToAllImages) {
+			for (ImageSlice imageSlice : imageSlices) {
+				imageSlice.move(deltaX, deltaY);
+			}
+		} else {
+			if (activeSlice != null) {
+				activeSlice.move(deltaX, deltaY);
+			}
+		}
+	}
+
+	@Override
+	public void resetMovement() {
+		for (ImageSlice imageSlice : imageSlices) {
+			imageSlice.resetMovement();
+		}
+	}
+
+	@Override
+	public void setActiveSlice(int x, int y) {
+		for (ImageSlice currentSlice : imageSlices) {
+			if (currentSlice.contains(x, y)) {
+				activeSlice = currentSlice;
+				activeSlice.setSelected(true);
+				break;
+			}
+		}
+	}
+
+	@Override
+	public void resetActiveSlice() {
+		if (activeSlice != null) {
+			activeSlice.setSelected(false);
+		}
+		activeSlice = null;
+	}
 }

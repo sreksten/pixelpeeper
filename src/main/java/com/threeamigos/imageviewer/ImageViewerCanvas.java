@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -64,7 +65,7 @@ public class ImageViewerCanvas extends JPanel {
 			public void mousePressed(MouseEvent e) {
 				if (dataModel.hasLoadedImages()) {
 					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					mouseTracker.mousePressed(e, dataModel.findImageSlice(e.getX(), e.getY()));
+					mouseTracker.mousePressed(e);
 					repaint();
 				}
 			}
@@ -91,6 +92,24 @@ public class ImageViewerCanvas extends JPanel {
 			}
 
 		});
+
+		addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(true);
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(false);
+				}
+			}
+
+		});
 	}
 
 	public void addMenus(JMenuBar menuBar) {
@@ -108,6 +127,11 @@ public class ImageViewerCanvas extends JPanel {
 			dataModel.toggleAutorotation();
 			repaint();
 		});
+		addCheckboxMenuItem(fileMenu, "Move all images", KeyEvent.VK_M, dataModel.isMovementAppliedToAllImages(),
+				event -> {
+					dataModel.toggleMovementAppliedToAllImages();
+					repaint();
+				});
 		addCheckboxMenuItem(fileMenu, "Show tags", KeyEvent.VK_I, dataModel.isTagsVisible(), event -> {
 			dataModel.toggleTagsVisibility();
 			repaint();

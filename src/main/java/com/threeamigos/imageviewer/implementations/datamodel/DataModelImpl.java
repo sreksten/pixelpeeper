@@ -16,20 +16,19 @@ import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
 public class DataModelImpl implements DataModel {
 
-	private final ScreenOffsetTracker screenOffsetTracker;
 	private final ImageSlicesManager slicesManager;
 	private final ExifTagPreferences tagPreferences;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
 
-	public DataModelImpl(ScreenOffsetTracker screenOffsetTracker, ImageSlicesManager slicesManager,
-			ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, PathPreferences pathPreferences) {
-		this.screenOffsetTracker = screenOffsetTracker;
+	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
+
+	public DataModelImpl(ImageSlicesManager slicesManager, ExifTagPreferences tagPreferences,
+			WindowPreferences windowPreferences, PathPreferences pathPreferences) {
 		this.slicesManager = slicesManager;
 		this.tagPreferences = tagPreferences;
 		this.windowPreferences = windowPreferences;
@@ -43,12 +42,11 @@ public class DataModelImpl implements DataModel {
 			for (File file : files) {
 				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences);
 				if (reader.readImage(file)) {
-					PictureData imageData = reader.getPictureData();
-					ImageSlice slice = slicesManager.createImageSlice(imageData);
-					slicesManager.addImageSlice(slice);
+					PictureData pictureData = reader.getPictureData();
+					slicesManager.createImageSlice(pictureData);
 				}
 			}
-			screenOffsetTracker.reset();
+			slicesManager.resetMovement();
 		}
 	}
 
@@ -138,11 +136,6 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public ImageSlice findImageSlice(int mouseX, int mouseY) {
-		return slicesManager.findImageSlice(mouseX, mouseY);
-	}
-
-	@Override
 	public int getPreferredX() {
 		return windowPreferences.getX();
 	}
@@ -172,4 +165,53 @@ public class DataModelImpl implements DataModel {
 		pathPreferences.setLastPath(lastPath);
 	}
 
+	@Override
+	public void move(int deltaX, int deltaY) {
+		boolean isMovementAppliedToAllImages = windowPreferences.isMovementAppliedToAllImages();
+		if (isMovementAppliedToAllImagesTemporarilyInverted) {
+			isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
+		}
+		slicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
+	}
+
+	@Override
+	public void resetMovement() {
+		slicesManager.resetMovement();
+	}
+
+	@Override
+	public void setActiveSlice(int x, int y) {
+		slicesManager.setActiveSlice(x, y);
+	}
+
+	@Override
+	public void resetActiveSlice() {
+		slicesManager.resetActiveSlice();
+	}
+
+	@Override
+	public boolean isMovementAppliedToAllImages() {
+		return windowPreferences.isMovementAppliedToAllImages();
+	}
+
+	@Override
+	public void setMovementAppliedToAllImages(boolean movementAppliedToAllImages) {
+		windowPreferences.setMovementAppliedToAllImages(movementAppliedToAllImages);
+	}
+
+	@Override
+	public void toggleMovementAppliedToAllImages() {
+		windowPreferences.setMovementAppliedToAllImages(!windowPreferences.isMovementAppliedToAllImages());
+	}
+
+	@Override
+	public boolean isMovementAppliedToAllImagesTemporarilyInverted() {
+		return isMovementAppliedToAllImagesTemporarilyInverted;
+	}
+
+	@Override
+	public void setMovementAppliedToAllImagesTemporarilyInverted(
+			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
+		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
+	}
 }

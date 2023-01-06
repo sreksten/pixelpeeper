@@ -14,6 +14,7 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	private int y;
 	private boolean autorotation;
 	private boolean tagsVisible;
+	private boolean movementAppliesToAllImages;
 
 	@Override
 	protected String getEntityDescription() {
@@ -95,6 +96,17 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 		y = (screenDimension.height - height) / 2;
 		autorotation = AUTOROTATION_DEFAULT;
 		tagsVisible = TAGS_VISIBLE_DEFAULT;
+		movementAppliesToAllImages = MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
+	}
+
+	@Override
+	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages) {
+		this.movementAppliesToAllImages = movementAppliesToAllImages;
+	}
+
+	@Override
+	public boolean isMovementAppliedToAllImages() {
+		return movementAppliesToAllImages;
 	}
 
 }

@@ -2,13 +2,15 @@ package com.threeamigos.imageviewer.interfaces.ui;
 
 import java.util.Collection;
 
+import com.threeamigos.imageviewer.data.PictureData;
+
 /**
  * Keeps track of the various image slices we see oncreen
  *
  * @author Stefano Reksten
  *
  */
-public interface ImageSlicesManager extends ImageSliceFactory {
+public interface ImageSlicesManager {
 
 	/**
 	 * Clears all associated slices to load new images
@@ -17,18 +19,9 @@ public interface ImageSlicesManager extends ImageSliceFactory {
 
 	public boolean hasLoadedImages();
 
-	public void addImageSlice(ImageSlice slice);
+	public ImageSlice createImageSlice(PictureData pictureData);
 
 	public Collection<ImageSlice> getImageSlices();
-
-	/**
-	 * Returns the slice the mouse is over
-	 *
-	 * @param x mouse coordinate
-	 * @param y mouse coordinate
-	 * @return the slice on which the mouse is hovering, if any
-	 */
-	public ImageSlice findImageSlice(int x, int y);
 
 	/**
 	 * To be used when the main window is resized
@@ -37,5 +30,13 @@ public interface ImageSlicesManager extends ImageSliceFactory {
 	 * @param panelHeight
 	 */
 	public void reframeImageSlices(int panelWidth, int panelHeight);
+
+	public void move(int deltaX, int deltaY, boolean allImages);
+
+	public void resetMovement();
+
+	public void setActiveSlice(int x, int y);
+
+	public void resetActiveSlice();
 
 }

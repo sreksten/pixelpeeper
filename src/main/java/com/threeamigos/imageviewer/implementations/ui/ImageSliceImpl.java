@@ -9,22 +9,21 @@ import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 
 public class ImageSliceImpl implements ImageSlice {
 
 	private final PictureData pictureData;
-	private final ScreenOffsetTracker offsetTracker;
 	private final ExifTagPreferences tagPreferences;
 	private final FontService fontService;
 
 	private Rectangle location;
+	private int screenXOffset;
+	private int screenYOffset;
+
 	private boolean selected;
 
-	public ImageSliceImpl(PictureData pictureData, ScreenOffsetTracker offsetTracker, ExifTagPreferences tagPreferences,
-			FontService fontService) {
+	public ImageSliceImpl(PictureData pictureData, ExifTagPreferences tagPreferences, FontService fontService) {
 		this.pictureData = pictureData;
-		this.offsetTracker = offsetTracker;
 		this.tagPreferences = tagPreferences;
 		this.fontService = fontService;
 	}
@@ -37,6 +36,41 @@ public class ImageSliceImpl implements ImageSlice {
 	@Override
 	public void setLocation(Rectangle location) {
 		this.location = location;
+		checkBoundaries();
+	}
+
+	@Override
+	public void move(int deltaX, int deltaY) {
+		screenXOffset += deltaX;
+		screenYOffset += deltaY;
+		checkBoundaries();
+	}
+
+	private void checkBoundaries() {
+		int pictureWidth = pictureData.getWidth();
+		if (screenXOffset > pictureWidth - location.width) {
+			screenXOffset = pictureWidth - location.width;
+		} else if (screenXOffset < 0) {
+			screenXOffset = 0;
+		}
+
+		int pictureHeight = pictureData.getHeight();
+		if (screenYOffset > pictureHeight - location.height) {
+			screenYOffset = pictureHeight - location.height;
+		} else if (screenYOffset < 0) {
+			screenYOffset = 0;
+		}
+	}
+
+	@Override
+	public void resetMovement() {
+		if (location != null) {
+			screenXOffset = (pictureData.getWidth() - location.width) / 2;
+			screenYOffset = (pictureData.getHeight() - location.height) / 2;
+		} else {
+			screenXOffset = 0;
+			screenYOffset = 0;
+		}
 	}
 
 	@Override
@@ -81,16 +115,7 @@ public class ImageSliceImpl implements ImageSlice {
 
 		} else {
 
-			int startX = (int) (pictureWidth * offsetTracker.getOffsetXPercentage());
-			if (startX + width >= pictureWidth) {
-				startX = pictureWidth - width - 1;
-			}
-			int startY = (int) (pictureHeight * offsetTracker.getOffsetYPercentage());
-			if (startY + height >= pictureHeight) {
-				startY = pictureHeight - height - 1;
-			}
-
-			BufferedImage subImage = pictureData.getImage().getSubimage(startX, startY, width, height);
+			BufferedImage subImage = pictureData.getImage().getSubimage(screenXOffset, screenYOffset, width, height);
 			g2d.drawImage(subImage, x, y, null);
 
 		}

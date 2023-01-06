@@ -49,6 +49,22 @@ public interface ImageSlice {
 	 */
 	public PictureData getPictureData();
 
+	/**
+	 * Move the image around the slice
+	 *
+	 * @param deltaX pixels to shift the upper X coordinate of the viewable part of
+	 *               the picture
+	 * @param deltaY pixels to shift the upper X coordinate of the viewable part of
+	 *               the picture
+	 */
+	public void move(int deltaX, int deltaY);
+
+	/**
+	 * To clear the image shifting when loading a new image. Image is centered on
+	 * the screen.
+	 */
+	public void resetMovement();
+
 	public void paint(Graphics2D g);
 
 	/**

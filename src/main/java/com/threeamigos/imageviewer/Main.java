@@ -19,11 +19,9 @@ import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
-import com.threeamigos.imageviewer.implementations.ui.ImageSliceFactoryImpl;
 import com.threeamigos.imageviewer.implementations.ui.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.PathPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.ui.ScreenOffsetTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
@@ -31,7 +29,6 @@ import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
 /**
@@ -59,17 +56,13 @@ public class Main {
 
 		// --- End preferences
 
-		ScreenOffsetTracker screenOffsetTracker = new ScreenOffsetTrackerImpl();
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagPreferences, new FontServiceImpl());
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(
-				new ImageSliceFactoryImpl(screenOffsetTracker, tagPreferences, new FontServiceImpl()));
-
-		DataModel dataModel = new DataModelImpl(screenOffsetTracker, imageSlicesManager, tagPreferences,
-				windowPreferences, pathPreferences);
+		DataModel dataModel = new DataModelImpl(imageSlicesManager, tagPreferences, windowPreferences, pathPreferences);
 
 		FileSelector fileSelector = new FileSelectorImpl(dataModel);
 
-		MouseTracker mouseTracker = new MouseTrackerImpl(screenOffsetTracker);
+		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(dataModel, mouseTracker, fileSelector,
 				new AboutWindowImpl());
