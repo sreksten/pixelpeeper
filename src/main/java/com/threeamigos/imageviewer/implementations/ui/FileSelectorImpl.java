@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class FileSelectorImpl implements FileSelector {
 		int returnVal = fileChooser.showOpenDialog(component);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			List<File> files = List.of(fileChooser.getSelectedFiles());
+			List<File> files = Arrays.asList(fileChooser.getSelectedFiles());
 			if (!files.isEmpty()) {
 				File firstFile = files.get(0);
 				dataModel.setLastPath(firstFile.getParentFile().getAbsolutePath());

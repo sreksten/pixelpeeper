@@ -29,7 +29,7 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 		String line;
 		String path = null;
 		while ((line = reader.readLine()) != null) {
-			if (!line.isEmpty() && !line.isBlank()) {
+			if (!line.trim().isEmpty()) {
 				path = line;
 				break;
 			}

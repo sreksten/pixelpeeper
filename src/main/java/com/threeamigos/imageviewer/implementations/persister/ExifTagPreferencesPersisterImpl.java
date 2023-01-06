@@ -34,7 +34,7 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 
 		String line;
 		while ((line = reader.readLine()) != null) {
-			if (!line.isEmpty() && !line.isBlank()) {
+			if (!line.trim().isEmpty()) {
 				StringTokenizer st = new StringTokenizer(line, "=");
 				ExifTag tag = ExifTag.valueOf(st.nextToken());
 				Boolean value = Boolean.valueOf(st.nextToken());

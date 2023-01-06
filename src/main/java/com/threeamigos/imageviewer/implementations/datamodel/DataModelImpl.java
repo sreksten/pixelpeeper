@@ -2,20 +2,20 @@ package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Graphics2D;
 import java.io.File;
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.implementations.ui.PersistablesHelperImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.PersistablesHelper;
 import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
@@ -26,24 +26,14 @@ public class DataModelImpl implements DataModel {
 	private final ExifTagPreferences tagPreferences;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
-	private final PersistablesHelper persistablesHelper;
-
-	private List<Persistable> persistables = new ArrayList<>();
 
 	public DataModelImpl(ScreenOffsetTracker screenOffsetTracker, ImageSlicesManager slicesManager,
 			ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, PathPreferences pathPreferences) {
 		this.screenOffsetTracker = screenOffsetTracker;
 		this.slicesManager = slicesManager;
-		this.persistablesHelper = new PersistablesHelperImpl();
-
 		this.tagPreferences = tagPreferences;
-		persistablesHelper.addPersistable(tagPreferences);
-
 		this.windowPreferences = windowPreferences;
-		persistablesHelper.addPersistable(windowPreferences);
-
 		this.pathPreferences = pathPreferences;
-		persistablesHelper.addPersistable(pathPreferences);
 	}
 
 	@Override
@@ -130,7 +120,16 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void savePreferences() {
-		persistablesHelper.persist();
+		try {
+			for (Field field : getClass().getFields()) {
+				Object fieldValue = field.get(this);
+				if (fieldValue instanceof Persistable) {
+					((Persistable) fieldValue).persist();
+				}
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			JOptionPane.showMessageDialog(null, "Error while saving preferences: " + e.getMessage());
+		}
 	}
 
 	@Override

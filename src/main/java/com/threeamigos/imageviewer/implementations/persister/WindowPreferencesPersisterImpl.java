@@ -44,7 +44,7 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 
 		String line;
 		while ((line = reader.readLine()) != null) {
-			if (!line.isEmpty() && !line.isBlank()) {
+			if (!line.trim().isEmpty()) {
 				StringTokenizer st = new StringTokenizer(line, "=");
 				String key = st.nextToken();
 				String value = st.nextToken();
