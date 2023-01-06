@@ -2,9 +2,9 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.event.MouseEvent;
 
+import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 
 public class MouseTrackerImpl implements MouseTracker {
 
