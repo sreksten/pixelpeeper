@@ -21,7 +21,7 @@ public class ImageSliceFactoryImpl implements ImageSliceFactory {
 
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
-		return new SliceImpl(pictureData, offsetTracker, tagPreferences, fontService);
+		return new ImageSliceImpl(pictureData, offsetTracker, tagPreferences, fontService);
 	}
 
 }

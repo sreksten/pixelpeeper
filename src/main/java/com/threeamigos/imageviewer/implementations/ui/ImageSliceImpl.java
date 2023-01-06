@@ -11,7 +11,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 
-public class SliceImpl implements ImageSlice {
+public class ImageSliceImpl implements ImageSlice {
 
 	private final PictureData pictureData;
 	private final ScreenOffsetTracker offsetTracker;
@@ -21,7 +21,7 @@ public class SliceImpl implements ImageSlice {
 	private Rectangle location;
 	private boolean selected;
 
-	public SliceImpl(PictureData pictureData, ScreenOffsetTracker offsetTracker, ExifTagPreferences tagPreferences,
+	public ImageSliceImpl(PictureData pictureData, ScreenOffsetTracker offsetTracker, ExifTagPreferences tagPreferences,
 			FontService fontService) {
 		this.pictureData = pictureData;
 		this.offsetTracker = offsetTracker;
