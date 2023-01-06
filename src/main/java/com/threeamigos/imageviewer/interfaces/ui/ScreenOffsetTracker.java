@@ -16,4 +16,6 @@ public interface ScreenOffsetTracker {
 
 	public double getOffsetYPercentage();
 
+	public void reset();
+
 }

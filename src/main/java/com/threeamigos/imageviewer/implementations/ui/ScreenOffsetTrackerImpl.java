@@ -27,4 +27,10 @@ public class ScreenOffsetTrackerImpl implements ScreenOffsetTracker {
 		return offsetYPercentage;
 	}
 
+	@Override
+	public void reset() {
+		offsetXPercentage = 0.0d;
+		offsetYPercentage = 0.0d;
+	}
+
 }

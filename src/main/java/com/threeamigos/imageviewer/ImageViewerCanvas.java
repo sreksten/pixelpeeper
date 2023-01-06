@@ -29,6 +29,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
+import com.threeamigos.imageviewer.interfaces.ui.ScreenOffsetTracker;
 import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
 /**
@@ -41,6 +42,7 @@ public class ImageViewerCanvas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private final transient ScreenOffsetTracker screenOffsetTracker;
 	private final transient ImageSlicesManager slicesManager;
 	private final transient ExifTagPreferences tagPreferences;
 	private final transient WindowPreferences windowPreferences;
@@ -50,10 +52,11 @@ public class ImageViewerCanvas extends JPanel {
 
 	private boolean showHelp = false;
 
-	public ImageViewerCanvas(MouseTracker mouseTracker, ImageSlicesManager slicesManager,
-			ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, CleanupHelper cleanupHelper,
-			FileSelector fileSelector, AboutWindow aboutWindow) {
+	public ImageViewerCanvas(MouseTracker mouseTracker, ScreenOffsetTracker screenOffsetTracker,
+			ImageSlicesManager slicesManager, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences,
+			CleanupHelper cleanupHelper, FileSelector fileSelector, AboutWindow aboutWindow) {
 		super();
+		this.screenOffsetTracker = screenOffsetTracker;
 		this.slicesManager = slicesManager;
 		this.tagPreferences = tagPreferences;
 		this.windowPreferences = windowPreferences;
@@ -202,6 +205,7 @@ public class ImageViewerCanvas extends JPanel {
 				}
 			}
 			slicesManager.reframeImageSlices(getWidth(), getHeight());
+			screenOffsetTracker.reset();
 			repaint();
 		}
 	}

@@ -64,17 +64,18 @@ public class Main {
 
 		// --- End preferences
 
-		ScreenOffsetTracker offsetTracker = new ScreenOffsetTrackerImpl();
+		ScreenOffsetTracker screenOffsetTracker = new ScreenOffsetTrackerImpl();
 
-		MouseTracker mouseTracker = new MouseTrackerImpl(offsetTracker);
+		MouseTracker mouseTracker = new MouseTrackerImpl(screenOffsetTracker);
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(
-				new ImageSliceFactoryImpl(offsetTracker, tagPreferences, new FontServiceImpl()));
+				new ImageSliceFactoryImpl(screenOffsetTracker, tagPreferences, new FontServiceImpl()));
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mouseTracker, imageSlicesManager, tagPreferences,
-				windowPreferences, cleanupHelper, fileSelector, new AboutWindowImpl());
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mouseTracker, screenOffsetTracker,
+				imageSlicesManager, tagPreferences, windowPreferences, cleanupHelper, fileSelector,
+				new AboutWindowImpl());
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, cleanupHelper);
 
