@@ -12,24 +12,24 @@ import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.persister.ExifTagPreferencesPersisterImpl;
 import com.threeamigos.imageviewer.implementations.persister.PathPreferencesPersisterImpl;
 import com.threeamigos.imageviewer.implementations.persister.WindowPreferencesPersisterImpl;
+import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
-import com.threeamigos.imageviewer.implementations.ui.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
-import com.threeamigos.imageviewer.implementations.ui.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
-import com.threeamigos.imageviewer.implementations.ui.PathPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.ui.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
-import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
 
 /**
  * Uses the MEtadata Extractor from https://drewnoakes.com/code/exif/

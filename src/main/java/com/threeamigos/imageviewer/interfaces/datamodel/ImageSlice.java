@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.interfaces.ui;
+package com.threeamigos.imageviewer.interfaces.datamodel;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;

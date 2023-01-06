@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.implementations.ui;
+package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,9 +6,9 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
 
 public class ImageSliceImpl implements ImageSlice {
 

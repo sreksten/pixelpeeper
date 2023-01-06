@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.implementations.ui;
+package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -7,10 +7,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
 
 public class ImageSlicesManagerImpl implements ImageSlicesManager {
 

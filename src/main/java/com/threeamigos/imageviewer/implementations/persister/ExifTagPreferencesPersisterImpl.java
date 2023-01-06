@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 
 public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<ExifTagPreferences>
 		implements Persister<ExifTagPreferences> {

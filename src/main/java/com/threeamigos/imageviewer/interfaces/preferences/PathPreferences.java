@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.interfaces.ui;
+package com.threeamigos.imageviewer.interfaces.preferences;
 
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 

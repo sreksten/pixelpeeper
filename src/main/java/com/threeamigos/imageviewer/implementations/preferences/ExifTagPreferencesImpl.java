@@ -1,11 +1,12 @@
-package com.threeamigos.imageviewer.implementations.ui;
+package com.threeamigos.imageviewer.implementations.preferences;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 
 public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPreferences> implements ExifTagPreferences {
 

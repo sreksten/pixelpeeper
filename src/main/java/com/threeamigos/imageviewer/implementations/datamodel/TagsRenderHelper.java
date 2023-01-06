@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.implementations.ui;
+package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class TagsRenderHelper {

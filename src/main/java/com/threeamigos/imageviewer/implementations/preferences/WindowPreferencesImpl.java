@@ -1,10 +1,11 @@
-package com.threeamigos.imageviewer.implementations.ui;
+package com.threeamigos.imageviewer.implementations.preferences;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPreferences> implements WindowPreferences {
 

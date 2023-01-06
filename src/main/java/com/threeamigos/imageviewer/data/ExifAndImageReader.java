@@ -17,7 +17,7 @@ import com.drew.metadata.exif.makernotes.NikonType1MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.NikonType2MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.PanasonicMakernoteDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class ExifAndImageReader {
 

@@ -11,12 +11,12 @@ import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.ui.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class DataModelImpl implements DataModel {
 

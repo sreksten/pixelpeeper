@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.ui.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 
 public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<PathPreferences>
 		implements Persister<PathPreferences> {

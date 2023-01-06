@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.ui.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<WindowPreferences>
 		implements Persister<WindowPreferences> {
