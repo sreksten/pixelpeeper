@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,7 +13,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -21,6 +24,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
@@ -41,6 +45,8 @@ public class ImageViewerCanvas extends JPanel {
 	private final transient AboutWindow aboutWindow;
 
 	private boolean showHelp = false;
+
+	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
 
 	public ImageViewerCanvas(DataModel dataModel, MouseTracker mouseTracker, FileSelector fileSelector,
 			AboutWindow aboutWindow) {
@@ -152,17 +158,39 @@ public class ImageViewerCanvas extends JPanel {
 			dataModel.toggleTagsVisibility();
 			repaint();
 		});
-		addCheckboxMenuItem(tagsMenu, "only if different", KeyEvent.VK_I, dataModel.isTagsVisibleOnlyIfDifferent(),
-				event -> {
-					dataModel.toggleTagsVisibilityOnlyIfDifferent();
-					repaint();
-				});
 		tagsMenu.addSeparator();
 		for (ExifTag exifTag : ExifTag.values()) {
-			addCheckboxMenuItem(tagsMenu, exifTag.getDescription(), -1, dataModel.isTagVisible(exifTag), event -> {
-				dataModel.toggleTagVisibility(exifTag);
-				repaint();
-			});
+			JMenu exifTagMenu = new JMenu(exifTag.getDescription());
+			menusByTag.put(exifTag, exifTagMenu);
+			tagsMenu.add(exifTagMenu);
+			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.YES.getDescription(), -1,
+					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.YES, event -> {
+						dataModel.setTagVisibility(exifTag, ExifTagVisibility.YES);
+						updateExifTagMenu(exifTag);
+						repaint();
+					});
+			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.ONLY_IF_DIFFERENT.getDescription(), -1,
+					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.ONLY_IF_DIFFERENT, event -> {
+						dataModel.setTagVisibility(exifTag, ExifTagVisibility.ONLY_IF_DIFFERENT);
+						updateExifTagMenu(exifTag);
+						repaint();
+					});
+			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.NO.getDescription(), -1,
+					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.NO, event -> {
+						dataModel.setTagVisibility(exifTag, ExifTagVisibility.NO);
+						updateExifTagMenu(exifTag);
+						repaint();
+					});
+		}
+	}
+
+	private void updateExifTagMenu(ExifTag exifTag) {
+		JMenu exifTagMenu = menusByTag.get(exifTag);
+		Component[] items = exifTagMenu.getMenuComponents();
+		ExifTagVisibility exifTagVisibility = dataModel.getTagVisibility(exifTag);
+		for (int i = 0; i < items.length; i++) {
+			JCheckBoxMenuItem item = (JCheckBoxMenuItem) items[i];
+			item.setSelected(exifTagVisibility.getDescription().equals(item.getText()));
 		}
 	}
 

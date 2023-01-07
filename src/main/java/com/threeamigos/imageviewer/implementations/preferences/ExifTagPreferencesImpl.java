@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
@@ -11,9 +12,8 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPreferences> implements ExifTagPreferences {
 
 	private boolean tagsVisible = true;
-	private boolean tagsVisibleOnlyIfDifferent = false;
 
-	private Map<ExifTag, Boolean> tagsMap;
+	private Map<ExifTag, ExifTagVisibility> tagsMap;
 
 	@Override
 	protected String getEntityDescription() {
@@ -29,29 +29,24 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 	}
 
 	@Override
-	public void setTagVisible(ExifTag tag, boolean visible) {
-		tagsMap.put(tag, visible);
+	public void setTagVisibility(ExifTag tag, ExifTagVisibility tagVisibility) {
+		tagsMap.put(tag, tagVisibility);
 	}
 
 	@Override
-	public boolean isTagVisible(ExifTag tag) {
-		Boolean value = tagsMap.get(tag);
+	public ExifTagVisibility getTagVisibility(ExifTag tag) {
+		ExifTagVisibility value = tagsMap.get(tag);
 		if (value == null) {
-			return false;
+			return ExifTagVisibility.NO;
 		} else {
 			return value;
 		}
 	}
 
 	@Override
-	public void toggle(ExifTag tag) {
-		setTagVisible(tag, !isTagVisible(tag));
-	}
-
-	@Override
 	protected void loadDefaultValues() {
 		for (ExifTag tag : ExifTag.values()) {
-			setTagVisible(tag, true);
+			setTagVisibility(tag, ExifTagVisibility.YES);
 		}
 	}
 
@@ -63,15 +58,5 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 	@Override
 	public void setTagsVisible(boolean tagsVisible) {
 		this.tagsVisible = tagsVisible;
-	}
-
-	@Override
-	public boolean isTagsVisibleOnlyIfDifferent() {
-		return tagsVisibleOnlyIfDifferent;
-	}
-
-	@Override
-	public void setTagsVisibleOnlyIfDifferent(boolean tagsVisibleOnlyIfDifferent) {
-		this.tagsVisibleOnlyIfDifferent = tagsVisibleOnlyIfDifferent;
 	}
 }

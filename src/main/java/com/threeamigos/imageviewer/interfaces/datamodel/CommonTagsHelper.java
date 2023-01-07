@@ -10,6 +10,8 @@ public interface CommonTagsHelper {
 
 	public void updateCommonTags(Collection<PictureData> pictureData);
 
+	public int getMappedPictures();
+
 	public boolean isCommonTag(ExifTag exifTag);
 
 	public Collection<ExifTag> getCommonTags();

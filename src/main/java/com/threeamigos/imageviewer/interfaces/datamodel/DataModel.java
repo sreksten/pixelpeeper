@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifTagVisibility;
 
 public interface DataModel {
 
@@ -43,13 +44,9 @@ public interface DataModel {
 
 	public void toggleTagsVisibility();
 
-	public boolean isTagsVisibleOnlyIfDifferent();
+	public ExifTagVisibility getTagVisibility(ExifTag exifTag);
 
-	public void toggleTagsVisibilityOnlyIfDifferent();
-
-	public boolean isTagVisible(ExifTag exifTag);
-
-	public void toggleTagVisibility(ExifTag exifTag);
+	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility);
 
 	public void savePreferences();
 

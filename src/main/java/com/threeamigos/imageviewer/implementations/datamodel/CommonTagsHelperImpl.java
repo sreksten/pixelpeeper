@@ -17,11 +17,13 @@ public class CommonTagsHelperImpl implements CommonTagsHelper {
 
 	private Collection<ExifTag> commonTags;
 	private Map<ExifTag, Collection<String>> uncommonTagsToValues;
+	private int mappedPictures;
 
 	@Override
 	public void updateCommonTags(Collection<PictureData> pictureData) {
 		commonTags = new ArrayList<>();
 		uncommonTagsToValues = new EnumMap<>(ExifTag.class);
+		mappedPictures = pictureData.size();
 
 		Set<ExifTag> allTags = new HashSet<>();
 		pictureData.forEach(p -> allTags.addAll(p.getAllTags()));
@@ -35,6 +37,11 @@ public class CommonTagsHelperImpl implements CommonTagsHelper {
 				uncommonTagsToValues.put(tag, values);
 			}
 		}
+	}
+
+	@Override
+	public int getMappedPictures() {
+		return mappedPictures;
 	}
 
 	@Override

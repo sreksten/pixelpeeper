@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -100,13 +101,13 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public boolean isTagVisible(ExifTag exifTag) {
-		return tagPreferences.isTagVisible(exifTag);
+	public ExifTagVisibility getTagVisibility(ExifTag exifTag) {
+		return tagPreferences.getTagVisibility(exifTag);
 	}
 
 	@Override
-	public void toggleTagVisibility(ExifTag exifTag) {
-		tagPreferences.toggle(exifTag);
+	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility) {
+		tagPreferences.setTagVisibility(exifTag, visibility);
 	}
 
 	@Override
@@ -219,15 +220,5 @@ public class DataModelImpl implements DataModel {
 	public void setMovementAppliedToAllImagesTemporarilyInverted(
 			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
 		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
-	}
-
-	@Override
-	public boolean isTagsVisibleOnlyIfDifferent() {
-		return tagPreferences.isTagsVisibleOnlyIfDifferent();
-	}
-
-	@Override
-	public void toggleTagsVisibilityOnlyIfDifferent() {
-		tagPreferences.setTagsVisibleOnlyIfDifferent(!tagPreferences.isTagsVisibleOnlyIfDifferent());
 	}
 }
