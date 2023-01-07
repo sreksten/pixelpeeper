@@ -6,13 +6,17 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice {
 
 	private final PictureData pictureData;
+	private final WindowPreferences windowPreferences;
+	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final FontService fontService;
 
@@ -22,8 +26,11 @@ public class ImageSliceImpl implements ImageSlice {
 
 	private boolean selected;
 
-	public ImageSliceImpl(PictureData pictureData, ExifTagPreferences tagPreferences, FontService fontService) {
+	public ImageSliceImpl(PictureData pictureData, WindowPreferences windowPreferences,
+			CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences, FontService fontService) {
 		this.pictureData = pictureData;
+		this.windowPreferences = windowPreferences;
+		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.fontService = fontService;
 	}
@@ -125,7 +132,8 @@ public class ImageSliceImpl implements ImageSlice {
 			g2d.drawRect(x, y, width - 1, height - 1);
 		}
 
-		new TagsRenderHelper(g2d, x, y + height - 1, fontService, pictureData, tagPreferences).render();
+		new TagsRenderHelper(g2d, x, y + height - 1, fontService, pictureData, windowPreferences, tagPreferences,
+				commonTagsHelper).render();
 
 	}
 

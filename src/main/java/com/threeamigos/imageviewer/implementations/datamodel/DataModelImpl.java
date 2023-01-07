@@ -2,24 +2,23 @@ package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Graphics2D;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.List;
-
-import javax.swing.JOptionPane;
+import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class DataModelImpl implements DataModel {
 
+	private final CommonTagsHelper commonTagsHelper;
 	private final ImageSlicesManager slicesManager;
 	private final ExifTagPreferences tagPreferences;
 	private final WindowPreferences windowPreferences;
@@ -27,12 +26,23 @@ public class DataModelImpl implements DataModel {
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
-	public DataModelImpl(ImageSlicesManager slicesManager, ExifTagPreferences tagPreferences,
-			WindowPreferences windowPreferences, PathPreferences pathPreferences) {
+	public DataModelImpl(CommonTagsHelper commonTagsHelper, ImageSlicesManager slicesManager,
+			ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, PathPreferences pathPreferences) {
+		this.commonTagsHelper = commonTagsHelper;
 		this.slicesManager = slicesManager;
 		this.tagPreferences = tagPreferences;
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
+
+		List<String> lastFilenames = pathPreferences.getLastFilenames();
+		if (!lastFilenames.isEmpty()) {
+			loadFilenames(lastFilenames);
+		}
+	}
+
+	private void loadFilenames(List<String> filenames) {
+		String path = pathPreferences.getLastPath() + File.separator;
+		loadFiles(filenames.stream().map(name -> new File(path + name)).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -47,6 +57,9 @@ public class DataModelImpl implements DataModel {
 				}
 			}
 			slicesManager.resetMovement();
+			commonTagsHelper.updateCommonTags(slicesManager.getImageSlices().stream().map(ImageSlice::getPictureData)
+					.collect(Collectors.toList()));
+			pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
 		}
 	}
 
@@ -118,16 +131,9 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void savePreferences() {
-		try {
-			for (Field field : getClass().getFields()) {
-				Object fieldValue = field.get(this);
-				if (fieldValue instanceof Persistable) {
-					((Persistable) fieldValue).persist();
-				}
-			}
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			JOptionPane.showMessageDialog(null, "Error while saving preferences: " + e.getMessage());
-		}
+		windowPreferences.persist();
+		pathPreferences.persist();
+		tagPreferences.persist();
 	}
 
 	@Override
@@ -213,5 +219,15 @@ public class DataModelImpl implements DataModel {
 	public void setMovementAppliedToAllImagesTemporarilyInverted(
 			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
 		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
+	}
+
+	@Override
+	public boolean isTagsVisibleOnlyIfDifferent() {
+		return windowPreferences.isTagsVisibleOnlyIfDifferent();
+	}
+
+	@Override
+	public void toggleTagsVisibilityOnlyIfDifferent() {
+		windowPreferences.setTagsVisibleOnlyIfDifferent(!windowPreferences.isTagsVisibleOnlyIfDifferent());
 	}
 }

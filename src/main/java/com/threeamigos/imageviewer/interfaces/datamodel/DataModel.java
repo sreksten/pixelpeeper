@@ -26,10 +26,6 @@ public interface DataModel {
 
 	public void setPreferredHeight(int height);
 
-	public String getLastPath();
-
-	public void setLastPath(String lastPath);
-
 	public boolean isAutorotation();
 
 	public void toggleAutorotation();
@@ -46,6 +42,10 @@ public interface DataModel {
 	public boolean isTagsVisible();
 
 	public void toggleTagsVisibility();
+
+	public boolean isTagsVisibleOnlyIfDifferent();
+
+	public void toggleTagsVisibilityOnlyIfDifferent();
 
 	public boolean isTagVisible(ExifTag exifTag);
 
@@ -72,6 +72,10 @@ public interface DataModel {
 	// Data part
 
 	public void loadFiles(List<File> files);
+
+	public String getLastPath();
+
+	public void setLastPath(String lastPath);
 
 	public boolean hasLoadedImages();
 

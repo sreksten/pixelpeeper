@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.persister.ExifTagPreferencesPersisterImpl;
@@ -23,6 +24,7 @@ import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
@@ -56,9 +58,13 @@ public class Main {
 
 		// --- End preferences
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagPreferences, new FontServiceImpl());
+		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
-		DataModel dataModel = new DataModelImpl(imageSlicesManager, tagPreferences, windowPreferences, pathPreferences);
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(windowPreferences, commonTagsHelper,
+				tagPreferences, new FontServiceImpl());
+
+		DataModel dataModel = new DataModelImpl(commonTagsHelper, imageSlicesManager, tagPreferences, windowPreferences,
+				pathPreferences);
 
 		FileSelector fileSelector = new FileSelectorImpl(dataModel);
 

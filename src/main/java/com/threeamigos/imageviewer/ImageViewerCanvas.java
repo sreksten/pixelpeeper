@@ -132,10 +132,6 @@ public class ImageViewerCanvas extends JPanel {
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		addCheckboxMenuItem(fileMenu, "Show tags", KeyEvent.VK_I, dataModel.isTagsVisible(), event -> {
-			dataModel.toggleTagsVisibility();
-			repaint();
-		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
 			showHelp = !showHelp;
 			repaint();
@@ -152,6 +148,16 @@ public class ImageViewerCanvas extends JPanel {
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
+		addCheckboxMenuItem(tagsMenu, "Show tags", KeyEvent.VK_I, dataModel.isTagsVisible(), event -> {
+			dataModel.toggleTagsVisibility();
+			repaint();
+		});
+		addCheckboxMenuItem(tagsMenu, "only if different", KeyEvent.VK_I, dataModel.isTagsVisibleOnlyIfDifferent(),
+				event -> {
+					dataModel.toggleTagsVisibilityOnlyIfDifferent();
+					repaint();
+				});
+		tagsMenu.addSeparator();
 		for (ExifTag exifTag : ExifTag.values()) {
 			addCheckboxMenuItem(tagsMenu, exifTag.getDescription(), -1, dataModel.isTagVisible(exifTag), event -> {
 				dataModel.toggleTagVisibility(exifTag);

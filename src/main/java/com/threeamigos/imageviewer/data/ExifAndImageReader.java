@@ -151,12 +151,12 @@ public class ExifAndImageReader {
 	private void printAllTags(Metadata metadata) {
 		for (Directory directory : metadata.getDirectories()) {
 			for (Tag tag : directory.getTags()) {
-				System.out.format("[%s] - %s [%s] = %s\n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
+				System.out.format("[%s] - %s [%s] = %s%n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
 						tag.getDescription());
 			}
 			if (directory.hasErrors()) {
 				for (String error : directory.getErrors()) {
-					System.err.format("ERROR: %s\n", error);
+					System.err.format("ERROR: %s%n", error);
 				}
 			}
 		}

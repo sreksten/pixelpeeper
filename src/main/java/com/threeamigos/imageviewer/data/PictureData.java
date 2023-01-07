@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.data;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Collection;
 
 public class PictureData {
 
@@ -32,6 +33,14 @@ public class PictureData {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public Collection<ExifTag> getAllTags() {
+		return exifMap.getAllTags();
+	}
+
+	public boolean isTagPresent(ExifTag exifTag) {
+		return exifMap.getAllTags().contains(exifTag);
 	}
 
 	public String getTagDescriptive(ExifTag exifTag) {

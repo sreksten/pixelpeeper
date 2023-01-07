@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
@@ -12,6 +15,10 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 		implements Persister<PathPreferences> {
 
 	private static final String PATH_FILENAME = "path.preferences";
+	private static final String PATH_PROPERTY = "path";
+	private static final String FILE_PROPERTY = "file";
+	private static final String PATH_ = "Path ";
+	private static final String _FOR_ = " for ";
 
 	@Override
 	public String getNamePart() {
@@ -20,7 +27,7 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 
 	@Override
 	protected String getEntityDescription() {
-		return "last path";
+		return "path and files";
 	}
 
 	@Override
@@ -28,10 +35,19 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 			throws IOException, IllegalArgumentException {
 		String line;
 		String path = null;
+		List<String> filenames = new ArrayList<>();
 		while ((line = reader.readLine()) != null) {
 			if (!line.trim().isEmpty()) {
-				path = line;
-				break;
+				StringTokenizer st = new StringTokenizer(line, "=");
+				String key = st.nextToken();
+				if (key.equalsIgnoreCase(PATH_PROPERTY)) {
+					path = st.nextToken();
+				} else if (key.equalsIgnoreCase(FILE_PROPERTY)) {
+					String filename = st.nextToken().trim();
+					if (!filename.isEmpty()) {
+						filenames.add(filename);
+					}
+				}
 			}
 		}
 		if (path == null) {
@@ -39,22 +55,42 @@ public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterIm
 		}
 		File file = new File(path);
 		if (!file.exists()) {
-			throw new IllegalArgumentException("Path " + path + " for " + getEntityDescription() + " does not exist");
+			throw new IllegalArgumentException(
+					PATH_ + path + _FOR_ + getEntityDescription() + " preferences does not exist");
 		}
 		if (!file.isDirectory()) {
 			throw new IllegalArgumentException(
-					"Path " + path + " for " + getEntityDescription() + " is not a directory");
+					PATH_ + path + _FOR_ + getEntityDescription() + " preferences is not a directory");
 		}
 		if (!file.canRead()) {
-			throw new IllegalArgumentException("Path " + path + " for " + getEntityDescription() + " cannot be read");
+			throw new IllegalArgumentException(
+					PATH_ + path + _FOR_ + getEntityDescription() + " preferences cannot be read");
 		}
-
 		pathPreferences.setLastPath(path);
+
+		for (String filename : filenames) {
+			file = new File(path + File.separator + filename);
+			if (!file.exists()) {
+				throw new IllegalArgumentException(
+						"File " + filename + _FOR_ + getEntityDescription() + " preferences does not exist");
+			}
+			if (!file.isFile()) {
+				throw new IllegalArgumentException(
+						"File " + filename + _FOR_ + getEntityDescription() + " preferences is not a file");
+			}
+			if (!file.canRead()) {
+				throw new IllegalArgumentException(
+						"File " + filename + _FOR_ + getEntityDescription() + " preferences cannot be read");
+			}
+		}
+		pathPreferences.setLastFilenames(filenames);
 	}
 
 	@Override
 	protected void saveImpl(PrintWriter writer, PathPreferences pathPreferences) throws IOException {
-		writer.write(pathPreferences.getLastPath());
+		writer.println(PATH_PROPERTY + "=" + pathPreferences.getLastPath());
+		for (String filename : pathPreferences.getLastFilenames()) {
+			writer.println(FILE_PROPERTY + "=" + filename);
+		}
 	}
-
 }

@@ -6,7 +6,9 @@ import java.awt.Graphics2D;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class TagsRenderHelper {
@@ -20,18 +22,22 @@ public class TagsRenderHelper {
 	private final int x;
 	private final FontService fontService;
 	private final PictureData pictureData;
+	private final WindowPreferences windowPreferences;
 	private final ExifTagPreferences tagPreferences;
+	private final CommonTagsHelper commonTagsHelper;
 
 	private int y;
 
 	TagsRenderHelper(Graphics2D g2d, int x, int y, FontService fontService, PictureData pictureData,
-			ExifTagPreferences tagPreferences) {
+			WindowPreferences windowPreferences, ExifTagPreferences tagPreferences, CommonTagsHelper commonTagsHelper) {
 		this.g2d = g2d;
 		this.x = x + HSPACING;
 		this.y = y - VSPACING - FONT_HEIGHT;
 		this.fontService = fontService;
 		this.pictureData = pictureData;
+		this.windowPreferences = windowPreferences;
 		this.tagPreferences = tagPreferences;
+		this.commonTagsHelper = commonTagsHelper;
 	}
 
 	public void render() {
@@ -77,21 +83,26 @@ public class TagsRenderHelper {
 
 		Font font = fontService.getFont("Arial", Font.BOLD, FONT_HEIGHT * 2);
 		g2d.setFont(font);
-		drawString(g2d, pictureData.getFilename(), x, y);
+		drawString(g2d, pictureData.getFilename(), x, y, Color.WHITE);
 	}
 
 	private void info(ExifTag exifTag) {
-		if (tagPreferences.isTagVisible(exifTag)) {
+		boolean tagVisible = tagPreferences.isTagVisible(exifTag);
+		if (tagVisible && windowPreferences.isTagsVisibleOnlyIfDifferent()) {
+			tagVisible = !commonTagsHelper.isCommonTag(exifTag);
+		}
+		if (tagVisible) {
 			String tagDescription = exifTag.getDescription();
 			String tagValue = pictureData.getTagDescriptive(exifTag);
-			drawString(g2d, String.format("%s: %s", tagDescription, tagValue), x, y);
+			drawString(g2d, String.format("%s: %s", tagDescription, tagValue), x, y,
+					commonTagsHelper.isCommonTag(exifTag) ? Color.GREEN : Color.YELLOW);
 			y -= FONT_HEIGHT + VSPACING;
 		}
 	}
-
-	protected void drawString(Graphics2D graphics, String s, int x, int y) {
-		drawString(graphics, s, x, y, Color.WHITE);
-	}
+//
+//	protected void drawString(Graphics2D graphics, String s, int x, int y) {
+//		drawString(graphics, s, x, y, Color.WHITE);
+//	}
 
 	protected void drawString(Graphics2D graphics, String s, int x, int y, Color color) {
 		graphics.setColor(Color.BLACK);
