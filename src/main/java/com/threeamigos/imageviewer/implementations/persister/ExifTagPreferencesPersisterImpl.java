@@ -19,6 +19,7 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 	private static final String TAG_PREFERENCES_FILENAME = "tag.preferences";
 
 	private static final String TAGS_VISIBLE = "tags_visible";
+	private static final String OVERRIDING_TAGS_VISIBILITY = "overriding_tags_visibility";
 	private static final String TAG_PREFIX = "TAG_";
 
 	@Override
@@ -35,6 +36,7 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 	protected void loadImpl(BufferedReader reader, ExifTagPreferences exifTagPreferences) throws IOException {
 
 		boolean tagsVisible = ExifTagPreferences.TAGS_VISIBLE_DEFAULT;
+		boolean overridingTagsVisibility = ExifTagPreferences.OVERRIDING_TAGS_VISIBILITY_DEFAULT;
 		Map<ExifTag, ExifTagVisibility> persistentMap = new EnumMap<>(ExifTag.class);
 
 		String line;
@@ -45,6 +47,8 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 				String value = st.nextToken();
 				if (TAGS_VISIBLE.equalsIgnoreCase(key)) {
 					tagsVisible = Boolean.valueOf(value);
+				} else if (OVERRIDING_TAGS_VISIBILITY.equalsIgnoreCase(key)) {
+					overridingTagsVisibility = Boolean.valueOf(value);
 				} else if (key.toUpperCase().startsWith(TAG_PREFIX)) {
 					String tagName = key.substring(TAG_PREFIX.length());
 					ExifTag tag = ExifTag.valueOf(tagName);
@@ -55,6 +59,7 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 		}
 
 		exifTagPreferences.setTagsVisible(tagsVisible);
+		exifTagPreferences.setOverridingTagsVisibility(overridingTagsVisibility);
 		for (Entry<ExifTag, ExifTagVisibility> entry : persistentMap.entrySet()) {
 			exifTagPreferences.setTagVisibility(entry.getKey(), entry.getValue());
 		}
@@ -63,6 +68,7 @@ public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersiste
 	@Override
 	protected void saveImpl(PrintWriter writer, ExifTagPreferences exifTagPreferences) throws IOException {
 		writer.println(TAGS_VISIBLE + "=" + exifTagPreferences.isTagsVisible());
+		writer.println(OVERRIDING_TAGS_VISIBILITY + "= " + exifTagPreferences.isOverridingTagsVisibility());
 		for (ExifTag tag : ExifTag.values()) {
 			writer.println(TAG_PREFIX + tag.name() + '=' + exifTagPreferences.getTagVisibility(tag).name());
 		}

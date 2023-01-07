@@ -12,6 +12,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPreferences> implements ExifTagPreferences {
 
 	private boolean tagsVisible = true;
+	private boolean overridingTagsVisibility = false;
 
 	private Map<ExifTag, ExifTagVisibility> tagsMap;
 
@@ -58,5 +59,15 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 	@Override
 	public void setTagsVisible(boolean tagsVisible) {
 		this.tagsVisible = tagsVisible;
+	}
+
+	@Override
+	public boolean isOverridingTagsVisibility() {
+		return overridingTagsVisibility;
+	}
+
+	@Override
+	public void setOverridingTagsVisibility(boolean overridingTagsVisibility) {
+		this.overridingTagsVisibility = overridingTagsVisibility;
 	}
 }

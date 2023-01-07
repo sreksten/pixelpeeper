@@ -44,6 +44,10 @@ public interface DataModel {
 
 	public void toggleTagsVisibility();
 
+	public boolean isOverridingTagsVisibility();
+
+	public void toggleOverridingTagsVisibility();
+
 	public ExifTagVisibility getTagVisibility(ExifTag exifTag);
 
 	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility);

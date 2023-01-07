@@ -101,6 +101,16 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
+	public boolean isOverridingTagsVisibility() {
+		return tagPreferences.isOverridingTagsVisibility();
+	}
+
+	@Override
+	public void toggleOverridingTagsVisibility() {
+		tagPreferences.setOverridingTagsVisibility(!tagPreferences.isOverridingTagsVisibility());
+	}
+
+	@Override
 	public ExifTagVisibility getTagVisibility(ExifTag exifTag) {
 		return tagPreferences.getTagVisibility(exifTag);
 	}
@@ -221,4 +231,5 @@ public class DataModelImpl implements DataModel {
 			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
 		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
 	}
+
 }

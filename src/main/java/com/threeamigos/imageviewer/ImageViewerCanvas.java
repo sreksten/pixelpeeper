@@ -158,6 +158,11 @@ public class ImageViewerCanvas extends JPanel {
 			dataModel.toggleTagsVisibility();
 			repaint();
 		});
+		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I, dataModel.isOverridingTagsVisibility(),
+				event -> {
+					dataModel.toggleOverridingTagsVisibility();
+					repaint();
+				});
 		tagsMenu.addSeparator();
 		for (ExifTag exifTag : ExifTag.values()) {
 			JMenu exifTagMenu = new JMenu(exifTag.getDescription());

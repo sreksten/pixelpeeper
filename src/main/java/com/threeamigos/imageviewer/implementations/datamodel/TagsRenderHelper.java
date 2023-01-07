@@ -87,9 +87,11 @@ public class TagsRenderHelper {
 	private void info(ExifTag exifTag) {
 		boolean tagVisible = tagPreferences.isTagsVisible();
 		if (tagVisible) {
-			ExifTagVisibility visibility = tagPreferences.getTagVisibility(exifTag);
-			tagVisible = visibility == ExifTagVisibility.YES || visibility == ExifTagVisibility.ONLY_IF_DIFFERENT
-					&& (commonTagsHelper.getMappedPictures() == 1 || !commonTagsHelper.isCommonTag(exifTag));
+			if (!tagPreferences.isOverridingTagsVisibility()) {
+				ExifTagVisibility visibility = tagPreferences.getTagVisibility(exifTag);
+				tagVisible = visibility == ExifTagVisibility.YES || visibility == ExifTagVisibility.ONLY_IF_DIFFERENT
+						&& (commonTagsHelper.getMappedPictures() == 1 || !commonTagsHelper.isCommonTag(exifTag));
+			}
 
 			if (tagVisible) {
 				String tagDescription = exifTag.getDescription();
