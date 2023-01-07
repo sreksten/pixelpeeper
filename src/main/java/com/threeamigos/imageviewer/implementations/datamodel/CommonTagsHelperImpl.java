@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 
 public class CommonTagsHelperImpl implements CommonTagsHelper {
@@ -20,16 +20,16 @@ public class CommonTagsHelperImpl implements CommonTagsHelper {
 	private int mappedPictures;
 
 	@Override
-	public void updateCommonTags(Collection<PictureData> pictureData) {
+	public void updateCommonTags(Collection<ExifMap> exifMaps) {
 		commonTags = new ArrayList<>();
 		uncommonTagsToValues = new EnumMap<>(ExifTag.class);
-		mappedPictures = pictureData.size();
+		mappedPictures = exifMaps.size();
 
 		Set<ExifTag> allTags = new HashSet<>();
-		pictureData.forEach(p -> allTags.addAll(p.getAllTags()));
+		exifMaps.forEach(map -> allTags.addAll(map.getAllTags()));
 
 		for (ExifTag tag : allTags) {
-			Collection<String> values = pictureData.stream().map(picture -> picture.getTagDescriptive(tag))
+			Collection<String> values = exifMaps.stream().map(exifMap -> exifMap.getTagDescriptive(tag))
 					.collect(Collectors.toSet());
 			if (values.size() == 1) {
 				commonTags.add(tag);

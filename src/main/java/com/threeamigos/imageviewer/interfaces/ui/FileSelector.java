@@ -14,4 +14,6 @@ public interface FileSelector {
 
 	public List<File> getSelectedFiles(Component component);
 
+	public File getSelectedDirectory(Component component);
+
 }

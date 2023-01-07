@@ -35,6 +35,10 @@ public class PictureData {
 		return height;
 	}
 
+	public ExifMap getExifMap() {
+		return exifMap;
+	}
+
 	public Collection<ExifTag> getAllTags() {
 		return exifMap.getAllTags();
 	}

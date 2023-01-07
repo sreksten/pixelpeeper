@@ -43,4 +43,24 @@ public class FileSelectorImpl implements FileSelector {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public File getSelectedDirectory(Component component) {
+
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Select directory");
+		fileChooser.setApproveButtonText("Load");
+		fileChooser.setCurrentDirectory(new File(dataModel.getLastPath()).getParentFile());
+		fileChooser.setApproveButtonMnemonic('L');
+		fileChooser.setMultiSelectionEnabled(false);
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+		int returnVal = fileChooser.showOpenDialog(component);
+
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			return fileChooser.getSelectedFile();
+		}
+
+		return null;
+	}
+
 }

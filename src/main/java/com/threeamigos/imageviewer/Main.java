@@ -21,6 +21,7 @@ import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreference
 import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
+import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
@@ -30,6 +31,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -63,8 +65,10 @@ public class Main {
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, tagPreferences,
 				new FontServiceImpl());
 
-		DataModel dataModel = new DataModelImpl(commonTagsHelper, imageSlicesManager, tagPreferences, windowPreferences,
-				pathPreferences);
+		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
+
+		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, tagPreferences,
+				windowPreferences, pathPreferences);
 
 		FileSelector fileSelector = new FileSelectorImpl(dataModel);
 

@@ -129,6 +129,14 @@ public class ImageViewerCanvas extends JPanel {
 				repaint();
 			}
 		});
+		addMenuItem(fileMenu, "Open directory", KeyEvent.VK_D, event -> {
+			File directory = fileSelector.getSelectedDirectory(this);
+			if (directory != null) {
+				dataModel.loadDirectory(directory);
+				dataModel.reframe(getWidth(), getHeight());
+				repaint();
+			}
+		});
 		addCheckboxMenuItem(fileMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();

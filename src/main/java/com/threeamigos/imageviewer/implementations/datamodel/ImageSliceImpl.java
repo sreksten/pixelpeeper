@@ -70,7 +70,13 @@ public class ImageSliceImpl implements ImageSlice {
 	public void resetMovement() {
 		if (location != null) {
 			screenXOffset = (pictureData.getWidth() - location.width) / 2;
+			if (screenXOffset < 0) {
+				screenXOffset = 0;
+			}
 			screenYOffset = (pictureData.getHeight() - location.height) / 2;
+			if (screenYOffset < 0) {
+				screenYOffset = 0;
+			}
 		} else {
 			screenXOffset = 0;
 			screenYOffset = 0;
@@ -100,37 +106,53 @@ public class ImageSliceImpl implements ImageSlice {
 			return;
 		}
 
-		int x = location.x;
-		int y = location.y;
-		int width = location.width;
-		int height = location.height;
-
+		int locationX = location.x;
+		int locationY = location.y;
+		int locationWidth = location.width;
+		int locationHeight = location.height;
 		int pictureWidth = pictureData.getWidth();
 		int pictureHeight = pictureData.getHeight();
 
-		if (pictureWidth <= width && pictureHeight <= height) {
+		if (pictureWidth < locationWidth || pictureHeight < locationHeight) {
+			g2d.setColor(Color.GRAY);
+			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
+		}
 
-			if (pictureWidth < width || pictureHeight < height) {
-				g2d.setColor(Color.GRAY);
-				g2d.drawRect(x, y, width - 1, height - 1);
-			}
-			g2d.drawImage(pictureData.getImage(), x + (width - pictureWidth) / 2, y + (height - pictureHeight) / 2,
-					null);
+		int imageSliceWidth = locationWidth <= pictureWidth ? locationWidth : pictureWidth;
+		int imageSliceHeight = locationHeight <= pictureHeight ? locationHeight : pictureHeight;
+		int imageSliceStartX = screenXOffset;
+		if (imageSliceStartX < 0) {
+			imageSliceStartX = 0;
+		}
+		if (imageSliceStartX + imageSliceWidth > pictureWidth) {
+			imageSliceStartX = pictureWidth - imageSliceWidth;
+		}
+		int imageSliceStartY = screenYOffset;
+		if (imageSliceStartY < 0) {
+			imageSliceStartY = 0;
+		}
+		if (imageSliceStartY + imageSliceHeight > pictureHeight) {
+			imageSliceStartY = pictureHeight - imageSliceHeight;
+		}
 
-		} else {
-
-			BufferedImage subImage = pictureData.getImage().getSubimage(screenXOffset, screenYOffset, width, height);
-			g2d.drawImage(subImage, x, y, null);
-
+		try {
+			BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY,
+					imageSliceWidth, imageSliceHeight);
+			g2d.drawImage(subImage, locationX, locationY, null);
+		} catch (Exception e) {
+			System.out.println("Something fishy happened with picture " + pictureData.getFilename() + "(" + pictureWidth
+					+ "x" + pictureHeight + "), screenXOffset = " + screenXOffset + ", screenYOffset = " + screenYOffset
+					+ ", width = " + locationWidth + ", height = " + locationHeight);
+			throw e;
 		}
 
 		if (selected) {
 			g2d.setColor(Color.RED);
-			g2d.drawRect(x, y, width - 1, height - 1);
+			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
 		}
 
-		new TagsRenderHelper(g2d, x, y + height - 1, fontService, pictureData, tagPreferences, commonTagsHelper)
-				.render();
+		new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
+				commonTagsHelper).render();
 
 	}
 

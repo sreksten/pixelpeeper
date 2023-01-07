@@ -1,0 +1,64 @@
+package com.threeamigos.imageviewer.implementations.ui;
+
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.ListSelectionModel;
+
+import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
+
+public class ExifTagsFilterImpl implements ExifTagsFilter {
+
+	@Override
+	public Map<ExifTag, Collection<String>> filterTags(Map<ExifTag, Collection<String>> map) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+		Map<ExifTag, JList> tagsToSelectedValues = new EnumMap<>(ExifTag.class);
+
+		int componentCount = 0;
+		for (Entry<ExifTag, Collection<String>> entry : map.entrySet()) {
+			ExifTag tag = entry.getKey();
+			Collection<String> values = entry.getValue();
+			JLabel label = new JLabel(tag.getDescription());
+			panel.add(label);
+			JList list = new JList(values.toArray());
+			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			panel.add(list);
+
+			tagsToSelectedValues.put(tag, list);
+
+			if (componentCount < map.size() - 1) {
+				JSeparator separator = new JSeparator();
+				panel.add(separator);
+				componentCount++;
+			}
+		}
+
+		JOptionPane.showMessageDialog(null, new JScrollPane(panel));
+
+		Map<ExifTag, Collection<String>> selectionMap = new EnumMap<>(ExifTag.class);
+
+		for (ExifTag exifTag : map.keySet()) {
+			JList list = tagsToSelectedValues.get(exifTag);
+			List<String> selectedValues = list.getSelectedValuesList();
+			if (!selectedValues.isEmpty()) {
+				selectionMap.put(exifTag, selectedValues);
+			}
+		}
+
+		return selectionMap;
+	}
+
+}
