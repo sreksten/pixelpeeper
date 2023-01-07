@@ -11,12 +11,10 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSlicesManagerImpl implements ImageSlicesManager {
 
-	private final WindowPreferences windowPreferences;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final FontService fontService;
@@ -25,9 +23,8 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 
 	private ImageSlice activeSlice;
 
-	public ImageSlicesManagerImpl(WindowPreferences windowPreferences, CommonTagsHelper commonTagsHelper,
-			ExifTagPreferences tagPreferences, FontService fontService) {
-		this.windowPreferences = windowPreferences;
+	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
+			FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.fontService = fontService;
@@ -64,8 +61,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
-		ImageSlice imageSlice = new ImageSliceImpl(pictureData, windowPreferences, commonTagsHelper, tagPreferences,
-				fontService);
+		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences, fontService);
 		imageSlices.add(imageSlice);
 		return imageSlice;
 	}

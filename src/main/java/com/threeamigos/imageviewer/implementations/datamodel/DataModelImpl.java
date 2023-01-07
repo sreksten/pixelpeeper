@@ -91,7 +91,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isTagsVisible() {
-		return windowPreferences.isTagsVisible();
+		return tagPreferences.isTagsVisible();
 	}
 
 	@Override
@@ -223,11 +223,11 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isTagsVisibleOnlyIfDifferent() {
-		return windowPreferences.isTagsVisibleOnlyIfDifferent();
+		return tagPreferences.isTagsVisibleOnlyIfDifferent();
 	}
 
 	@Override
 	public void toggleTagsVisibilityOnlyIfDifferent() {
-		windowPreferences.setTagsVisibleOnlyIfDifferent(!windowPreferences.isTagsVisibleOnlyIfDifferent());
+		tagPreferences.setTagsVisibleOnlyIfDifferent(!tagPreferences.isTagsVisibleOnlyIfDifferent());
 	}
 }

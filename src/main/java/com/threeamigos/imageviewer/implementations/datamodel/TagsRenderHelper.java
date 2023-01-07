@@ -8,7 +8,6 @@ import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class TagsRenderHelper {
@@ -22,20 +21,18 @@ public class TagsRenderHelper {
 	private final int x;
 	private final FontService fontService;
 	private final PictureData pictureData;
-	private final WindowPreferences windowPreferences;
 	private final ExifTagPreferences tagPreferences;
 	private final CommonTagsHelper commonTagsHelper;
 
 	private int y;
 
 	TagsRenderHelper(Graphics2D g2d, int x, int y, FontService fontService, PictureData pictureData,
-			WindowPreferences windowPreferences, ExifTagPreferences tagPreferences, CommonTagsHelper commonTagsHelper) {
+			ExifTagPreferences tagPreferences, CommonTagsHelper commonTagsHelper) {
 		this.g2d = g2d;
 		this.x = x + HSPACING;
 		this.y = y - VSPACING - FONT_HEIGHT;
 		this.fontService = fontService;
 		this.pictureData = pictureData;
-		this.windowPreferences = windowPreferences;
 		this.tagPreferences = tagPreferences;
 		this.commonTagsHelper = commonTagsHelper;
 	}
@@ -88,7 +85,7 @@ public class TagsRenderHelper {
 
 	private void info(ExifTag exifTag) {
 		boolean tagVisible = tagPreferences.isTagVisible(exifTag);
-		if (tagVisible && windowPreferences.isTagsVisibleOnlyIfDifferent()) {
+		if (tagVisible && tagPreferences.isTagsVisibleOnlyIfDifferent()) {
 			tagVisible = !commonTagsHelper.isCommonTag(exifTag);
 		}
 		if (tagVisible) {

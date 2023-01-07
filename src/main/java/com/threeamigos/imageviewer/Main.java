@@ -60,8 +60,8 @@ public class Main {
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(windowPreferences, commonTagsHelper,
-				tagPreferences, new FontServiceImpl());
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, tagPreferences,
+				new FontServiceImpl());
 
 		DataModel dataModel = new DataModelImpl(commonTagsHelper, imageSlicesManager, tagPreferences, windowPreferences,
 				pathPreferences);

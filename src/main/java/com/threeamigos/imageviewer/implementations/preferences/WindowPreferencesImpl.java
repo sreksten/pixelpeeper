@@ -14,8 +14,6 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	private int x;
 	private int y;
 	private boolean autorotation;
-	private boolean tagsVisible;
-	private boolean tagsVisibleOnlyIfDifferent;
 	private boolean movementAppliesToAllImages;
 
 	@Override
@@ -80,26 +78,6 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	}
 
 	@Override
-	public void setTagsVisible(boolean tagsVisible) {
-		this.tagsVisible = tagsVisible;
-	}
-
-	@Override
-	public boolean isTagsVisible() {
-		return tagsVisible;
-	}
-
-	@Override
-	public void setTagsVisibleOnlyIfDifferent(boolean tagsVisibleOnlyIfDifferent) {
-		this.tagsVisibleOnlyIfDifferent = tagsVisibleOnlyIfDifferent;
-	}
-
-	@Override
-	public boolean isTagsVisibleOnlyIfDifferent() {
-		return tagsVisibleOnlyIfDifferent;
-	}
-
-	@Override
 	protected void loadDefaultValues() {
 		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
 		width = screenDimension.width * 2 / 3;
@@ -107,8 +85,6 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 		x = (screenDimension.width - width) / 2;
 		y = (screenDimension.height - height) / 2;
 		autorotation = AUTOROTATION_DEFAULT;
-		tagsVisible = TAGS_VISIBLE_DEFAULT;
-		tagsVisibleOnlyIfDifferent = TAGS_VISIBLE_ONLY_IF_DIFFERENT_DEFAULT;
 		movementAppliesToAllImages = MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
 	}
 

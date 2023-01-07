@@ -20,8 +20,6 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 	private static final String X = "x";
 	private static final String Y = "y";
 	private static final String AUTOROTATION = "autorotation";
-	private static final String TAGS_VISIBLE = "tags_visible";
-	private static final String TAGS_VISIBLE_ONLY_IF_DIFFERENT = "tags_visible_only_if_different";
 	private static final String MOVEMENT_APPLIED_TO_ALL_IMAGES = "movement_applied_to_all_images";
 
 	@Override
@@ -42,8 +40,6 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		int x = -1;
 		int y = -1;
 		boolean autorotation = WindowPreferences.AUTOROTATION_DEFAULT;
-		boolean tagsVisible = WindowPreferences.TAGS_VISIBLE_DEFAULT;
-		boolean tagsVisibleOnlyIfDifferent = WindowPreferences.TAGS_VISIBLE_ONLY_IF_DIFFERENT_DEFAULT;
 		boolean movementAppliesToAllImages = WindowPreferences.MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
 
 		String line;
@@ -62,10 +58,6 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 					y = Integer.parseInt(value);
 				} else if (AUTOROTATION.equalsIgnoreCase(key)) {
 					autorotation = Boolean.valueOf(value);
-				} else if (TAGS_VISIBLE.equals(key)) {
-					tagsVisible = Boolean.valueOf(value);
-				} else if (TAGS_VISIBLE_ONLY_IF_DIFFERENT.equals(key)) {
-					tagsVisibleOnlyIfDifferent = Boolean.valueOf(value);
 				} else if (MOVEMENT_APPLIED_TO_ALL_IMAGES.equals(key)) {
 					movementAppliesToAllImages = Boolean.valueOf(value);
 				}
@@ -79,8 +71,6 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		windowPreferences.setX(x);
 		windowPreferences.setY(y);
 		windowPreferences.setAutorotation(autorotation);
-		windowPreferences.setTagsVisible(tagsVisible);
-		windowPreferences.setTagsVisibleOnlyIfDifferent(tagsVisibleOnlyIfDifferent);
 		windowPreferences.setMovementAppliedToAllImages(movementAppliesToAllImages);
 	}
 
@@ -117,8 +107,6 @@ public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersister
 		writer.println(X + "=" + windowPreferences.getX());
 		writer.println(Y + "=" + windowPreferences.getY());
 		writer.println(AUTOROTATION + "=" + windowPreferences.isAutorotation());
-		writer.println(TAGS_VISIBLE + "=" + windowPreferences.isTagsVisible());
-		writer.println(TAGS_VISIBLE_ONLY_IF_DIFFERENT + "=" + windowPreferences.isTagsVisibleOnlyIfDifferent());
 		writer.println(MOVEMENT_APPLIED_TO_ALL_IMAGES + "=" + windowPreferences.isMovementAppliedToAllImages());
 	}
 
