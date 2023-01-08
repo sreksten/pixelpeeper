@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 
-public abstract class AbstractPreferencesPersisterImpl<T> implements Persister<T> {
+public abstract class TextBasedAbstractPreferencesPersister<T> implements Persister<T> {
 
 	@Override
 	public PersistResult load(T entity) {

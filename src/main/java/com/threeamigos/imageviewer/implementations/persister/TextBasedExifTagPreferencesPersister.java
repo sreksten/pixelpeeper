@@ -13,7 +13,7 @@ import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 
-public class ExifTagPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<ExifTagPreferences>
+public class TextBasedExifTagPreferencesPersister extends TextBasedAbstractPreferencesPersister<ExifTagPreferences>
 		implements Persister<ExifTagPreferences> {
 
 	private static final String TAG_PREFERENCES_FILENAME = "tag.preferences";

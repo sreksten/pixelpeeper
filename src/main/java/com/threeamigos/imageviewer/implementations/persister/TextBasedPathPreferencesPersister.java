@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 
-public class PathPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<PathPreferences>
+public class TextBasedPathPreferencesPersister extends TextBasedAbstractPreferencesPersister<PathPreferences>
 		implements Persister<PathPreferences> {
 
 	private static final String PATH_FILENAME = "path.preferences";

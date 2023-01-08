@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
-public class WindowPreferencesPersisterImpl extends AbstractPreferencesPersisterImpl<WindowPreferences>
+public class TextBasedWindowPreferencesPersister extends TextBasedAbstractPreferencesPersister<WindowPreferences>
 		implements Persister<WindowPreferences> {
 
 	private static final String FRAME_DIMENSION_FILENAME = "frame.preferences";

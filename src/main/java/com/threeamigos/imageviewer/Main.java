@@ -14,9 +14,9 @@ import javax.swing.WindowConstants;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
-import com.threeamigos.imageviewer.implementations.persister.ExifTagPreferencesPersisterImpl;
-import com.threeamigos.imageviewer.implementations.persister.PathPreferencesPersisterImpl;
-import com.threeamigos.imageviewer.implementations.persister.WindowPreferencesPersisterImpl;
+import com.threeamigos.imageviewer.implementations.persister.TextBasedExifTagPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.TextBasedPathPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.TextBasedWindowPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
@@ -52,11 +52,11 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		WindowPreferences windowPreferences = new WindowPreferencesImpl(new WindowPreferencesPersisterImpl());
+		WindowPreferences windowPreferences = new WindowPreferencesImpl(new TextBasedWindowPreferencesPersister());
 
-		PathPreferences pathPreferences = new PathPreferencesImpl(new PathPreferencesPersisterImpl());
+		PathPreferences pathPreferences = new PathPreferencesImpl(new TextBasedPathPreferencesPersister());
 
-		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new ExifTagPreferencesPersisterImpl());
+		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new TextBasedExifTagPreferencesPersister());
 
 		// --- End preferences
 
