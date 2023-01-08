@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 

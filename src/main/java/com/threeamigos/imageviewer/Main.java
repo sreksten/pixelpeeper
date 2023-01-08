@@ -11,10 +11,11 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.common.util.preferences.filebased.implementations.SwingBasedRootPathProvider;
+import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
-import com.threeamigos.imageviewer.implementations.persister.RootPathProvider;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedExifTagPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedPathPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedWindowPreferencesPersister;
@@ -53,7 +54,7 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 		
-		RootPathProvider rootPathProvider = new RootPathProvider(this);
+		RootPathProvider rootPathProvider = new SwingBasedRootPathProvider(this);
 
 		WindowPreferences windowPreferences = new WindowPreferencesImpl(new TextBasedWindowPreferencesPersister(rootPathProvider));
 

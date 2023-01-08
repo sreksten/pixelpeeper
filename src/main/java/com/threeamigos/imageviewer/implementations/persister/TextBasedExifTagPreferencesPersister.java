@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;

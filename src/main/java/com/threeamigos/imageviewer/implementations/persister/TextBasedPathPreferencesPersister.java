@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 
