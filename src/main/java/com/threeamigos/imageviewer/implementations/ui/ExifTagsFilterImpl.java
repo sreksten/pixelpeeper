@@ -2,9 +2,9 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.TrayIcon.MessageType;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +37,13 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		for (Entry<ExifTag, Collection<String>> entry : map.entrySet()) {
 
 			ExifTag tag = entry.getKey();
-			Collection<String> values = entry.getValue();
+			
+			List<String> values = new ArrayList<>();
+			values.addAll(entry.getValue());
+			Collections.sort(values);
 
 			JList<String> list = new JList(values.toArray());
+			
 			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			list.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			list.setFixedCellWidth(400);
