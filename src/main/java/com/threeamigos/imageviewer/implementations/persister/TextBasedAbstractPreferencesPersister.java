@@ -27,23 +27,23 @@ public abstract class TextBasedAbstractPreferencesPersister<T> implements Persis
 			String filename = getFilenameWithPath();
 			File file = new File(filename);
 			if (!file.exists()) {
-				return FilePersistResultImpl.notFound(getEntityDescription());
+				return PreferencesFilePersistResult.notFound(getEntityDescription());
 			}
 			if (!file.canRead()) {
-				return FilePersistResultImpl.cannotBeRead(getEntityDescription());
+				return PreferencesFilePersistResult.cannotBeRead(getEntityDescription());
 			}
 
 			try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 				loadImpl(reader, entity);
 			} catch (Exception e) {
-				return new FilePersistResultImpl(e.getMessage());
+				return new PreferencesFilePersistResult(e.getMessage());
 			}
 
-			FilePersistResultImpl result = new FilePersistResultImpl();
+			PreferencesFilePersistResult result = new PreferencesFilePersistResult();
 			result.setFilename(filename);
 			return result;
 		} else {
-			return FilePersistResultImpl.preferencesPathNotAccessible();
+			return PreferencesFilePersistResult.preferencesPathNotAccessible();
 		}
 	}
 
@@ -53,18 +53,18 @@ public abstract class TextBasedAbstractPreferencesPersister<T> implements Persis
 			String filename = getFilenameWithPath();
 			File file = new File(filename);
 			if (file.exists() && !file.canWrite()) {
-				return new FilePersistResultImpl(getEntityDescription() + " preferences file cannot be written.");
+				return new PreferencesFilePersistResult(getEntityDescription() + " preferences file cannot be written.");
 			}
 			try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
 				saveImpl(writer, entity);
 			} catch (Exception e) {
-				return new FilePersistResultImpl(e.getMessage());
+				return new PreferencesFilePersistResult(e.getMessage());
 			}
-			FilePersistResultImpl result = new FilePersistResultImpl();
+			PreferencesFilePersistResult result = new PreferencesFilePersistResult();
 			result.setFilename(filename);
 			return result;
 		} else {
-			return FilePersistResultImpl.preferencesPathNotAccessible();
+			return PreferencesFilePersistResult.preferencesPathNotAccessible();
 		}
 	}
 

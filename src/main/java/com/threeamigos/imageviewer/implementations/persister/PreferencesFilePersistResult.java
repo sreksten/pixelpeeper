@@ -2,21 +2,21 @@ package com.threeamigos.imageviewer.implementations.persister;
 
 import com.threeamigos.imageviewer.interfaces.persister.FilePersistResult;
 
-class FilePersistResultImpl implements FilePersistResult {
+class PreferencesFilePersistResult implements FilePersistResult {
 
 	public static final FilePersistResult notFound(String fileDescription) {
-		FilePersistResultImpl persistResult = new FilePersistResultImpl(
+		PreferencesFilePersistResult persistResult = new PreferencesFilePersistResult(
 				"No " + fileDescription + " preferences file found");
 		persistResult.notFound = true;
 		return persistResult;
 	}
 
 	public static final FilePersistResult cannotBeRead(String fileDescription) {
-		return new FilePersistResultImpl(fileDescription + " preferences file cannot be read");
+		return new PreferencesFilePersistResult(fileDescription + " preferences file cannot be read");
 	}
 
 	public static final FilePersistResult preferencesPathNotAccessible() {
-		return new FilePersistResultImpl("Preferences directory file cannot be accessed");
+		return new PreferencesFilePersistResult("Preferences directory file cannot be accessed");
 	}
 	
 	private final boolean successful;
@@ -26,11 +26,11 @@ class FilePersistResultImpl implements FilePersistResult {
 
 	private String error;
 
-	FilePersistResultImpl() {
+	PreferencesFilePersistResult() {
 		successful = true;
 	}
 
-	FilePersistResultImpl(String error) {
+	PreferencesFilePersistResult(String error) {
 		successful = false;
 		this.error = error;
 	}
