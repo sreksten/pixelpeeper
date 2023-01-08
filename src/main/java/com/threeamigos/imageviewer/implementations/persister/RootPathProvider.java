@@ -90,7 +90,7 @@ public class RootPathProvider {
 			return null;
 		}
 	}
-	
+
 	String getPreferencesPathImpl() throws Exception {
 		String home = System.getProperty("preferences.directory");
 		if (home == null) {
@@ -160,13 +160,13 @@ public class RootPathProvider {
 		}
 	}
 	
-	private String buildRootPath(String home, String packageName) {
+	String buildRootPath(String home, String packageName) {
 		String result = new StringBuilder(home).append(File.separator).append(".").append(packageName).toString();
 		new File(result).mkdirs();
 		return result;
 	}
 
-	private String getUserHome() {
+	String getUserHome() {
 		return System.getProperty("user.home");
 	}
 }
