@@ -74,7 +74,7 @@ public interface DataModel {
 
 	public void loadFiles(List<File> files);
 
-	public void loadDirectory(File directory);
+	public void browseDirectory(File directory);
 
 	public String getLastPath();
 

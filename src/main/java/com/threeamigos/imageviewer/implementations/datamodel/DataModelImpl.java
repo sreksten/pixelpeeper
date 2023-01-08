@@ -77,7 +77,7 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public void loadDirectory(File directory) {
+	public void browseDirectory(File directory) {
 		if (directory.isDirectory()) {
 
 			Map<File, ExifMap> fileToTags = new HashMap<>();
@@ -130,6 +130,9 @@ public class DataModelImpl implements DataModel {
 
 			if (!tagsToFilter.isEmpty()) {
 				selectionMap = exifTagsFilter.filterTags(tagsToFilter);
+				if (selectionMap == null) {
+					return;
+				}
 			}
 
 			List<File> filesToLoad = new ArrayList<>();
