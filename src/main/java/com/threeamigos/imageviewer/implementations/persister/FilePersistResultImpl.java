@@ -15,6 +15,10 @@ class FilePersistResultImpl implements FilePersistResult {
 		return new FilePersistResultImpl(fileDescription + " preferences file cannot be read");
 	}
 
+	public static final FilePersistResult preferencesPathNotAccessible() {
+		return new FilePersistResultImpl("Preferences directory file cannot be accessed");
+	}
+	
 	private final boolean successful;
 	private boolean notFound;
 

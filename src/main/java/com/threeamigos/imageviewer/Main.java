@@ -14,6 +14,7 @@ import javax.swing.WindowConstants;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
+import com.threeamigos.imageviewer.implementations.persister.RootPathProvider;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedExifTagPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedPathPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextBasedWindowPreferencesPersister;
@@ -36,7 +37,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
- * Uses the MEtadata Extractor from https://drewnoakes.com/code/exif/
+ * Uses the Metadata Extractor from https://drewnoakes.com/code/exif/
  *
  * @author Stefano Reksten
  *
@@ -51,12 +52,14 @@ public class Main {
 	public Main() {
 
 		// Preferences that can be stored and retrieved in a subsequent run
+		
+		RootPathProvider rootPathProvider = new RootPathProvider(this);
 
-		WindowPreferences windowPreferences = new WindowPreferencesImpl(new TextBasedWindowPreferencesPersister());
+		WindowPreferences windowPreferences = new WindowPreferencesImpl(new TextBasedWindowPreferencesPersister(rootPathProvider));
 
-		PathPreferences pathPreferences = new PathPreferencesImpl(new TextBasedPathPreferencesPersister());
+		PathPreferences pathPreferences = new PathPreferencesImpl(new TextBasedPathPreferencesPersister(rootPathProvider));
 
-		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new TextBasedExifTagPreferencesPersister());
+		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new TextBasedExifTagPreferencesPersister(rootPathProvider));
 
 		// --- End preferences
 

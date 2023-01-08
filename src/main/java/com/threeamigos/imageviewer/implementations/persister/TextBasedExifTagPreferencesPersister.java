@@ -22,6 +22,10 @@ public class TextBasedExifTagPreferencesPersister extends TextBasedAbstractPrefe
 	private static final String OVERRIDING_TAGS_VISIBILITY = "overriding_tags_visibility";
 	private static final String TAG_PREFIX = "TAG_";
 
+	public TextBasedExifTagPreferencesPersister (RootPathProvider rootPathProvider) {
+		super(rootPathProvider);
+	}
+	
 	@Override
 	public String getNamePart() {
 		return TAG_PREFERENCES_FILENAME;

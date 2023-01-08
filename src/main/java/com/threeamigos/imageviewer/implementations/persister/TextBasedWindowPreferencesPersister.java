@@ -22,6 +22,10 @@ public class TextBasedWindowPreferencesPersister extends TextBasedAbstractPrefer
 	private static final String AUTOROTATION = "autorotation";
 	private static final String MOVEMENT_APPLIED_TO_ALL_IMAGES = "movement_applied_to_all_images";
 
+	public TextBasedWindowPreferencesPersister(RootPathProvider rootPathProvider) {
+		super(rootPathProvider);
+	}
+	
 	@Override
 	public String getNamePart() {
 		return FRAME_DIMENSION_FILENAME;

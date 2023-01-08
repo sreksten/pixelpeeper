@@ -20,6 +20,10 @@ public class TextBasedPathPreferencesPersister extends TextBasedAbstractPreferen
 	private static final String PATH_ = "Path ";
 	private static final String _FOR_ = " for ";
 
+	public TextBasedPathPreferencesPersister(RootPathProvider rootPathProvider) {
+		super(rootPathProvider);
+	}
+	
 	@Override
 	public String getNamePart() {
 		return PATH_FILENAME;
