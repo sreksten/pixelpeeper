@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.TrayIcon.MessageType;
@@ -32,8 +33,6 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		Map<ExifTag, JList<String>> tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
-		Dimension dimension = null;
-		
 		int componentCount = 0;
 		for (Entry<ExifTag, Collection<String>> entry : map.entrySet()) {
 
@@ -42,10 +41,8 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 			JList<String> list = new JList(values.toArray());
 			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-			if (dimension == null) {
-				dimension = list.getPreferredSize();
-				dimension.width = 500;
-			}
+			list.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			list.setFixedCellWidth(400);
 
 			JLabel label = new JLabel(tag.getDescription());
 			label.setLabelFor(list);
