@@ -2,16 +2,19 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import javax.swing.JOptionPane;
 
+import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 
 public abstract class AbstractPreferencesImpl<T> implements Persistable {
 
-	protected Persister<T> persister;
+	protected final MessageConsumer messageConsumer;
+	protected final Persister<T> persister;
 
-	protected AbstractPreferencesImpl(Persister<T> persister) {
+	protected AbstractPreferencesImpl(final Persister<T> persister, final MessageConsumer messageConsumer) {
 		this.persister = persister;
+		this.messageConsumer = messageConsumer;
 	}
 
 	protected void loadPostConstruct() {
@@ -19,8 +22,7 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 			PersistResult persistResult = persister.load((T) this);
 			if (!persistResult.isSuccessful()) {
 				if (!persistResult.isNotFound()) {
-					JOptionPane.showMessageDialog(null, "Error while loading " + getEntityDescription()
-							+ " preferences: " + persistResult.getError());
+					messageConsumer.error("Error while loading " + getEntityDescription() + " preferences: " + persistResult.getError());
 				}
 				loadDefaultValues();
 			}
@@ -38,8 +40,7 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 		if (persister != null) {
 			PersistResult persistResult = persister.save((T) this);
 			if (!persistResult.isSuccessful()) {
-				JOptionPane.showMessageDialog(null,
-						"Error while saving " + getEntityDescription() + " preferences: " + persistResult.getError());
+				messageConsumer.error("Error while saving " + getEntityDescription() + " preferences: " + persistResult.getError());
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.implementations.SwingMessageConsumer;
+import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
@@ -52,19 +53,21 @@ public class Main {
 	// TODO: lens manufacturer
 
 	public Main() {
+		
+		MessageConsumer messageConsumer = new SwingMessageConsumer();
 
 		// Preferences that can be stored and retrieved in a subsequent run
 		
-		PreferencesRootPathProvider preferencesRootPathProvider = new PreferencesRootPathProviderImpl(this, new SwingMessageConsumer());
+		PreferencesRootPathProvider preferencesRootPathProvider = new PreferencesRootPathProviderImpl(this, messageConsumer);
 		if (preferencesRootPathProvider.shouldAbort()) {
 			System.exit(0);
 		}
 
-		WindowPreferences windowPreferences = new WindowPreferencesImpl(new FileBasedWindowPreferencesPersister(preferencesRootPathProvider));
+		WindowPreferences windowPreferences = new WindowPreferencesImpl(new FileBasedWindowPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
-		PathPreferences pathPreferences = new PathPreferencesImpl(new FileBasedPathPreferencesPersister(preferencesRootPathProvider));
+		PathPreferences pathPreferences = new PathPreferencesImpl(new FileBasedPathPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
-		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider));
+		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
 		// --- End preferences
 

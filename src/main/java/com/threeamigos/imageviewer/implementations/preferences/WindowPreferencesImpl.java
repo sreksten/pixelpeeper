@@ -3,6 +3,7 @@ package com.threeamigos.imageviewer.implementations.preferences;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
@@ -21,8 +22,8 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 		return "window";
 	}
 
-	public WindowPreferencesImpl(Persister<WindowPreferences> persister) {
-		super(persister);
+	public WindowPreferencesImpl(Persister<WindowPreferences> persister, MessageConsumer messageConsumer) {
+		super(persister, messageConsumer);
 
 		loadPostConstruct();
 	}
