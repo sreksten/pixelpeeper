@@ -7,16 +7,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 
-public abstract class TextBasedAbstractPreferencesPersister<T> implements Persister<T> {
+public abstract class FileBasedAbstractPreferencesPersister<T> implements Persister<T> {
 
 	private final String preferencesPath;
 	private final boolean preferencesPathAccessible;
 
-	protected TextBasedAbstractPreferencesPersister(RootPathProvider rootPathProvider) {
+	protected FileBasedAbstractPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
 		preferencesPath = rootPathProvider.getRootPath();
 		preferencesPathAccessible = rootPathProvider.isRootPathAccessible();
 	}

@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
-public class TextBasedWindowPreferencesPersister extends TextBasedAbstractPreferencesPersister<WindowPreferences>
+public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPreferencesPersister<WindowPreferences>
 		implements Persister<WindowPreferences> {
 
 	private static final String FRAME_DIMENSION_FILENAME = "frame.preferences";
@@ -23,7 +23,7 @@ public class TextBasedWindowPreferencesPersister extends TextBasedAbstractPrefer
 	private static final String AUTOROTATION = "autorotation";
 	private static final String MOVEMENT_APPLIED_TO_ALL_IMAGES = "movement_applied_to_all_images";
 
-	public TextBasedWindowPreferencesPersister(RootPathProvider rootPathProvider) {
+	public FileBasedWindowPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
 		super(rootPathProvider);
 	}
 	

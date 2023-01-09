@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 
-public class TextBasedExifTagPreferencesPersister extends TextBasedAbstractPreferencesPersister<ExifTagPreferences>
+public class FileBasedExifTagPreferencesPersister extends FileBasedAbstractPreferencesPersister<ExifTagPreferences>
 		implements Persister<ExifTagPreferences> {
 
 	private static final String TAG_PREFERENCES_FILENAME = "tag.preferences";
@@ -23,7 +23,7 @@ public class TextBasedExifTagPreferencesPersister extends TextBasedAbstractPrefe
 	private static final String OVERRIDING_TAGS_VISIBILITY = "overriding_tags_visibility";
 	private static final String TAG_PREFIX = "TAG_";
 
-	public TextBasedExifTagPreferencesPersister (RootPathProvider rootPathProvider) {
+	public FileBasedExifTagPreferencesPersister (PreferencesRootPathProvider rootPathProvider) {
 		super(rootPathProvider);
 	}
 	
