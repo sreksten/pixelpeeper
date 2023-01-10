@@ -62,13 +62,13 @@ public class DataModelImpl implements DataModel {
 	public void loadFiles(List<File> files) {
 		if (!files.isEmpty()) {
 			slicesManager.clear();
-			for (File file : files) {
+			files.parallelStream().forEach(file -> { 
 				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences);
 				if (reader.readImage(file)) {
 					PictureData pictureData = reader.getPictureData();
 					slicesManager.createImageSlice(pictureData);
 				}
-			}
+			});
 			slicesManager.resetMovement();
 			commonTagsHelper.updateCommonTags(slicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
