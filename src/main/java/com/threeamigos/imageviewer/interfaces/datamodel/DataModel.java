@@ -52,6 +52,10 @@ public interface DataModel {
 
 	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility);
 
+	public boolean isShowEdgeImages();
+	
+	public void toggleShowingEdgeImages();
+	
 	public void savePreferences();
 
 	// Graphics part

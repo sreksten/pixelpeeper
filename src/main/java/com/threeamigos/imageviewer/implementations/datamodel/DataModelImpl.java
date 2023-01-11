@@ -171,9 +171,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void repaint(Graphics2D graphics) {
-		for (ImageSlice slice : slicesManager.getImageSlices()) {
-			slice.paint(graphics);
-		}
+		slicesManager.getImageSlices().parallelStream().forEach(slice -> slice.paint(graphics));
 	}
 
 	@Override
@@ -330,6 +328,16 @@ public class DataModelImpl implements DataModel {
 	public void setMovementAppliedToAllImagesTemporarilyInverted(
 			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
 		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
+	}
+
+	@Override
+	public boolean isShowEdgeImages() {
+		return windowPreferences.isShowEdgeImages();
+	}
+
+	@Override
+	public void toggleShowingEdgeImages() {
+		windowPreferences.setShowEdgeImages(!windowPreferences.isShowEdgeImages());
 	}
 
 }

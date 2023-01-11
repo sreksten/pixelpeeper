@@ -1,6 +1,8 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -9,6 +11,7 @@ import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice {
@@ -16,6 +19,7 @@ public class ImageSliceImpl implements ImageSlice {
 	private final PictureData pictureData;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
+	private final WindowPreferences windowPreferences;
 	private final FontService fontService;
 
 	private Rectangle location;
@@ -24,11 +28,11 @@ public class ImageSliceImpl implements ImageSlice {
 
 	private boolean selected;
 
-	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			FontService fontService) {
+	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, FontService fontService) {
 		this.pictureData = pictureData;
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
+		this.windowPreferences = windowPreferences;
 		this.fontService = fontService;
 	}
 
@@ -135,24 +139,57 @@ public class ImageSliceImpl implements ImageSlice {
 			imageSliceStartY = pictureHeight - imageSliceHeight;
 		}
 
-		try {
-			BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY,
-					imageSliceWidth, imageSliceHeight);
+		BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth, imageSliceHeight);
+		BufferedImage edgeImage = windowPreferences.isShowEdgeImages() ? pictureData.getEdgeImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth, imageSliceHeight) : null;
+		
+		synchronized(g2d) {
+
+			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
+			
 			g2d.drawImage(subImage, locationX, locationY, null);
-		} catch (Exception e) {
-			System.out.println("Something fishy happened with picture " + pictureData.getFilename() + "(" + pictureWidth
-					+ "x" + pictureHeight + "), screenXOffset = " + screenXOffset + ", screenYOffset = " + screenYOffset
-					+ ", width = " + locationWidth + ", height = " + locationHeight);
-			throw e;
-		}
 
-		if (selected) {
-			g2d.setColor(Color.RED);
-			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
-		}
+			if (windowPreferences.isShowEdgeImages()) {
 
-		new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
-				commonTagsHelper).render();
+				Composite originalAc = g2d.getComposite();
+
+				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.3F);
+				g2d.setComposite(ac);
+
+				g2d.drawImage(edgeImage, locationX, locationY, null);
+
+				g2d.setComposite(originalAc);
+			}
+
+			if (selected) {
+				g2d.setColor(Color.RED);
+				g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
+			}
+
+			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
+					commonTagsHelper).render();
+		}
+		/*
+		BufferedImage image;
+		if (windowPreferences.isShowEdgeImages()) {
+			image = pictureData.getImage();
+		} else {
+			image = pictureData.getEdgeImage();
+		}
+		BufferedImage subImage = image.getSubimage(imageSliceStartX, imageSliceStartY,
+				imageSliceWidth, imageSliceHeight);
+
+		synchronized(g2d) {
+			g2d.drawImage(subImage, locationX, locationY, null);
+
+			if (selected) {
+				g2d.setColor(Color.RED);
+				g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
+			}
+
+			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
+					commonTagsHelper).render();
+		}
+		 */
 
 	}
 

@@ -16,6 +16,7 @@ public class PictureData {
 	private int width;
 	private int height;
 	private BufferedImage image;
+	private BufferedImage edgeImage;
 
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file) {
 		this.width = width;
@@ -90,5 +91,19 @@ public class PictureData {
 			height = tmp;
 		}
 	}
+	
+	public boolean isEdgePictureLoaded() {
+		return edgeImage != null;
+	}
 
+	public BufferedImage getEdgeImage() {
+		if (edgeImage == null) {
+			CannyEdgeDetector detector = new CannyEdgeDetector();
+			detector.setSourceImage(image);
+			detector.process();
+			edgeImage = detector.getEdgesImage();
+		}
+		return edgeImage;
+	}
+	
 }

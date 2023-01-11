@@ -16,6 +16,8 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	private int y;
 	private boolean autorotation;
 	private boolean movementAppliesToAllImages;
+	private boolean showEdgeImages;
+	private int edgeImagesTransparency = 0;
 
 	@Override
 	protected String getEntityDescription() {
@@ -97,6 +99,26 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	@Override
 	public boolean isMovementAppliedToAllImages() {
 		return movementAppliesToAllImages;
+	}
+
+	@Override
+	public void setShowEdgeImages(boolean showEdgeImages) {
+		this.showEdgeImages = showEdgeImages;
+	}
+
+	@Override
+	public boolean isShowEdgeImages() {
+		return showEdgeImages;
+	}
+
+	@Override
+	public void setEdgeImagesTransparency(int edgeImagesTransparency) {
+		this.edgeImagesTransparency = edgeImagesTransparency;
+	}
+
+	@Override
+	public int getEdgeImagesTransparency() {
+		return edgeImagesTransparency;
 	}
 
 }

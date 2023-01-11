@@ -146,6 +146,11 @@ public class ImageViewerCanvas extends JPanel {
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
+		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, dataModel.isShowEdgeImages(),
+				event -> {
+					dataModel.toggleShowingEdgeImages();
+					repaint();
+				});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
 			showHelp = !showHelp;
 			repaint();
