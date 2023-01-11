@@ -152,7 +152,7 @@ public class ImageSliceImpl implements ImageSlice {
 
 				Composite originalAc = g2d.getComposite();
 
-				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.3F);
+				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, windowPreferences.getEdgeImagesTransparency() / 100.0f);
 				g2d.setComposite(ac);
 
 				g2d.drawImage(edgeImage, locationX, locationY, null);
