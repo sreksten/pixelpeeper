@@ -17,7 +17,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 public class FileBasedExifTagPreferencesPersister extends FileBasedAbstractPreferencesPersister<ExifTagPreferences>
 		implements Persister<ExifTagPreferences> {
 
-	private static final String TAG_PREFERENCES_FILENAME = "tag.preferences";
+	private static final String EXIF_TAG_PREFERENCES_FILENAME = "exif-tag.preferences";
 
 	private static final String TAGS_VISIBLE = "tags_visible";
 	private static final String OVERRIDING_TAGS_VISIBILITY = "overriding_tags_visibility";
@@ -29,7 +29,7 @@ public class FileBasedExifTagPreferencesPersister extends FileBasedAbstractPrefe
 	
 	@Override
 	public String getNamePart() {
-		return TAG_PREFERENCES_FILENAME;
+		return EXIF_TAG_PREFERENCES_FILENAME;
 	}
 
 	@Override

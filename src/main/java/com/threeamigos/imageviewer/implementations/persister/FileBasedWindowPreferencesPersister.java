@@ -14,7 +14,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPreferencesPersister<WindowPreferences>
 		implements Persister<WindowPreferences> {
 
-	private static final String FRAME_DIMENSION_FILENAME = "frame.preferences";
+	private static final String WINDOW_PREFERENCES_FILENAME = "window.preferences";
 
 	private static final String WIDTH = "width";
 	private static final String HEIGHT = "height";
@@ -31,7 +31,7 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 	
 	@Override
 	public String getNamePart() {
-		return FRAME_DIMENSION_FILENAME;
+		return WINDOW_PREFERENCES_FILENAME;
 	}
 
 	@Override

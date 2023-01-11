@@ -15,7 +15,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 public class FileBasedPathPreferencesPersister extends FileBasedAbstractPreferencesPersister<PathPreferences>
 		implements Persister<PathPreferences> {
 
-	private static final String PATH_FILENAME = "path.preferences";
+	private static final String PATH_PREFERENCES_FILENAME = "path.preferences";
 	private static final String PATH_PROPERTY = "path";
 	private static final String FILE_PROPERTY = "file";
 	private static final String PATH_ = "Path ";
@@ -27,7 +27,7 @@ public class FileBasedPathPreferencesPersister extends FileBasedAbstractPreferen
 	
 	@Override
 	public String getNamePart() {
-		return PATH_FILENAME;
+		return PATH_PREFERENCES_FILENAME;
 	}
 
 	@Override
