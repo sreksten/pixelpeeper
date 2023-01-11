@@ -65,7 +65,7 @@ public interface ImageSlice {
 	 */
 	public void resetMovement();
 
-	public void paint(Graphics2D g);
+	public void paint(Graphics2D g2d);
 
 	/**
 	 * Rotates the image if needed
