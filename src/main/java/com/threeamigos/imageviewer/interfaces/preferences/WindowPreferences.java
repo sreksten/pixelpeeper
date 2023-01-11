@@ -13,7 +13,7 @@ public interface WindowPreferences extends Persistable {
 	public static final boolean AUTOROTATION_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT = true;
 	public static final boolean SHOWING_EDGE_IMAGES_DEFAULT = false;
-	public static final int EDGE_IMAGES_TRANSPARENCY_DEFAULT = 0;
+	public static final int EDGE_IMAGES_TRANSPARENCY_DEFAULT = 30;
 
 	public void setWidth(int width);
 
