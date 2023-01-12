@@ -1,7 +1,5 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
-import javax.swing.JOptionPane;
-
 import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
@@ -19,6 +17,7 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 
 	protected void loadPostConstruct() {
 		if (persister != null) {
+			@SuppressWarnings("unchecked")
 			PersistResult persistResult = persister.load((T) this);
 			if (!persistResult.isSuccessful()) {
 				if (!persistResult.isNotFound()) {
@@ -38,6 +37,7 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 	@Override
 	public void persist() {
 		if (persister != null) {
+			@SuppressWarnings("unchecked")
 			PersistResult persistResult = persister.save((T) this);
 			if (!persistResult.isSuccessful()) {
 				messageConsumer.error("Error while saving " + getEntityDescription() + " preferences: " + persistResult.getError());

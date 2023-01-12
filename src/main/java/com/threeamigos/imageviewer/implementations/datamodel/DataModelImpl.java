@@ -15,13 +15,12 @@ import java.util.stream.Collectors;
 import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
@@ -31,21 +30,21 @@ public class DataModelImpl implements DataModel {
 	private final ExifTagsFilter exifTagsFilter;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ImageSlicesManager slicesManager;
-	private final ExifTagPreferences tagPreferences;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
+	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager slicesManager, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences,
-			PathPreferences pathPreferences) {
+			ImageSlicesManager slicesManager, WindowPreferences windowPreferences,
+			PathPreferences pathPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.slicesManager = slicesManager;
-		this.tagPreferences = tagPreferences;
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
+		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 
 		List<String> lastFilenames = pathPreferences.getLastFilenames();
 		if (!lastFilenames.isEmpty()) {
@@ -63,7 +62,7 @@ public class DataModelImpl implements DataModel {
 		if (!files.isEmpty()) {
 			slicesManager.clear();
 			files.parallelStream().forEach(file -> { 
-				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences);
+				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences, cannyEdgeDetectorFactory);
 				if (reader.readImage(file)) {
 					PictureData pictureData = reader.getPictureData();
 					slicesManager.createImageSlice(pictureData);
@@ -84,7 +83,7 @@ public class DataModelImpl implements DataModel {
 
 			for (File file : directory.listFiles()) {
 				if (file.isFile()) {
-					ExifAndImageReader reader = new ExifAndImageReader(windowPreferences);
+					ExifAndImageReader reader = new ExifAndImageReader(windowPreferences, cannyEdgeDetectorFactory);
 					ExifMap exifMap = reader.readMetadata(file);
 
 					if (exifMap != null) {
@@ -189,95 +188,8 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public boolean isTagsVisible() {
-		return tagPreferences.isTagsVisible();
-	}
-
-	@Override
-	public void toggleTagsVisibility() {
-		tagPreferences.setTagsVisible(!tagPreferences.isTagsVisible());
-	}
-
-	@Override
-	public boolean isOverridingTagsVisibility() {
-		return tagPreferences.isOverridingTagsVisibility();
-	}
-
-	@Override
-	public void toggleOverridingTagsVisibility() {
-		tagPreferences.setOverridingTagsVisibility(!tagPreferences.isOverridingTagsVisibility());
-	}
-
-	@Override
-	public ExifTagVisibility getTagVisibility(ExifTag exifTag) {
-		return tagPreferences.getTagVisibility(exifTag);
-	}
-
-	@Override
-	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility) {
-		tagPreferences.setTagVisibility(exifTag, visibility);
-	}
-
-	@Override
-	public int getPreferredWidth() {
-		return windowPreferences.getWidth();
-	}
-
-	@Override
-	public void setPreferredWidth(int width) {
-		windowPreferences.setWidth(width);
-	}
-
-	@Override
-	public int getPreferredHeight() {
-		return windowPreferences.getHeight();
-	}
-
-	@Override
-	public void setPreferredHeight(int height) {
-		windowPreferences.setHeight(height);
-	}
-
-	@Override
-	public void savePreferences() {
-		windowPreferences.persist();
-		pathPreferences.persist();
-		tagPreferences.persist();
-	}
-
-	@Override
 	public boolean hasLoadedImages() {
 		return slicesManager.hasLoadedImages();
-	}
-
-	@Override
-	public int getPreferredX() {
-		return windowPreferences.getX();
-	}
-
-	@Override
-	public void setPreferredX(int x) {
-		windowPreferences.setX(x);
-	}
-
-	@Override
-	public int getPreferredY() {
-		return windowPreferences.getY();
-	}
-
-	@Override
-	public void setPreferredY(int y) {
-		windowPreferences.setY(y);
-	}
-
-	@Override
-	public String getLastPath() {
-		return pathPreferences.getLastPath();
-	}
-
-	@Override
-	public void setLastPath(String lastPath) {
-		pathPreferences.setLastPath(lastPath);
 	}
 
 	@Override

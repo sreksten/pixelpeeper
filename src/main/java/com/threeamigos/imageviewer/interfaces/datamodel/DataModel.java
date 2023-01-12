@@ -4,28 +4,9 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.util.List;
 
-import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.data.ExifTagVisibility;
-
 public interface DataModel {
 
 	// Preferences part
-
-	public int getPreferredX();
-
-	public void setPreferredX(int x);
-
-	public int getPreferredY();
-
-	public void setPreferredY(int y);
-
-	public int getPreferredWidth();
-
-	public void setPreferredWidth(int width);
-
-	public int getPreferredHeight();
-
-	public void setPreferredHeight(int height);
 
 	public boolean isAutorotation();
 
@@ -40,24 +21,10 @@ public interface DataModel {
 	public void setMovementAppliedToAllImagesTemporarilyInverted(
 			boolean isMovementAppliedToAllImagesTemporarilyInverted);
 
-	public boolean isTagsVisible();
-
-	public void toggleTagsVisibility();
-
-	public boolean isOverridingTagsVisibility();
-
-	public void toggleOverridingTagsVisibility();
-
-	public ExifTagVisibility getTagVisibility(ExifTag exifTag);
-
-	public void setTagVisibility(ExifTag exifTag, ExifTagVisibility visibility);
-
 	public boolean isShowEdgeImages();
 	
 	public void toggleShowingEdgeImages();
 	
-	public void savePreferences();
-
 	// Graphics part
 
 	public void reframe(int width, int height);
@@ -79,10 +46,6 @@ public interface DataModel {
 	public void loadFiles(List<File> files);
 
 	public void browseDirectory(File directory);
-
-	public String getLastPath();
-
-	public void setLastPath(String lastPath);
 
 	public boolean hasLoadedImages();
 

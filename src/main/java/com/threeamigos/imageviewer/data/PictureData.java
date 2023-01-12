@@ -4,12 +4,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
+
 public class PictureData {
 
 	private final int orientation;
 	private final ExifMap exifMap;
 	private final File file;
 	private final String filename;
+	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 
 	private boolean orientationAdjusted = false;
 
@@ -18,7 +22,7 @@ public class PictureData {
 	private BufferedImage image;
 	private BufferedImage edgeImage;
 
-	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file) {
+	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
 		this.width = width;
 		this.height = height;
 		this.orientation = orientation;
@@ -26,6 +30,7 @@ public class PictureData {
 		this.image = image;
 		this.file = file;
 		this.filename = file.getName();
+		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 	}
 
 	public int getWidth() {
@@ -98,7 +103,7 @@ public class PictureData {
 
 	public BufferedImage getEdgeImage() {
 		if (edgeImage == null) {
-			CannyEdgeDetector detector = new CannyEdgeDetector();
+			CannyEdgeDetector detector = cannyEdgeDetectorFactory.getCannyEdgeDetector();
 			detector.setSourceImage(image);
 			detector.process();
 			edgeImage = detector.getEdgesImage();

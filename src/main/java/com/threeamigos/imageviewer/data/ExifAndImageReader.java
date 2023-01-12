@@ -5,17 +5,20 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class ExifAndImageReader {
 
 	private final WindowPreferences windowPreferences;
+	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 
 	private PictureData pictureData;
 	private int pictureOrientation = ExifOrientation.AS_IS;
 
-	public ExifAndImageReader(WindowPreferences windowPreferences) {
+	public ExifAndImageReader(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
 		this.windowPreferences = windowPreferences;
+		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 	}
 
 	public ExifMap readMetadata(File file) {
@@ -44,7 +47,7 @@ public class ExifAndImageReader {
 				BufferedImage bufferedImage = ImageIO.read(file);
 
 				pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(), pictureOrientation,
-						exifMap, bufferedImage, file);
+						exifMap, bufferedImage, file, cannyEdgeDetectorFactory);
 
 				if (windowPreferences.isAutorotation()) {
 					pictureData.correctOrientation();

@@ -15,25 +15,32 @@ import com.threeamigos.common.util.implementations.SwingMessageConsumer;
 import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
+import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgeDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
+import com.threeamigos.imageviewer.implementations.persister.FileBasedCannyEdgeDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedExifTagPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedPathPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedWindowPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.preferences.CannyEdgeDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.PreferencesPersisterHelperImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
@@ -54,6 +61,8 @@ public class Main {
 
 	public Main() {
 		
+		// A way to show error/warning messages to the user
+		
 		MessageConsumer messageConsumer = new SwingMessageConsumer();
 
 		// Preferences that can be stored and retrieved in a subsequent run
@@ -67,27 +76,32 @@ public class Main {
 
 		PathPreferences pathPreferences = new PathPreferencesImpl(new FileBasedPathPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
-		ExifTagPreferences tagPreferences = new ExifTagPreferencesImpl(new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl(new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
+		CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences = new CannyEdgeDetectorPreferencesImpl(new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+		
+		PreferencesPersisterHelper preferencesPersisterHelper = new PreferencesPersisterHelperImpl(windowPreferences, pathPreferences, exifTagPreferences, cannyEdgeDetectorPreferences);
+		
 		// --- End preferences
 
+		CannyEdgeDetectorFactory cannyEdgeDetectorFactory = new CannyEdgeDetectorFactoryImpl(cannyEdgeDetectorPreferences);
+		
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, tagPreferences, windowPreferences, new FontServiceImpl());
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences, windowPreferences, cannyEdgeDetectorFactory, new FontServiceImpl());
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
-		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, tagPreferences,
-				windowPreferences, pathPreferences);
+		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences, pathPreferences, cannyEdgeDetectorFactory);
 
-		FileSelector fileSelector = new FileSelectorImpl(dataModel);
+		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(dataModel, mouseTracker, fileSelector,
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel, preferencesPersisterHelper, mouseTracker, fileSelector,
 				new AboutWindowImpl());
 
-		JFrame jframe = prepareFrame(imageViewerCanvas, dataModel);
+		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 
 		JMenuBar menuBar = new JMenuBar();
 
@@ -99,7 +113,7 @@ public class Main {
 
 	}
 
-	private JFrame prepareFrame(ImageViewerCanvas canvas, DataModel dataModel) {
+	private JFrame prepareFrame(ImageViewerCanvas canvas, WindowPreferences windowPreferences, PreferencesPersisterHelper preferencesPersisterHelper) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
 		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -107,7 +121,7 @@ public class Main {
 		jframe.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				dataModel.savePreferences();
+				preferencesPersisterHelper.persist();
 				System.exit(0);
 			}
 		});
@@ -122,20 +136,20 @@ public class Main {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				dataModel.setPreferredWidth(canvas.getWidth());
-				dataModel.setPreferredHeight(canvas.getHeight());
+				windowPreferences.setWidth(canvas.getWidth());
+				windowPreferences.setHeight(canvas.getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				dataModel.setPreferredX(jframe.getX());
-				dataModel.setPreferredY(jframe.getY());
+				windowPreferences.setX(jframe.getX());
+				windowPreferences.setY(jframe.getY());
 			}
 		});
 
 		jframe.pack();
 		jframe.setResizable(true);
-		jframe.setLocation(dataModel.getPreferredX(), dataModel.getPreferredY());
+		jframe.setLocation(windowPreferences.getX(), windowPreferences.getY());
 
 		return jframe;
 	}

@@ -1,6 +1,9 @@
-package com.threeamigos.imageviewer.data;
+package com.threeamigos.imageviewer.implementations.datamodel;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 
 /**
  * <p><em>This software has been released into the public domain.
@@ -33,7 +36,7 @@ import java.util.Arrays;
  *
  */
 
-public class CannyEdgeDetector {
+public class CannyEdgeDetectorImpl implements CannyEdgeDetector {
 
 	// statics
 	
@@ -69,12 +72,12 @@ public class CannyEdgeDetector {
 	 * Constructs a new detector with default parameters.
 	 */
 	
-	public CannyEdgeDetector() {
-		lowThreshold = 2.5f;
-		highThreshold = 7.5f;
-		gaussianKernelRadius = 2f;
-		gaussianKernelWidth = 16;
-		contrastNormalized = false;
+	public CannyEdgeDetectorImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences) {
+		lowThreshold = cannyEdgeDetectorPreferences.getLowThreshold();
+		highThreshold = cannyEdgeDetectorPreferences.getHighThreshold();
+		gaussianKernelRadius = cannyEdgeDetectorPreferences.getGaussianKernelRadius();
+		gaussianKernelWidth = cannyEdgeDetectorPreferences.getGaussianKernelWidth();
+		contrastNormalized = cannyEdgeDetectorPreferences.isContrastNormalized();
 	}
 
 	// accessors

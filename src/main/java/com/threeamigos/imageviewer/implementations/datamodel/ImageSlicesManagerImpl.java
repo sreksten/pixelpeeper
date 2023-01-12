@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
@@ -19,16 +20,19 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager {
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final WindowPreferences windowPreferences;
+	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 	private final FontService fontService;
 
 	private List<ImageSlice> imageSlices = new ArrayList<>();
 
 	private ImageSlice activeSlice;
 
-	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, FontService fontService) {
+	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences,
+			CannyEdgeDetectorFactory cannyEdgeDetectorFactory, FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.windowPreferences = windowPreferences;
+		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 		this.fontService = fontService;
 	}
 

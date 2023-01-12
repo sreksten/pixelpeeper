@@ -26,6 +26,9 @@ import javax.swing.JPanel;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
+import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
@@ -40,7 +43,9 @@ public class ImageViewerCanvas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private final transient ExifTagPreferences exifTagPreferences;
 	private final transient DataModel dataModel;
+	private final transient PreferencesPersisterHelper preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
 	private final transient AboutWindow aboutWindow;
 
@@ -48,15 +53,17 @@ public class ImageViewerCanvas extends JPanel {
 
 	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
 
-	public ImageViewerCanvas(DataModel dataModel, MouseTracker mouseTracker, FileSelector fileSelector,
+	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker, FileSelector fileSelector,
 			AboutWindow aboutWindow) {
 		super();
+		this.exifTagPreferences = exifTagPreferences;
 		this.dataModel = dataModel;
+		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
 		this.aboutWindow = aboutWindow;
 
-		int width = dataModel.getPreferredWidth();
-		int height = dataModel.getPreferredHeight();
+		int width = windowPreferences.getWidth();
+		int height = windowPreferences.getHeight();
 
 		setSize(width, height);
 		setMinimumSize(getSize());
@@ -161,19 +168,19 @@ public class ImageViewerCanvas extends JPanel {
 
 		fileMenu.addSeparator();
 		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> {
-			dataModel.savePreferences();
+			preferencesPersisterHelper.persist();
 			System.exit(0);
 		});
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
-		addCheckboxMenuItem(tagsMenu, "Show tags", KeyEvent.VK_I, dataModel.isTagsVisible(), event -> {
-			dataModel.toggleTagsVisibility();
+		addCheckboxMenuItem(tagsMenu, "Show tags", KeyEvent.VK_I, exifTagPreferences.isTagsVisible(), event -> {
+			exifTagPreferences.setTagsVisible(!exifTagPreferences.isTagsVisible());
 			repaint();
 		});
-		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I, dataModel.isOverridingTagsVisibility(),
+		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I, exifTagPreferences.isOverridingTagsVisibility(),
 				event -> {
-					dataModel.toggleOverridingTagsVisibility();
+					exifTagPreferences.setOverridingTagsVisibility(!exifTagPreferences.isOverridingTagsVisibility());
 					repaint();
 				});
 		tagsMenu.addSeparator();
@@ -182,20 +189,20 @@ public class ImageViewerCanvas extends JPanel {
 			menusByTag.put(exifTag, exifTagMenu);
 			tagsMenu.add(exifTagMenu);
 			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.YES.getDescription(), -1,
-					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.YES, event -> {
-						dataModel.setTagVisibility(exifTag, ExifTagVisibility.YES);
+					exifTagPreferences.getTagVisibility(exifTag) == ExifTagVisibility.YES, event -> {
+						exifTagPreferences.setTagVisibility(exifTag, ExifTagVisibility.YES);
 						updateExifTagMenu(exifTag);
 						repaint();
 					});
 			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.ONLY_IF_DIFFERENT.getDescription(), -1,
-					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.ONLY_IF_DIFFERENT, event -> {
-						dataModel.setTagVisibility(exifTag, ExifTagVisibility.ONLY_IF_DIFFERENT);
+					exifTagPreferences.getTagVisibility(exifTag) == ExifTagVisibility.ONLY_IF_DIFFERENT, event -> {
+						exifTagPreferences.setTagVisibility(exifTag, ExifTagVisibility.ONLY_IF_DIFFERENT);
 						updateExifTagMenu(exifTag);
 						repaint();
 					});
 			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.NO.getDescription(), -1,
-					dataModel.getTagVisibility(exifTag) == ExifTagVisibility.NO, event -> {
-						dataModel.setTagVisibility(exifTag, ExifTagVisibility.NO);
+					exifTagPreferences.getTagVisibility(exifTag) == ExifTagVisibility.NO, event -> {
+						exifTagPreferences.setTagVisibility(exifTag, ExifTagVisibility.NO);
 						updateExifTagMenu(exifTag);
 						repaint();
 					});
@@ -205,7 +212,7 @@ public class ImageViewerCanvas extends JPanel {
 	private void updateExifTagMenu(ExifTag exifTag) {
 		JMenu exifTagMenu = menusByTag.get(exifTag);
 		Component[] items = exifTagMenu.getMenuComponents();
-		ExifTagVisibility exifTagVisibility = dataModel.getTagVisibility(exifTag);
+		ExifTagVisibility exifTagVisibility = exifTagPreferences.getTagVisibility(exifTag);
 		for (int i = 0; i < items.length; i++) {
 			JCheckBoxMenuItem item = (JCheckBoxMenuItem) items[i];
 			item.setSelected(exifTagVisibility.getDescription().equals(item.getText()));
