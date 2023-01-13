@@ -30,6 +30,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
+import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -43,23 +44,29 @@ public class ImageViewerCanvas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private final transient WindowPreferences windowPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
 	private final transient DataModel dataModel;
 	private final transient PreferencesPersisterHelper preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
+	private final transient CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector;
 	private final transient AboutWindow aboutWindow;
 
 	private boolean showHelp = false;
 
 	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
 
-	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker, FileSelector fileSelector,
+	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
+			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
+			FileSelector fileSelector, CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector,
 			AboutWindow aboutWindow) {
 		super();
+		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
 		this.dataModel = dataModel;
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
+		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelector;
 		this.aboutWindow = aboutWindow;
 
 		int width = windowPreferences.getWidth();
@@ -153,11 +160,13 @@ public class ImageViewerCanvas extends JPanel {
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, dataModel.isShowEdgeImages(),
-				event -> {
-					dataModel.toggleShowingEdgeImages();
-					repaint();
-				});
+		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, windowPreferences.isShowEdgeImages(), event -> {
+			windowPreferences.setShowEdgeImages(!windowPreferences.isShowEdgeImages());
+			repaint();
+		});
+		addMenuItem(fileMenu, "Canny Edge Detector parameters", KeyEvent.VK_C, event -> {
+			cannyEdgeDetectorPreferencesSelector.selectParameters(this);
+		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
 			showHelp = !showHelp;
 			repaint();
@@ -178,8 +187,8 @@ public class ImageViewerCanvas extends JPanel {
 			exifTagPreferences.setTagsVisible(!exifTagPreferences.isTagsVisible());
 			repaint();
 		});
-		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I, exifTagPreferences.isOverridingTagsVisibility(),
-				event -> {
+		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I,
+				exifTagPreferences.isOverridingTagsVisibility(), event -> {
 					exifTagPreferences.setOverridingTagsVisibility(!exifTagPreferences.isOverridingTagsVisibility());
 					repaint();
 				});

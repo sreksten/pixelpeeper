@@ -9,13 +9,13 @@ import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHe
 public class PreferencesPersisterHelperImpl implements PreferencesPersisterHelper {
 
 	private List<Persistable> persistables = new ArrayList<>();
-	
-	public PreferencesPersisterHelperImpl(Persistable ... persistable) {
+
+	public PreferencesPersisterHelperImpl(Persistable... persistables) {
 		for (Persistable current : persistables) {
 			this.persistables.add(current);
 		}
 	}
-	
+
 	@Override
 	public void addPersistable(Persistable persistable) {
 		persistables.add(persistable);
@@ -25,5 +25,5 @@ public class PreferencesPersisterHelperImpl implements PreferencesPersisterHelpe
 	public void persist() {
 		persistables.forEach(Persistable::persist);
 	}
-	
+
 }
