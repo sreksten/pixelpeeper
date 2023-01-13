@@ -9,6 +9,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.implementations.SwingMessageConsumer;
@@ -173,7 +174,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		new Main();
+		SwingUtilities.invokeLater(() -> new Main());
 	}
 
 }
