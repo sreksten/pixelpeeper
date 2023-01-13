@@ -25,19 +25,15 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
 
-public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetectorPreferencesSelector, ChangeListener {
+public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetectorPreferencesSelector {
 
-	private static final float NORMALIZATION_VALUE = 10.0f;
-
-	private static final int MIN_TRANSPARENCY = 0;
-	private static final int MAX_TRANSPARENCY = 100;
+	private static final String OK_OPTION = "OK";
+	private static final String CANCEL_OPTION = "Cancel";
 
 	private static final String LOW_THRESHOLD = "Low threshold";
 	private static final String HIGH_THRESHOLD = "High threshold";
@@ -46,83 +42,46 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 	private static final String CONTRAST_NORMALIZED = "Contrast normalized";
 	private static final String TRANSPARENCY = "Transparency";
 
-	private final WindowPreferences windowPreferences;
-	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
-
-	private int lowThreshold;
-	private int highThreshold;
-	private int gaussianKernelRadius;
-	private int gaussianKernelWidth;
-	private boolean contrastNormalized;
-	private int transparency;
-
-	private JLabel lowThresholdText;
-	private JLabel highThresholdText;
-	private JLabel gaussianKernelRadiusText;
-	private JLabel gaussianKernelWidthText;
-	private JLabel transparencyText;
-
-	private JSlider lowThresholdSlider;
-	private JSlider highThresholdSlider;
-	private JSlider gaussianKernelRadiusSlider;
-	private JSlider gaussianKernelWidthSlider;
-	private JCheckBox contrastNormalizedCheckbox;
-	private JSlider transparencySlider;
-
-	private Component parentComponent;
+	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences) {
-		this.windowPreferences = windowPreferences;
-		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, Component parentComponent) {
+		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(windowPreferences, cannyEdgeDetectorPreferences,
+				parentComponent);
 	}
 
 	@Override
 	public boolean selectParameters(Component parentComponent) {
 
-		this.parentComponent = parentComponent;
-
-		lowThresholdText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getLowThreshold()));
-		highThresholdText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getHighThreshold()));
-		gaussianKernelRadiusText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getGaussianKernelRadius()));
-		gaussianKernelWidthText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getGaussianKernelWidth()));
-		transparencyText = new JLabel(String.valueOf(windowPreferences.getEdgeImagesTransparency()));
-
-		lowThreshold = normalize(cannyEdgeDetectorPreferences.getLowThreshold());
-		highThreshold = normalize(cannyEdgeDetectorPreferences.getHighThreshold());
-		gaussianKernelRadius = normalize(cannyEdgeDetectorPreferences.getGaussianKernelRadius());
-		gaussianKernelWidth = cannyEdgeDetectorPreferences.getGaussianKernelWidth();
-		contrastNormalized = cannyEdgeDetectorPreferences.isContrastNormalized();
-		transparency = normalizeTransparency(windowPreferences.getEdgeImagesTransparency());
-
 		boolean selectionSuccessful = false;
 
-		String[] options = { "OK", "Cancel" };
-		JOptionPane jop = new JOptionPane(createPreferencesPanel(parentComponent), JOptionPane.QUESTION_MESSAGE,
+		String[] options = { OK_OPTION, CANCEL_OPTION };
+
+		JOptionPane optionPane = new JOptionPane(createPreferencesPanel(parentComponent), JOptionPane.QUESTION_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION, null, options, options[1]);
-		JDialog dialog = jop.createDialog(parentComponent, "Canny Edge Detector Preferences");
+
+		JDialog dialog = optionPane.createDialog(parentComponent, "Canny Edge Detector Preferences");
+
 		dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				windowPreferences.setEdgeImagesTransparency(normalizeTransparency(transparency));
+				dataModel.cancelSelection();
 				dialog.setVisible(false);
 			}
 		});
+
 		// In real code, you should invoke this from AWT-EventQueue using
 		// invokeAndWait() or something
 		dialog.setVisible(true);
-		if ("Cancel".equals(jop.getValue())) {
-			windowPreferences.setEdgeImagesTransparency(normalizeTransparency(transparency));
-		} else if ("OK".equals(jop.getValue())) {
-			cannyEdgeDetectorPreferences.setLowThreshold(denormalize(lowThresholdSlider.getValue()));
-			cannyEdgeDetectorPreferences.setHighThreshold(denormalize(highThresholdSlider.getValue()));
-			cannyEdgeDetectorPreferences.setGaussianKernelRadius(denormalize(gaussianKernelRadiusSlider.getValue()));
-			cannyEdgeDetectorPreferences.setGaussianKernelWidth(gaussianKernelWidthSlider.getValue());
-			cannyEdgeDetectorPreferences.setContrastNormalized(contrastNormalizedCheckbox.isSelected());
-			windowPreferences.setEdgeImagesTransparency(normalizeTransparency(transparencySlider.getValue()));
+
+		if (CANCEL_OPTION.equals(optionPane.getValue())) {
+			dataModel.cancelSelection();
+		} else if (OK_OPTION.equals(optionPane.getValue())) {
+			dataModel.acceptSelection();
 			selectionSuccessful = true;
 		}
+
 		dialog.dispose();
 
 		if (parentComponent != null) {
@@ -152,11 +111,13 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		gaussianKernelWidthSliderLabelTable.put(Integer.valueOf(32), new JLabel("32"));
 
 		Hashtable<Integer, JLabel> transparencySliderLabelTable = new Hashtable<>();
-		transparencySliderLabelTable.put(Integer.valueOf(MIN_TRANSPARENCY),
-				new JLabel(String.valueOf(MIN_TRANSPARENCY)));
+		transparencySliderLabelTable.put(
+				Integer.valueOf(CannyEdgeDetectorPreferencesSelectorDataModel.MIN_TRANSPARENCY),
+				new JLabel(String.valueOf(CannyEdgeDetectorPreferencesSelectorDataModel.MIN_TRANSPARENCY)));
 		transparencySliderLabelTable.put(Integer.valueOf(50), new JLabel("50"));
-		transparencySliderLabelTable.put(Integer.valueOf(MAX_TRANSPARENCY),
-				new JLabel(String.valueOf(MAX_TRANSPARENCY)));
+		transparencySliderLabelTable.put(
+				Integer.valueOf(CannyEdgeDetectorPreferencesSelectorDataModel.MAX_TRANSPARENCY),
+				new JLabel(String.valueOf(CannyEdgeDetectorPreferencesSelectorDataModel.MAX_TRANSPARENCY)));
 
 		Dimension labelDimension = getMaxDimension(component.getGraphics(), LOW_THRESHOLD, HIGH_THRESHOLD,
 				GAUSSIAN_KERNEL_RADIUS, GAUSSIAN_KERNEL_WIDTH, CONTRAST_NORMALIZED, TRANSPARENCY);
@@ -164,28 +125,27 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-		lowThresholdSlider = createSliderPanel(panel, labelDimension, LOW_THRESHOLD, 0, 100, lowThreshold,
-				thresholdSliderLabelTable, lowThresholdText);
+		createSliderPanel(panel, labelDimension, LOW_THRESHOLD, dataModel.lowThresholdSlider, thresholdSliderLabelTable,
+				dataModel.lowThresholdText);
 
 		panel.add(new JSeparator());
 
-		highThresholdSlider = createSliderPanel(panel, labelDimension, HIGH_THRESHOLD, 0, 100, highThreshold,
-				thresholdSliderLabelTable, highThresholdText);
+		createSliderPanel(panel, labelDimension, HIGH_THRESHOLD, dataModel.highThresholdSlider,
+				thresholdSliderLabelTable, dataModel.highThresholdText);
 
 		panel.add(new JSeparator());
 
-		gaussianKernelRadiusSlider = createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_RADIUS, 1, 100,
-				gaussianKernelRadius, gaussianKernelRadiusSliderLabelTable, gaussianKernelRadiusText);
+		createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_RADIUS, dataModel.gaussianKernelRadiusSlider,
+				gaussianKernelRadiusSliderLabelTable, dataModel.gaussianKernelRadiusText);
 
 		panel.add(new JSeparator());
 
-		gaussianKernelWidthSlider = createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_WIDTH, 2, 32,
-				gaussianKernelWidth, gaussianKernelWidthSliderLabelTable, gaussianKernelWidthText);
+		createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_WIDTH, dataModel.gaussianKernelWidthSlider,
+				gaussianKernelWidthSliderLabelTable, dataModel.gaussianKernelWidthText);
 
 		panel.add(new JSeparator());
 
-		contrastNormalizedCheckbox = createCheckboxPanel(panel, labelDimension, CONTRAST_NORMALIZED,
-				contrastNormalized);
+		createCheckboxPanel(panel, labelDimension, CONTRAST_NORMALIZED, dataModel.contrastNormalizedCheckbox);
 
 		panel.add(new JSeparator());
 
@@ -193,21 +153,21 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		panel.add(new JSeparator());
 
-		transparencySlider = createSliderPanel(panel, labelDimension, TRANSPARENCY, MIN_TRANSPARENCY, MAX_TRANSPARENCY,
-				transparency, transparencySliderLabelTable, transparencyText);
+		createSliderPanel(panel, labelDimension, TRANSPARENCY, dataModel.transparencySlider,
+				transparencySliderLabelTable, dataModel.transparencyText);
 
 		return panel;
 	}
 
-	private JSlider createSliderPanel(JPanel parent, Dimension labelDimension, String labelString, int minValue,
-			int maxValue, int currentValue, Hashtable<Integer, JLabel> labelTable, JLabel valueLabel) {
+	private JSlider createSliderPanel(JPanel parent, Dimension labelDimension, String sliderLabel, JSlider slider,
+			Hashtable<Integer, JLabel> labelTable, JLabel valueLabel) {
 
 		JPanel panel = new JPanel();
 		panel.setMinimumSize(new Dimension(400, 40));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
 		JPanel labelPanel = new JPanel();
-		JLabel label = new JLabel(labelString);
+		JLabel label = new JLabel(sliderLabel);
 		label.setMinimumSize(labelDimension);
 		label.setSize(labelDimension);
 		label.setVerticalAlignment(SwingConstants.TOP);
@@ -216,8 +176,6 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		panel.add(labelPanel);
 
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, currentValue);
-		slider.addChangeListener(this);
 		slider.setMajorTickSpacing(10);
 		slider.setMinorTickSpacing(5);
 		slider.setPaintTicks(true);
@@ -236,22 +194,19 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		return slider;
 	}
 
-	private JCheckBox createCheckboxPanel(JPanel parent, Dimension labelDimension, String labelString,
-			boolean currentValue) {
+	private JCheckBox createCheckboxPanel(JPanel parent, Dimension labelDimension, String checkboxLabel,
+			JCheckBox checkbox) {
 
 		JPanel panel = new JPanel();
 		panel.setMinimumSize(new Dimension(400, 40));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
-		JLabel label = new JLabel(labelString);
+		JLabel label = new JLabel(checkboxLabel);
 		label.setMinimumSize(labelDimension);
 		label.setSize(labelDimension);
 		label.setVerticalAlignment(SwingConstants.TOP);
 		panel.add(label);
 
-		JCheckBox checkbox = new JCheckBox();
-		checkbox.setSelected(currentValue);
-		checkbox.addChangeListener(this);
 		panel.add(checkbox);
 		panel.add(Box.createHorizontalGlue());
 
@@ -281,11 +236,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		resetToPrevious.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				lowThresholdSlider.setValue(lowThreshold);
-				highThresholdSlider.setValue(highThreshold);
-				gaussianKernelRadiusSlider.setValue(gaussianKernelRadius);
-				gaussianKernelWidthSlider.setValue(gaussianKernelWidth);
-				contrastNormalizedCheckbox.setSelected(contrastNormalized);
+				dataModel.reset();
 			}
 		});
 
@@ -297,13 +248,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		resetToDefault.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				lowThresholdSlider.setValue(normalize(CannyEdgeDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT));
-				highThresholdSlider
-						.setValue(normalize(CannyEdgeDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT));
-				gaussianKernelRadiusSlider
-						.setValue(normalize(CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT));
-				gaussianKernelWidthSlider.setValue(CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT);
-				contrastNormalizedCheckbox.setSelected(CannyEdgeDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT);
+				dataModel.resetToDefault();
 			}
 		});
 
@@ -331,46 +276,6 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			}
 		}
 		return new Dimension(maxWidth, maxHeight);
-	}
-
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		Object object = e.getSource();
-		if (object == lowThresholdSlider) {
-			lowThresholdText.setText(String.valueOf(denormalize(lowThresholdSlider.getValue())));
-			if (lowThresholdSlider.getValue() > highThresholdSlider.getValue()) {
-				highThresholdSlider.setValue(lowThresholdSlider.getValue());
-				highThresholdText.setText(String.valueOf(denormalize(highThresholdSlider.getValue())));
-			}
-		} else if (object == highThresholdSlider) {
-			highThresholdText.setText(String.valueOf(denormalize(highThresholdSlider.getValue())));
-			if (highThresholdSlider.getValue() < lowThresholdSlider.getValue()) {
-				lowThresholdSlider.setValue(highThresholdSlider.getValue());
-				lowThresholdText.setText(String.valueOf(denormalize(lowThresholdSlider.getValue())));
-			}
-		} else if (object == gaussianKernelRadiusSlider) {
-			gaussianKernelRadiusText.setText(String.valueOf(denormalize(gaussianKernelRadiusSlider.getValue())));
-		} else if (object == gaussianKernelWidthSlider) {
-			gaussianKernelWidthText.setText(String.valueOf(gaussianKernelWidthSlider.getValue()));
-		} else if (object == transparencySlider) {
-			transparencyText.setText(String.valueOf(normalizeTransparency(transparencySlider.getValue())));
-			windowPreferences.setEdgeImagesTransparency(normalizeTransparency(transparencySlider.getValue()));
-			if (parentComponent != null) {
-				parentComponent.repaint();
-			}
-		}
-	}
-
-	private int normalize(float value) {
-		return (int) (value * NORMALIZATION_VALUE);
-	}
-
-	private float denormalize(int value) {
-		return value / NORMALIZATION_VALUE;
-	}
-
-	private int normalizeTransparency(int transparency) {
-		return MAX_TRANSPARENCY - transparency;
 	}
 
 }

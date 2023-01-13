@@ -31,6 +31,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHe
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
+import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -58,7 +59,8 @@ public class ImageViewerCanvas extends JPanel {
 
 	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
-			FileSelector fileSelector, CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector,
+			FileSelector fileSelector,
+			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
 			AboutWindow aboutWindow) {
 		super();
 		this.windowPreferences = windowPreferences;
@@ -66,7 +68,7 @@ public class ImageViewerCanvas extends JPanel {
 		this.dataModel = dataModel;
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
-		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelector;
+		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelectorFactory.createSelector(this);
 		this.aboutWindow = aboutWindow;
 
 		int width = windowPreferences.getWidth();

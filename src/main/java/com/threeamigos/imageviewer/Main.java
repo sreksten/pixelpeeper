@@ -29,7 +29,7 @@ import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesIm
 import com.threeamigos.imageviewer.implementations.preferences.PreferencesPersisterHelperImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
-import com.threeamigos.imageviewer.implementations.ui.CannyEdgeDetectorPreferencesSelectorImpl;
+import com.threeamigos.imageviewer.implementations.ui.CannyEdgeDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
@@ -43,7 +43,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
+import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
@@ -87,13 +87,10 @@ public class Main {
 		CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences = new CannyEdgeDetectorPreferencesImpl(
 				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider), messageConsumer);
 
-		CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorParametersSelector = new CannyEdgeDetectorPreferencesSelectorImpl(
-				windowPreferences, cannyEdgeDetectorPreferences);
-
 		PreferencesPersisterHelper preferencesPersisterHelper = new PreferencesPersisterHelperImpl(windowPreferences,
 				pathPreferences, exifTagPreferences, cannyEdgeDetectorPreferences);
 
-		// --- End preferences
+		// Data model
 
 		CannyEdgeDetectorFactory cannyEdgeDetectorFactory = new CannyEdgeDetectorFactoryImpl(
 				cannyEdgeDetectorPreferences);
@@ -108,12 +105,17 @@ public class Main {
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
 				pathPreferences, cannyEdgeDetectorFactory);
 
+		// User Interface
+
+		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
+				windowPreferences, cannyEdgeDetectorPreferences);
+
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
-				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorParametersSelector,
+				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorParametersSelectorFactory,
 				new AboutWindowImpl());
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
