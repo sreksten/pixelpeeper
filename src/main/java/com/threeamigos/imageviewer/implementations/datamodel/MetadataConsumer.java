@@ -15,15 +15,12 @@ import com.drew.metadata.exif.makernotes.NikonType2MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.PanasonicMakernoteDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.threeamigos.imageviewer.data.ExifMap;
-import com.threeamigos.imageviewer.data.ExifOrientation;
 import com.threeamigos.imageviewer.data.ExifTag;
 
 class MetadataConsumer {
 
 	private final File file;
 	private final ExifMap exifMap;
-
-	private int pictureOrientation = ExifOrientation.AS_IS;
 
 	MetadataConsumer(File file) {
 		this.file = file;
@@ -69,10 +66,6 @@ class MetadataConsumer {
 		return exifMap;
 	}
 
-	int getPictureOrientation() {
-		return pictureOrientation;
-	}
-
 	private void consumeJpeg(JpegDirectory jpegDirectory) throws MetadataException {
 		int pictureWidth = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_WIDTH);
 		int pictureHeight = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
@@ -88,7 +81,7 @@ class MetadataConsumer {
 		consume(directory, ExifTag.LENS_MODEL, ExifDirectoryBase.TAG_LENS_MODEL);
 		consume(directory, ExifTag.IMAGE_ORIENTATION, ExifDirectoryBase.TAG_ORIENTATION);
 		try {
-			pictureOrientation = directory.getInt(ExifDirectoryBase.TAG_ORIENTATION);
+			exifMap.setPictureOrientation(directory.getInt(ExifDirectoryBase.TAG_ORIENTATION));
 		} catch (MetadataException e) {
 			// Let's just not make any orientation correction
 		}

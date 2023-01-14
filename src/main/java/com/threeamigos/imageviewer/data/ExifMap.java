@@ -6,11 +6,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
+
 public class ExifMap {
 
 	private Set<ExifTag> allTags = new HashSet<>();
 	private Map<ExifTag, String> tagToDescriptions = new EnumMap<>(ExifTag.class);
 	private Map<ExifTag, Object> tagToObjects = new EnumMap<>(ExifTag.class);
+	private int pictureOrientation = ExifOrientationHelper.AS_IS;
 
 	public void setIfAbsent(ExifTag exifTag, String value, Object object) {
 		if (value == null || value.trim().isEmpty()) {
@@ -31,6 +34,14 @@ public class ExifMap {
 
 	public Object getTagObject(ExifTag exifTag) {
 		return tagToObjects.computeIfAbsent(exifTag, t -> "N/A");
+	}
+
+	public void setPictureOrientation(int pictureOrientation) {
+		this.pictureOrientation = pictureOrientation;
+	}
+
+	public int getPictureOrientation() {
+		return pictureOrientation;
 	}
 
 }

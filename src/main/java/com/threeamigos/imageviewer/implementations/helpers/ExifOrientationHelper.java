@@ -1,9 +1,9 @@
-package com.threeamigos.imageviewer.data;
+package com.threeamigos.imageviewer.implementations.helpers;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
-public class ExifOrientation {
+public class ExifOrientationHelper {
 
 	public static final int AS_IS = 1;
 	public static final int FLIP_HORIZONTALLY = 2;

@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -23,6 +24,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
+import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -41,7 +43,7 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
  * @author Stefano Reksten
  *
  */
-public class ImageViewerCanvas extends JPanel {
+public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -132,18 +134,24 @@ public class ImageViewerCanvas extends JPanel {
 			}
 
 		});
+
+		DragAndDropSupportHelper.addJavaFileListSupport(this, null);
+	}
+
+	@Override
+	public void accept(List<File> selectedFiles) {
+		if (!selectedFiles.isEmpty()) {
+			dataModel.loadFiles(selectedFiles);
+			dataModel.reframe(getWidth(), getHeight());
+			repaint();
+		}
 	}
 
 	public void addMenus(JMenuBar menuBar) {
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
 		addMenuItem(fileMenu, "Open", KeyEvent.VK_O, event -> {
-			List<File> selectedFiles = fileSelector.getSelectedFiles(this);
-			if (!selectedFiles.isEmpty()) {
-				dataModel.loadFiles(selectedFiles);
-				dataModel.reframe(getWidth(), getHeight());
-				repaint();
-			}
+			accept(fileSelector.getSelectedFiles(this));
 		});
 		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_D, event -> {
 			File directory = fileSelector.getSelectedDirectory(this);
@@ -271,4 +279,5 @@ public class ImageViewerCanvas extends JPanel {
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		dataModel.repaint(graphics);
 	}
+
 }

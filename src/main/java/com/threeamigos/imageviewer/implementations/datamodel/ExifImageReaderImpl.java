@@ -7,7 +7,6 @@ import javax.imageio.ImageIO;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
-import com.threeamigos.imageviewer.data.ExifOrientation;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
@@ -18,9 +17,6 @@ public class ExifImageReaderImpl implements ExifImageReader {
 	private final WindowPreferences windowPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 	private final MessageHandler messageConsumer;
-
-	private PictureData pictureData;
-	private int pictureOrientation = ExifOrientation.AS_IS;
 
 	public ExifImageReaderImpl(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory,
 			MessageHandler messageConsumer) {
@@ -33,7 +29,6 @@ public class ExifImageReaderImpl implements ExifImageReader {
 		try {
 			MetadataConsumer metadataConsumer = new MetadataConsumer(file);
 			if (metadataConsumer.consume()) {
-				pictureOrientation = metadataConsumer.getPictureOrientation();
 				return metadataConsumer.getExifMap();
 			}
 		} catch (Exception e) {
@@ -46,14 +41,16 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
 		ExifMap exifMap = readMetadata(file);
 
+		int pictureOrientation = exifMap.getPictureOrientation();
+
 		if (exifMap != null) {
 
 			try {
 
 				BufferedImage bufferedImage = ImageIO.read(file);
 
-				pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(), pictureOrientation,
-						exifMap, bufferedImage, file, cannyEdgeDetectorFactory);
+				PictureData pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(),
+						pictureOrientation, exifMap, bufferedImage, file, cannyEdgeDetectorFactory);
 
 				if (windowPreferences.isAutorotation()) {
 					pictureData.correctOrientation();

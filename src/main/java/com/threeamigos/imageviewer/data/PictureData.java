@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
 
+import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 
@@ -75,7 +76,7 @@ public class PictureData {
 
 	public void correctOrientation() {
 		if (!orientationAdjusted) {
-			image = ExifOrientation.correctOrientation(image, orientation);
+			image = ExifOrientationHelper.correctOrientation(image, orientation);
 			swapDimensionsIfNeeded();
 			orientationAdjusted = true;
 		}
@@ -83,7 +84,7 @@ public class PictureData {
 
 	public void undoOrientationCorrection() {
 		if (orientationAdjusted) {
-			image = ExifOrientation.undoOrientationCorrection(image, orientation);
+			image = ExifOrientationHelper.undoOrientationCorrection(image, orientation);
 			swapDimensionsIfNeeded();
 			orientationAdjusted = false;
 		}
