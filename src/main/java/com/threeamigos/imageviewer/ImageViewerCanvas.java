@@ -153,7 +153,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 	public void addMenus(JMenuBar menuBar) {
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open", KeyEvent.VK_O, event -> {
+		addMenuItem(fileMenu, "Open File...", KeyEvent.VK_O, event -> {
 			accept(fileSelector.getSelectedFiles(this));
 		});
 		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_D, event -> {
