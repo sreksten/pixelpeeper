@@ -28,6 +28,7 @@ import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
@@ -49,6 +50,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 
 	private final transient WindowPreferences windowPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
+	private final transient CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final transient DataModel dataModel;
 	private final transient PreferencesPersisterHelper preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
@@ -61,12 +63,13 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 
 	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
-			FileSelector fileSelector,
+			FileSelector fileSelector, CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
 			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
 			AboutWindow aboutWindow) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
+		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.dataModel = dataModel;
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
@@ -170,10 +173,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, windowPreferences.isShowEdgeImages(), event -> {
-			windowPreferences.setShowEdgeImages(!windowPreferences.isShowEdgeImages());
-			repaint();
-		});
+		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, cannyEdgeDetectorPreferences.isShowEdgeImages(),
+				event -> {
+					cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
+					repaint();
+				});
 		addMenuItem(fileMenu, "Canny Edge Detector parameters", KeyEvent.VK_C, event -> {
 			cannyEdgeDetectorPreferencesSelector.selectParameters(this);
 		});

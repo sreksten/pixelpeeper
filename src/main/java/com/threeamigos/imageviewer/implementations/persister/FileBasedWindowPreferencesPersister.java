@@ -22,13 +22,11 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 	private static final String Y = "y";
 	private static final String AUTOROTATION = "autorotation";
 	private static final String MOVEMENT_APPLIED_TO_ALL_IMAGES = "movement_applied_to_all_images";
-	private static final String SHOW_EDGE_IMAGES = "show_edge_images";
-	private static final String EDGE_IMAGES_TRANSPARENCY = "edge_images_transparency";
 
 	public FileBasedWindowPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
 		super(rootPathProvider);
 	}
-	
+
 	@Override
 	public String getNamePart() {
 		return WINDOW_PREFERENCES_FILENAME;
@@ -48,8 +46,6 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 		int y = -1;
 		boolean autorotation = WindowPreferences.AUTOROTATION_DEFAULT;
 		boolean movementAppliesToAllImages = WindowPreferences.MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
-		boolean showEdgeImages = WindowPreferences.SHOWING_EDGE_IMAGES_DEFAULT;
-		int edgeImagesTransparency = WindowPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT;
 
 		String line;
 		while ((line = reader.readLine()) != null) {
@@ -69,10 +65,6 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 					autorotation = Boolean.valueOf(value);
 				} else if (MOVEMENT_APPLIED_TO_ALL_IMAGES.equals(key)) {
 					movementAppliesToAllImages = Boolean.valueOf(value);
-				} else if (SHOW_EDGE_IMAGES.equals(key)) {
-					showEdgeImages = Boolean.valueOf(value);
-				} else if (EDGE_IMAGES_TRANSPARENCY.equals(key)) {
-					edgeImagesTransparency = Integer.parseInt(value);
 				}
 			}
 		}
@@ -85,8 +77,6 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 		windowPreferences.setY(y);
 		windowPreferences.setAutorotation(autorotation);
 		windowPreferences.setMovementAppliedToAllImages(movementAppliesToAllImages);
-		windowPreferences.setShowEdgeImages(showEdgeImages);
-		windowPreferences.setEdgeImagesTransparency(edgeImagesTransparency);
 	}
 
 	private void checkBoundaries(int width, int height, int x, int y) throws IllegalArgumentException {
@@ -123,8 +113,6 @@ public class FileBasedWindowPreferencesPersister extends FileBasedAbstractPrefer
 		writer.println(Y + "=" + windowPreferences.getY());
 		writer.println(AUTOROTATION + "=" + windowPreferences.isAutorotation());
 		writer.println(MOVEMENT_APPLIED_TO_ALL_IMAGES + "=" + windowPreferences.isMovementAppliedToAllImages());
-		writer.println(SHOW_EDGE_IMAGES + "=" + windowPreferences.isShowEdgeImages());
-		writer.println(EDGE_IMAGES_TRANSPARENCY + "=" + windowPreferences.getEdgeImagesTransparency());
 	}
 
 }

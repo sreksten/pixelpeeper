@@ -21,6 +21,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
@@ -33,12 +34,14 @@ public class DataModelImpl implements DataModel {
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
+	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final ExifImageReader imageReader;
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
 			ImageSlicesManager slicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
 			CannyEdgeDetectorFactory cannyEdgeDetectorFactory, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
@@ -46,6 +49,7 @@ public class DataModelImpl implements DataModel {
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
+		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.imageReader = imageReader;
 
 		List<String> lastFilenames = pathPreferences.getLastFilenames();
@@ -244,12 +248,12 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isShowEdgeImages() {
-		return windowPreferences.isShowEdgeImages();
+		return cannyEdgeDetectorPreferences.isShowEdgeImages();
 	}
 
 	@Override
 	public void toggleShowingEdgeImages() {
-		windowPreferences.setShowEdgeImages(!windowPreferences.isShowEdgeImages());
+		cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
 	}
 
 }

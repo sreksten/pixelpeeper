@@ -9,8 +9,8 @@ import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice {
@@ -18,7 +18,7 @@ public class ImageSliceImpl implements ImageSlice {
 	private final PictureData pictureData;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
-	private final WindowPreferences windowPreferences;
+	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final FontService fontService;
 
 	private Rectangle location;
@@ -28,11 +28,11 @@ public class ImageSliceImpl implements ImageSlice {
 	private boolean selected;
 
 	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			WindowPreferences windowPreferences, FontService fontService) {
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, FontService fontService) {
 		this.pictureData = pictureData;
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
-		this.windowPreferences = windowPreferences;
+		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.fontService = fontService;
 	}
 
@@ -141,7 +141,7 @@ public class ImageSliceImpl implements ImageSlice {
 
 		BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
 				imageSliceHeight);
-		BufferedImage edgeImage = windowPreferences.isShowEdgeImages()
+		BufferedImage edgeImage = cannyEdgeDetectorPreferences.isShowEdgeImages()
 				? pictureData.getEdgeImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
 						imageSliceHeight)
 				: null;
@@ -151,8 +151,8 @@ public class ImageSliceImpl implements ImageSlice {
 			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
 			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-					windowPreferences.isShowEdgeImages() ? edgeImage : null, locationX, locationY,
-					windowPreferences.getEdgeImagesTransparency());
+					cannyEdgeDetectorPreferences.isShowEdgeImages() ? edgeImage : null, locationX, locationY,
+					cannyEdgeDetectorPreferences.getEdgeImagesTransparency());
 
 			if (selected) {
 				g2d.setColor(Color.RED);

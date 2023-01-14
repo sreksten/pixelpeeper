@@ -107,25 +107,25 @@ public class Main {
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
-				windowPreferences, cannyEdgeDetectorFactory, new FontServiceImpl());
+				cannyEdgeDetectorPreferences, new FontServiceImpl());
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, cannyEdgeDetectorFactory, imageReader);
+				pathPreferences, cannyEdgeDetectorPreferences, cannyEdgeDetectorFactory, imageReader);
 
 		// User Interface
 
 		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				windowPreferences, cannyEdgeDetectorPreferences, imageReader, messageConsumer);
+				cannyEdgeDetectorPreferences, imageReader, messageConsumer);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
-				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorParametersSelectorFactory,
-				new AboutWindowImpl());
+				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorPreferences,
+				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl());
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 

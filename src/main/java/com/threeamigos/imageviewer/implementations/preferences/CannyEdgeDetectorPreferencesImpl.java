@@ -5,7 +5,11 @@ import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 
-public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgeDetectorPreferences> implements CannyEdgeDetectorPreferences {
+public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgeDetectorPreferences>
+		implements CannyEdgeDetectorPreferences {
+
+	private boolean showEdgeImages;
+	private int edgeImagesTransparency = 0;
 
 	private float lowThreshold = 2.5f;
 	private float highThreshold = 7.5f;
@@ -18,10 +22,31 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 		return "canny edge detector";
 	}
 
-	public CannyEdgeDetectorPreferencesImpl(Persister<CannyEdgeDetectorPreferences> persister, MessageHandler messageConsumer) {
+	public CannyEdgeDetectorPreferencesImpl(Persister<CannyEdgeDetectorPreferences> persister,
+			MessageHandler messageConsumer) {
 		super(persister, messageConsumer);
 
 		loadPostConstruct();
+	}
+
+	@Override
+	public void setShowEdgeImages(boolean showEdgeImages) {
+		this.showEdgeImages = showEdgeImages;
+	}
+
+	@Override
+	public boolean isShowEdgeImages() {
+		return showEdgeImages;
+	}
+
+	@Override
+	public void setEdgeImagesTransparency(int edgeImagesTransparency) {
+		this.edgeImagesTransparency = edgeImagesTransparency;
+	}
+
+	@Override
+	public int getEdgeImagesTransparency() {
+		return edgeImagesTransparency;
 	}
 
 	@Override
@@ -61,7 +86,7 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 
 	@Override
 	public void setGaussianKernelWidth(int gaussianKernelWidth) {
-		this.gaussianKernelWidth = gaussianKernelWidth;		
+		this.gaussianKernelWidth = gaussianKernelWidth;
 	}
 
 	@Override
@@ -82,5 +107,5 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 		gaussianKernelWidth = 16;
 		contrastNormalized = false;
 	}
-	
+
 }

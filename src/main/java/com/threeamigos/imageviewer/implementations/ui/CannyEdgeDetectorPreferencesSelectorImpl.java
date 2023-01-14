@@ -41,7 +41,6 @@ import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
 
 public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetectorPreferencesSelector {
@@ -66,9 +65,8 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 	private final ExifImageReader exifImageReader;
 	private final MessageHandler messageConsumer;
 
-	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader exifImageReader,
-			Component parentComponent, MessageHandler messageConsumer) {
+	public CannyEdgeDetectorPreferencesSelectorImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
+			ExifImageReader exifImageReader, Component parentComponent, MessageHandler messageConsumer) {
 		this.exifImageReader = exifImageReader;
 		this.messageConsumer = messageConsumer;
 
@@ -88,8 +86,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		testImageCanvas = new SourceImageCanvas();
 		testImageCanvas.setSize(width, height);
 
-		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(windowPreferences, cannyEdgeDetectorPreferences,
-				testImageCanvas);
+		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(cannyEdgeDetectorPreferences, testImageCanvas);
 		dataModel.setTestImage(testImage);
 		dataModel.recalculateEdgeImage();
 	}
@@ -371,7 +368,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		public void paint(Graphics g) {
 			super.paint(g);
 			ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, dataModel.getSourceImage(),
-					dataModel.getEdgeImage(), 0, 0, dataModel.getTransparency());
+					dataModel.getEdgeImage(), 0, 0, dataModel.getEdgeImagesTransparency());
 		}
 
 		private BufferedImage loadCropAndResizeImage(File file) {
