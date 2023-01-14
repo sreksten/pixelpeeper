@@ -1,8 +1,6 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
-import java.awt.AlphaComposite;
 import java.awt.Component;
-import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -40,6 +38,7 @@ import javax.swing.WindowConstants;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
@@ -371,20 +370,8 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		@Override
 		public void paint(Graphics g) {
 			super.paint(g);
-			if (dataModel.getSourceImage() != null) {
-				Graphics2D g2d = (Graphics2D) g;
-				g2d.drawImage(dataModel.getSourceImage(), 0, 0, null);
-
-				Composite originalAc = g2d.getComposite();
-
-				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
-						dataModel.getTransparency() / 100.0f);
-				g2d.setComposite(ac);
-
-				g2d.drawImage(dataModel.getEdgeImage(), 0, 0, null);
-
-				g2d.setComposite(originalAc);
-			}
+			ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, dataModel.getSourceImage(),
+					dataModel.getEdgeImage(), 0, 0, dataModel.getTransparency());
 		}
 
 		private BufferedImage loadCropAndResizeImage(File file) {

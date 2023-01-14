@@ -1,13 +1,12 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
@@ -151,20 +150,9 @@ public class ImageSliceImpl implements ImageSlice {
 
 			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
-			g2d.drawImage(subImage, locationX, locationY, null);
-
-			if (windowPreferences.isShowEdgeImages()) {
-
-				Composite originalAc = g2d.getComposite();
-
-				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
-						windowPreferences.getEdgeImagesTransparency() / 100.0f);
-				g2d.setComposite(ac);
-
-				g2d.drawImage(edgeImage, locationX, locationY, null);
-
-				g2d.setComposite(originalAc);
-			}
+			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
+					windowPreferences.isShowEdgeImages() ? edgeImage : null, locationX, locationY,
+					windowPreferences.getEdgeImagesTransparency());
 
 			if (selected) {
 				g2d.setColor(Color.RED);
