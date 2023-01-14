@@ -164,36 +164,40 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 				repaint();
 			}
 		});
-		addCheckboxMenuItem(fileMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
-			dataModel.toggleAutorotation();
-			repaint();
-		});
-		addCheckboxMenuItem(fileMenu, "Move all images", KeyEvent.VK_M, dataModel.isMovementAppliedToAllImages(),
-				event -> {
-					dataModel.toggleMovementAppliedToAllImages();
-					repaint();
-				});
-		addCheckboxMenuItem(fileMenu, "Show edges", KeyEvent.VK_M, cannyEdgeDetectorPreferences.isShowEdgeImages(),
-				event -> {
-					cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
-					repaint();
-				});
-		addMenuItem(fileMenu, "Canny Edge Detector parameters", KeyEvent.VK_C, event -> {
-			cannyEdgeDetectorPreferencesSelector.selectParameters(this);
-		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
 			showHelp = !showHelp;
 			repaint();
 		});
 
-		fileMenu.addSeparator();
 		addMenuItem(fileMenu, "About", KeyEvent.VK_S, event -> aboutWindow.about(this));
 
-		fileMenu.addSeparator();
 		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> {
 			preferencesPersisterHelper.persist();
 			System.exit(0);
 		});
+
+		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
+		menuBar.add(edgesDetectorMenu);
+		addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
+				cannyEdgeDetectorPreferences.isShowEdgeImages(), event -> {
+					cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
+					repaint();
+				});
+		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyEvent.VK_C, event -> {
+			cannyEdgeDetectorPreferencesSelector.selectParameters(this);
+		});
+
+		JMenu imageHandlingMenu = new JMenu("Image handling");
+		menuBar.add(imageHandlingMenu);
+		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
+			dataModel.toggleAutorotation();
+			repaint();
+		});
+		addCheckboxMenuItem(imageHandlingMenu, "Move all images", KeyEvent.VK_M,
+				dataModel.isMovementAppliedToAllImages(), event -> {
+					dataModel.toggleMovementAppliedToAllImages();
+					repaint();
+				});
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
