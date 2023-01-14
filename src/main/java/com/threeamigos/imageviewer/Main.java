@@ -70,28 +70,28 @@ public class Main {
 
 		// A way to show error/warning messages to the user
 
-		MessageHandler messageConsumer = new CompositeMessageHandler(new SwingMessageHandler(),
+		MessageHandler messageHandler = new CompositeMessageHandler(new SwingMessageHandler(),
 				new ConsoleMessageHandler());
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
 		PreferencesRootPathProvider preferencesRootPathProvider = new PreferencesRootPathProviderImpl(this,
-				messageConsumer);
+				messageHandler);
 		if (preferencesRootPathProvider.shouldAbort()) {
 			System.exit(0);
 		}
 
 		WindowPreferences windowPreferences = new WindowPreferencesImpl(
-				new FileBasedWindowPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+				new FileBasedWindowPreferencesPersister(preferencesRootPathProvider), messageHandler);
 
 		PathPreferences pathPreferences = new PathPreferencesImpl(
-				new FileBasedPathPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+				new FileBasedPathPreferencesPersister(preferencesRootPathProvider), messageHandler);
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl(
-				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageHandler);
 
 		CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences = new CannyEdgeDetectorPreferencesImpl(
-				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider), messageConsumer);
+				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider), messageHandler);
 
 		PreferencesPersisterHelper preferencesPersisterHelper = new PreferencesPersisterHelperImpl(windowPreferences,
 				pathPreferences, exifTagPreferences, cannyEdgeDetectorPreferences);
@@ -102,7 +102,7 @@ public class Main {
 				cannyEdgeDetectorPreferences);
 
 		ExifImageReader imageReader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory,
-				messageConsumer);
+				messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
@@ -112,12 +112,12 @@ public class Main {
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, cannyEdgeDetectorPreferences, cannyEdgeDetectorFactory, imageReader);
+				pathPreferences, cannyEdgeDetectorPreferences, imageReader);
 
 		// User Interface
 
 		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				cannyEdgeDetectorPreferences, imageReader, messageConsumer);
+				cannyEdgeDetectorPreferences, imageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 

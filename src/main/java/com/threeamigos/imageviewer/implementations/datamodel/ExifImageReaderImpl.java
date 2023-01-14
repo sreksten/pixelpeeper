@@ -5,7 +5,7 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
@@ -16,13 +16,13 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
 	private final WindowPreferences windowPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
-	private final MessageHandler messageConsumer;
+	private final ExceptionHandler exceptionHandler;
 
 	public ExifImageReaderImpl(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory,
-			MessageHandler messageConsumer) {
+			ExceptionHandler exceptionHandler) {
 		this.windowPreferences = windowPreferences;
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
-		this.messageConsumer = messageConsumer;
+		this.exceptionHandler = exceptionHandler;
 	}
 
 	public ExifMap readMetadata(File file) {
@@ -32,7 +32,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
 				return metadataConsumer.getExifMap();
 			}
 		} catch (Exception e) {
-			messageConsumer.handleErrorMessage(e.getMessage());
+			exceptionHandler.handleException(e);
 		}
 		return null;
 	}
@@ -59,7 +59,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
 				return pictureData;
 
 			} catch (Exception e) {
-				messageConsumer.handleErrorMessage(e.getMessage());
+				exceptionHandler.handleException(e);
 			}
 		}
 

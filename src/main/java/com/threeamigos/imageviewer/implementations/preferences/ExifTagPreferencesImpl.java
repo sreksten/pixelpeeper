@@ -3,7 +3,7 @@ package com.threeamigos.imageviewer.implementations.preferences;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
@@ -22,8 +22,8 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 		return "tag";
 	}
 
-	public ExifTagPreferencesImpl(Persister<ExifTagPreferences> persister, MessageHandler messageConsumer) {
-		super(persister, messageConsumer);
+	public ExifTagPreferencesImpl(Persister<ExifTagPreferences> persister, ErrorMessageHandler errorMessageHandler) {
+		super(persister, errorMessageHandler);
 
 		tagsMap = new EnumMap<>(ExifTag.class);
 

@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
@@ -33,7 +32,6 @@ public class DataModelImpl implements DataModel {
 	private final ImageSlicesManager slicesManager;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
-	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final ExifImageReader imageReader;
 
@@ -41,14 +39,12 @@ public class DataModelImpl implements DataModel {
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
 			ImageSlicesManager slicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
-			CannyEdgeDetectorFactory cannyEdgeDetectorFactory, ExifImageReader imageReader) {
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.slicesManager = slicesManager;
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
-		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.imageReader = imageReader;
 

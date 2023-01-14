@@ -35,7 +35,7 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
@@ -63,12 +63,12 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
 	private final ExifImageReader exifImageReader;
-	private final MessageHandler messageConsumer;
+	private final ExceptionHandler exceptionHandler;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
-			ExifImageReader exifImageReader, Component parentComponent, MessageHandler messageConsumer) {
+			ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
 		this.exifImageReader = exifImageReader;
-		this.messageConsumer = messageConsumer;
+		this.exceptionHandler = exceptionHandler;
 
 		BufferedImage testImage = null;
 		int width = SOURCE_IMAGE_CANVAS_SIZE_DEFAULT;
@@ -80,7 +80,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			width = testImage.getWidth();
 			height = testImage.getHeight();
 		} catch (IOException e) {
-			messageConsumer.handleErrorMessage(e.getMessage());
+			exceptionHandler.handleException(e);
 		}
 
 		testImageCanvas = new SourceImageCanvas();
@@ -345,7 +345,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		private static final long serialVersionUID = 1L;
 
 		SourceImageCanvas() {
-			DragAndDropSupportHelper.addJavaFileListSupport(this, messageConsumer);
+			DragAndDropSupportHelper.addJavaFileListSupport(this, exceptionHandler);
 		}
 
 		@Override
@@ -391,7 +391,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 				}
 				return image;
 			} catch (Exception e) {
-				messageConsumer.handleErrorMessage(e.getMessage());
+				exceptionHandler.handleException(e);
 				return null;
 			}
 		}

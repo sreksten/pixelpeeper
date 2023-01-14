@@ -3,7 +3,7 @@ package com.threeamigos.imageviewer.implementations.preferences;
 import java.util.Collections;
 import java.util.List;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
@@ -18,8 +18,8 @@ public class PathPreferencesImpl extends AbstractPreferencesImpl<PathPreferences
 		return "path";
 	}
 
-	public PathPreferencesImpl(Persister<PathPreferences> persister, MessageHandler messageConsumer) {
-		super(persister, messageConsumer);
+	public PathPreferencesImpl(Persister<PathPreferences> persister, ErrorMessageHandler errorMmessageHandler) {
+		super(persister, errorMmessageHandler);
 
 		loadPostConstruct();
 	}

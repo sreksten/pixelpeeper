@@ -1,18 +1,18 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 
 public abstract class AbstractPreferencesImpl<T> implements Persistable {
 
-	protected final MessageHandler messageConsumer;
+	protected final ErrorMessageHandler errorMessageHandler;
 	protected final Persister<T> persister;
 
-	protected AbstractPreferencesImpl(final Persister<T> persister, final MessageHandler messageConsumer) {
+	protected AbstractPreferencesImpl(final Persister<T> persister, final ErrorMessageHandler errorMessageHandler) {
 		this.persister = persister;
-		this.messageConsumer = messageConsumer;
+		this.errorMessageHandler = errorMessageHandler;
 	}
 
 	protected void loadPostConstruct() {
@@ -21,7 +21,8 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 			PersistResult persistResult = persister.load((T) this);
 			if (!persistResult.isSuccessful()) {
 				if (!persistResult.isNotFound()) {
-					messageConsumer.handleErrorMessage("Error while loading " + getEntityDescription() + " preferences: " + persistResult.getError());
+					errorMessageHandler.handleErrorMessage("Error while loading " + getEntityDescription()
+							+ " preferences: " + persistResult.getError());
 				}
 				loadDefaultValues();
 			}
@@ -40,7 +41,8 @@ public abstract class AbstractPreferencesImpl<T> implements Persistable {
 			@SuppressWarnings("unchecked")
 			PersistResult persistResult = persister.save((T) this);
 			if (!persistResult.isSuccessful()) {
-				messageConsumer.handleErrorMessage("Error while saving " + getEntityDescription() + " preferences: " + persistResult.getError());
+				errorMessageHandler.handleErrorMessage(
+						"Error while saving " + getEntityDescription() + " preferences: " + persistResult.getError());
 			}
 		}
 	}

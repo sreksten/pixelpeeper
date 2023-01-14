@@ -2,7 +2,7 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Component;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
@@ -12,19 +12,19 @@ public class CannyEdgeDetectorPreferencesSelectorFactoryImpl implements CannyEdg
 
 	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final ExifImageReader exifImageReader;
-	private final MessageHandler messageConsumer;
+	private final ExceptionHandler exceptionHandler;
 
 	public CannyEdgeDetectorPreferencesSelectorFactoryImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
-			ExifImageReader exifImageReader, MessageHandler messageConsumer) {
+			ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.exifImageReader = exifImageReader;
-		this.messageConsumer = messageConsumer;
+		this.exceptionHandler = exceptionHandler;
 	}
 
 	@Override
 	public CannyEdgeDetectorPreferencesSelector createSelector(Component component) {
 		return new CannyEdgeDetectorPreferencesSelectorImpl(cannyEdgeDetectorPreferences, exifImageReader, component,
-				messageConsumer);
+				exceptionHandler);
 	}
 
 }
