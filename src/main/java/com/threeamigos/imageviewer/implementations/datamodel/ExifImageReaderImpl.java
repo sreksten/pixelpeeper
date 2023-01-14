@@ -5,23 +5,28 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifOrientation;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
-public class ExifImageReaderImpl {
+public class ExifImageReaderImpl implements ExifImageReader {
 
 	private final WindowPreferences windowPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
+	private final MessageConsumer messageConsumer;
 
 	private PictureData pictureData;
 	private int pictureOrientation = ExifOrientation.AS_IS;
 
-	public ExifImageReaderImpl(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
+	public ExifImageReaderImpl(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory,
+			MessageConsumer messageConsumer) {
 		this.windowPreferences = windowPreferences;
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
+		this.messageConsumer = messageConsumer;
 	}
 
 	public ExifMap readMetadata(File file) {
@@ -31,15 +36,13 @@ public class ExifImageReaderImpl {
 				pictureOrientation = metadataConsumer.getPictureOrientation();
 				return metadataConsumer.getExifMap();
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
+			messageConsumer.error(e.getMessage());
 		}
-
 		return null;
 	}
 
-	public boolean readImage(File file) {
+	public PictureData readImage(File file) {
 
 		ExifMap exifMap = readMetadata(file);
 
@@ -56,18 +59,14 @@ public class ExifImageReaderImpl {
 					pictureData.correctOrientation();
 				}
 
-				return true;
+				return pictureData;
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				messageConsumer.error(e.getMessage());
 			}
 		}
 
-		return false;
-	}
-
-	public PictureData getPictureData() {
-		return pictureData;
+		return null;
 	}
 
 }

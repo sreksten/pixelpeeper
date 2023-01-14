@@ -18,6 +18,7 @@ import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
@@ -32,18 +33,20 @@ public class DataModelImpl implements DataModel {
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
+	private final ExifImageReader imageReader;
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager slicesManager, WindowPreferences windowPreferences,
-			PathPreferences pathPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
+			ImageSlicesManager slicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
+			CannyEdgeDetectorFactory cannyEdgeDetectorFactory, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.slicesManager = slicesManager;
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
+		this.imageReader = imageReader;
 
 		List<String> lastFilenames = pathPreferences.getLastFilenames();
 		if (!lastFilenames.isEmpty()) {
@@ -60,10 +63,9 @@ public class DataModelImpl implements DataModel {
 	public void loadFiles(List<File> files) {
 		if (!files.isEmpty()) {
 			slicesManager.clear();
-			files.parallelStream().forEach(file -> { 
-				ExifImageReaderImpl reader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory);
-				if (reader.readImage(file)) {
-					PictureData pictureData = reader.getPictureData();
+			files.parallelStream().forEach(file -> {
+				PictureData pictureData = imageReader.readImage(file);
+				if (pictureData != null) {
 					slicesManager.createImageSlice(pictureData);
 				}
 			});
@@ -82,8 +84,7 @@ public class DataModelImpl implements DataModel {
 
 			for (File file : directory.listFiles()) {
 				if (file.isFile()) {
-					ExifImageReaderImpl reader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory);
-					ExifMap exifMap = reader.readMetadata(file);
+					ExifMap exifMap = imageReader.readMetadata(file);
 
 					if (exifMap != null) {
 						fileToTags.put(file, exifMap);

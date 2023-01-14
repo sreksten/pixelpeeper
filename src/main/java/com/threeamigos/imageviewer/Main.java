@@ -12,6 +12,8 @@ import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.common.util.implementations.CompositeMessageConsumer;
+import com.threeamigos.common.util.implementations.ConsoleMessageConsumer;
 import com.threeamigos.common.util.implementations.SwingMessageConsumer;
 import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
@@ -19,6 +21,7 @@ import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesR
 import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgeDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedCannyEdgeDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedExifTagPreferencesPersister;
@@ -38,6 +41,7 @@ import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
@@ -66,7 +70,8 @@ public class Main {
 
 		// A way to show error/warning messages to the user
 
-		MessageConsumer messageConsumer = new SwingMessageConsumer();
+		MessageConsumer messageConsumer = new CompositeMessageConsumer(new SwingMessageConsumer(),
+				new ConsoleMessageConsumer());
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
@@ -96,6 +101,9 @@ public class Main {
 		CannyEdgeDetectorFactory cannyEdgeDetectorFactory = new CannyEdgeDetectorFactoryImpl(
 				cannyEdgeDetectorPreferences);
 
+		ExifImageReader imageReader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory,
+				messageConsumer);
+
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
@@ -104,12 +112,12 @@ public class Main {
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, cannyEdgeDetectorFactory);
+				pathPreferences, cannyEdgeDetectorFactory, imageReader);
 
 		// User Interface
 
 		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				windowPreferences, cannyEdgeDetectorPreferences, messageConsumer);
+				windowPreferences, cannyEdgeDetectorPreferences, imageReader, messageConsumer);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 

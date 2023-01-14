@@ -41,6 +41,8 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.MessageConsumer;
+import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
@@ -64,11 +66,13 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 	SourceImageCanvas testImageCanvas;
 
 	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
+	private final ExifImageReader exifImageReader;
 	private final MessageConsumer messageConsumer;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, Component parentComponent,
-			MessageConsumer messageConsumer) {
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader exifImageReader,
+			Component parentComponent, MessageConsumer messageConsumer) {
+		this.exifImageReader = exifImageReader;
 		this.messageConsumer = messageConsumer;
 
 		BufferedImage testImage = null;
@@ -399,7 +403,8 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		private BufferedImage loadCropAndResizeImage(File file) {
 			try {
-				BufferedImage image = ImageIO.read(file);
+				PictureData pictureData = exifImageReader.readImage(file);
+				BufferedImage image = pictureData.getImage();
 				int width = image.getWidth();
 				int height = image.getHeight();
 				if (width > 256 || height > 256) {
