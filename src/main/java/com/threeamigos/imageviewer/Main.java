@@ -109,7 +109,7 @@ public class Main {
 		// User Interface
 
 		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				windowPreferences, cannyEdgeDetectorPreferences);
+				windowPreferences, cannyEdgeDetectorPreferences, messageConsumer);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 

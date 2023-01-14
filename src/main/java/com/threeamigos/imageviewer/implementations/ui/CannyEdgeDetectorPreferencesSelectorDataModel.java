@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Component;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -8,19 +9,26 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgeDetectorImpl;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
-public class CannyEdgeDetectorPreferencesSelectorDataModel implements ChangeListener {
+public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeDetectorPreferences, ChangeListener {
 
 	private static final float NORMALIZATION_VALUE = 10.0f;
 
+	static final int MIN_THRESHOLD = 1;
+	static final int MAX_THRESHOLD = 100;
 	static final int MIN_TRANSPARENCY = 0;
 	static final int MAX_TRANSPARENCY = 100;
 
 	private final WindowPreferences windowPreferences;
 	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final Component component;
+
+	private BufferedImage sourceImage;
+	private BufferedImage edgeImage;
 
 	private int lowThreshold;
 	private int highThreshold;
@@ -61,8 +69,8 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements ChangeList
 		gaussianKernelWidthText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getGaussianKernelWidth()));
 		transparencyText = new JLabel(String.valueOf(windowPreferences.getEdgeImagesTransparency()));
 
-		lowThresholdSlider = createSlider(0, 100, lowThreshold);
-		highThresholdSlider = createSlider(0, 100, highThreshold);
+		lowThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, lowThreshold);
+		highThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, highThreshold);
 		gaussianKernelRadiusSlider = createSlider(1, 100, gaussianKernelRadius);
 		gaussianKernelWidthSlider = createSlider(2, 32, gaussianKernelWidth);
 		contrastNormalizedCheckbox = createCheckbox(contrastNormalized);
@@ -89,6 +97,10 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements ChangeList
 		gaussianKernelRadiusSlider.setValue(gaussianKernelRadius);
 		gaussianKernelWidthSlider.setValue(gaussianKernelWidth);
 		contrastNormalizedCheckbox.setSelected(contrastNormalized);
+		transparencySlider.setValue(transparency);
+
+		windowPreferences.setEdgeImagesTransparency(transparency);
+		component.repaint();
 	}
 
 	void resetToDefault() {
@@ -97,6 +109,10 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements ChangeList
 		gaussianKernelRadiusSlider.setValue(normalize(CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT));
 		gaussianKernelWidthSlider.setValue(CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT);
 		contrastNormalizedCheckbox.setSelected(CannyEdgeDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT);
+		transparencySlider.setValue(normalizeTransparency(WindowPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT));
+
+		windowPreferences.setEdgeImagesTransparency(WindowPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT);
+		component.repaint();
 	}
 
 	private JSlider createSlider(int minValue, int maxValue, int currentValue) {
@@ -149,8 +165,94 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements ChangeList
 		} else if (object == transparencySlider) {
 			transparencyText.setText(String.valueOf(denormalizeTransparency(transparencySlider.getValue())));
 			windowPreferences.setEdgeImagesTransparency(denormalizeTransparency(transparencySlider.getValue()));
-			component.repaint();
+//			component.repaint();
 		}
+
+		recalculateEdgeImage();
+		component.repaint();
+	}
+
+	@Override
+	public void persist() {
+	}
+
+	@Override
+	public float getLowThreshold() {
+		return denormalize(lowThresholdSlider.getValue());
+	}
+
+	@Override
+	public void setLowThreshold(float lowThreshold) {
+		lowThresholdSlider.setValue(normalize(lowThreshold));
+	}
+
+	@Override
+	public float getHighThreshold() {
+		return denormalize(highThreshold);
+	}
+
+	@Override
+	public void setHighThreshold(float highThreshold) {
+		highThresholdSlider.setValue(normalize(highThreshold));
+	}
+
+	@Override
+	public float getGaussianKernelRadius() {
+		return denormalize(gaussianKernelRadiusSlider.getValue());
+	}
+
+	@Override
+	public void setGaussianKernelRadius(float gaussianKernelRadius) {
+		gaussianKernelRadiusSlider.setValue(normalize(gaussianKernelRadius));
+	}
+
+	@Override
+	public int getGaussianKernelWidth() {
+		return gaussianKernelWidthSlider.getValue();
+	}
+
+	@Override
+	public void setGaussianKernelWidth(int gaussianKernelWidth) {
+		gaussianKernelWidthSlider.setValue(gaussianKernelWidth);
+	}
+
+	@Override
+	public boolean isContrastNormalized() {
+		return contrastNormalizedCheckbox.isSelected();
+	}
+
+	@Override
+	public void setContrastNormalized(boolean contrastNormalized) {
+		contrastNormalizedCheckbox.setSelected(contrastNormalized);
+	}
+
+	public int getTransparency() {
+		return denormalizeTransparency(transparencySlider.getValue());
+	}
+
+	public void setTransparency(int transparency) {
+		transparencySlider.setValue(normalizeTransparency(transparency));
+	}
+
+	void recalculateEdgeImage() {
+		if (sourceImage != null) {
+			CannyEdgeDetector cannyEdgeDetector = new CannyEdgeDetectorImpl(this);
+			cannyEdgeDetector.setSourceImage(sourceImage);
+			cannyEdgeDetector.process();
+			edgeImage = cannyEdgeDetector.getEdgesImage();
+		}
+	}
+
+	void setTestImage(BufferedImage testImage) {
+		this.sourceImage = testImage;
+	}
+
+	BufferedImage getSourceImage() {
+		return sourceImage;
+	}
+
+	BufferedImage getEdgeImage() {
+		return edgeImage;
 	}
 
 }

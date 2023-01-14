@@ -28,7 +28,8 @@ public class ImageSliceImpl implements ImageSlice {
 
 	private boolean selected;
 
-	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences, WindowPreferences windowPreferences, FontService fontService) {
+	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
+			WindowPreferences windowPreferences, FontService fontService) {
 		this.pictureData = pictureData;
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
@@ -139,20 +140,25 @@ public class ImageSliceImpl implements ImageSlice {
 			imageSliceStartY = pictureHeight - imageSliceHeight;
 		}
 
-		BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth, imageSliceHeight);
-		BufferedImage edgeImage = windowPreferences.isShowEdgeImages() ? pictureData.getEdgeImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth, imageSliceHeight) : null;
-		
-		synchronized(g2d) {
+		BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
+				imageSliceHeight);
+		BufferedImage edgeImage = windowPreferences.isShowEdgeImages()
+				? pictureData.getEdgeImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
+						imageSliceHeight)
+				: null;
+
+		synchronized (g2d) {
 
 			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
-			
+
 			g2d.drawImage(subImage, locationX, locationY, null);
 
 			if (windowPreferences.isShowEdgeImages()) {
 
 				Composite originalAc = g2d.getComposite();
 
-				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, windowPreferences.getEdgeImagesTransparency() / 100.0f);
+				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
+						windowPreferences.getEdgeImagesTransparency() / 100.0f);
 				g2d.setComposite(ac);
 
 				g2d.drawImage(edgeImage, locationX, locationY, null);
@@ -165,31 +171,9 @@ public class ImageSliceImpl implements ImageSlice {
 				g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
 			}
 
-			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
-					commonTagsHelper).render();
+			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData,
+					tagPreferences, commonTagsHelper).render();
 		}
-		/*
-		BufferedImage image;
-		if (windowPreferences.isShowEdgeImages()) {
-			image = pictureData.getImage();
-		} else {
-			image = pictureData.getEdgeImage();
-		}
-		BufferedImage subImage = image.getSubimage(imageSliceStartX, imageSliceStartY,
-				imageSliceWidth, imageSliceHeight);
-
-		synchronized(g2d) {
-			g2d.drawImage(subImage, locationX, locationY, null);
-
-			if (selected) {
-				g2d.setColor(Color.RED);
-				g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
-			}
-
-			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
-					commonTagsHelper).render();
-		}
-		 */
 
 	}
 

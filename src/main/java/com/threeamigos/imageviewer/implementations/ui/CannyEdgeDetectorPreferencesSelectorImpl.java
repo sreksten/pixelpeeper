@@ -1,6 +1,8 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
+import java.awt.AlphaComposite;
 import java.awt.Component;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -11,8 +13,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Hashtable;
 
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -21,16 +28,18 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.common.util.interfaces.MessageConsumer;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
 
 public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetectorPreferencesSelector {
+
+	private static final int SPACING = 5;
 
 	private static final String OK_OPTION = "OK";
 	private static final String CANCEL_OPTION = "Cancel";
@@ -42,12 +51,34 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 	private static final String CONTRAST_NORMALIZED = "Contrast normalized";
 	private static final String TRANSPARENCY = "Transparency";
 
+	TestImageCanvas testImageCanvas;
+
 	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, Component parentComponent) {
+			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, Component parentComponent,
+			MessageConsumer messageConsumer) {
+
+		BufferedImage testImage = null;
+		int width = 256;
+		int height = 256;
+
+		try {
+			InputStream inputStream = getClass().getResourceAsStream("/testImage.jpg");
+			testImage = ImageIO.read(inputStream);
+			width = testImage.getWidth();
+			height = testImage.getHeight();
+		} catch (IOException e) {
+			messageConsumer.error(e.getMessage());
+		}
+
+		testImageCanvas = new TestImageCanvas();
+		testImageCanvas.setSize(width, height);
+
 		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(windowPreferences, cannyEdgeDetectorPreferences,
-				parentComponent);
+				testImageCanvas);
+		dataModel.setTestImage(testImage);
+		dataModel.recalculateEdgeImage();
 	}
 
 	@Override
@@ -57,7 +88,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		String[] options = { OK_OPTION, CANCEL_OPTION };
 
-		JOptionPane optionPane = new JOptionPane(createPreferencesPanel(parentComponent), JOptionPane.QUESTION_MESSAGE,
+		JOptionPane optionPane = new JOptionPane(createPreferencesPanel(parentComponent), -1,
 				JOptionPane.OK_CANCEL_OPTION, null, options, options[1]);
 
 		JDialog dialog = optionPane.createDialog(parentComponent, "Canny Edge Detector Preferences");
@@ -73,6 +104,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		// In real code, you should invoke this from AWT-EventQueue using
 		// invokeAndWait() or something
+		dialog.pack();
 		dialog.setVisible(true);
 
 		if (CANCEL_OPTION.equals(optionPane.getValue())) {
@@ -94,14 +126,27 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 	private JPanel createPreferencesPanel(Component component) {
 
+		JPanel sliderAndPreviewPanel = new JPanel();
+		sliderAndPreviewPanel.setLayout(new BoxLayout(sliderAndPreviewPanel, BoxLayout.LINE_AXIS));
+
+		sliderAndPreviewPanel.add(createSlidersPanel(component));
+
+		sliderAndPreviewPanel.add(Box.createHorizontalStrut(SPACING));
+
+		sliderAndPreviewPanel.add(createPreviewPanel());
+
+		return sliderAndPreviewPanel;
+	}
+
+	private JPanel createSlidersPanel(Component component) {
+
 		Hashtable<Integer, JLabel> thresholdSliderLabelTable = new Hashtable<>();
-		thresholdSliderLabelTable.put(Integer.valueOf(1), new JLabel("0"));
+		thresholdSliderLabelTable.put(Integer.valueOf(1), new JLabel("0.1"));
 		thresholdSliderLabelTable.put(Integer.valueOf(50), new JLabel("5"));
 		thresholdSliderLabelTable.put(Integer.valueOf(100), new JLabel("10"));
 
 		Hashtable<Integer, JLabel> gaussianKernelRadiusSliderLabelTable = new Hashtable<>();
 		gaussianKernelRadiusSliderLabelTable.put(Integer.valueOf(1), new JLabel("0.1"));
-		gaussianKernelRadiusSliderLabelTable.put(Integer.valueOf(20), new JLabel("2"));
 		gaussianKernelRadiusSliderLabelTable.put(Integer.valueOf(50), new JLabel("5"));
 		gaussianKernelRadiusSliderLabelTable.put(Integer.valueOf(100), new JLabel("10"));
 
@@ -122,115 +167,122 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		Dimension labelDimension = getMaxDimension(component.getGraphics(), LOW_THRESHOLD, HIGH_THRESHOLD,
 				GAUSSIAN_KERNEL_RADIUS, GAUSSIAN_KERNEL_WIDTH, CONTRAST_NORMALIZED, TRANSPARENCY);
 
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+		JPanel slidersPanel = new JPanel();
+		slidersPanel.setLayout(new BoxLayout(slidersPanel, BoxLayout.PAGE_AXIS));
 
-		createSliderPanel(panel, labelDimension, LOW_THRESHOLD, dataModel.lowThresholdSlider, thresholdSliderLabelTable,
-				dataModel.lowThresholdText);
+		createSliderPanel(slidersPanel, labelDimension, LOW_THRESHOLD, dataModel.lowThresholdSlider,
+				thresholdSliderLabelTable, dataModel.lowThresholdText);
 
-		panel.add(new JSeparator());
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(panel, labelDimension, HIGH_THRESHOLD, dataModel.highThresholdSlider,
+		createSliderPanel(slidersPanel, labelDimension, HIGH_THRESHOLD, dataModel.highThresholdSlider,
 				thresholdSliderLabelTable, dataModel.highThresholdText);
 
-		panel.add(new JSeparator());
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_RADIUS, dataModel.gaussianKernelRadiusSlider,
+		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_RADIUS, dataModel.gaussianKernelRadiusSlider,
 				gaussianKernelRadiusSliderLabelTable, dataModel.gaussianKernelRadiusText);
 
-		panel.add(new JSeparator());
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(panel, labelDimension, GAUSSIAN_KERNEL_WIDTH, dataModel.gaussianKernelWidthSlider,
+		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_WIDTH, dataModel.gaussianKernelWidthSlider,
 				gaussianKernelWidthSliderLabelTable, dataModel.gaussianKernelWidthText);
 
-		panel.add(new JSeparator());
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createCheckboxPanel(panel, labelDimension, CONTRAST_NORMALIZED, dataModel.contrastNormalizedCheckbox);
+		createCheckboxPanel(slidersPanel, labelDimension, CONTRAST_NORMALIZED, dataModel.contrastNormalizedCheckbox);
 
-		panel.add(new JSeparator());
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createActionsPanel(panel);
-
-		panel.add(new JSeparator());
-
-		createSliderPanel(panel, labelDimension, TRANSPARENCY, dataModel.transparencySlider,
+		createSliderPanel(slidersPanel, labelDimension, TRANSPARENCY, dataModel.transparencySlider,
 				transparencySliderLabelTable, dataModel.transparencyText);
 
-		return panel;
+		slidersPanel.add(Box.createVerticalStrut(SPACING));
+
+		createActionsPanel(slidersPanel);
+
+		return slidersPanel;
 	}
 
-	private JSlider createSliderPanel(JPanel parent, Dimension labelDimension, String sliderLabel, JSlider slider,
+	private JPanel createPreviewPanel() {
+
+		JPanel previewPanel = new JPanel();
+		previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.PAGE_AXIS));
+
+		previewPanel.add(createImagePanel());
+
+		previewPanel.add(Box.createVerticalStrut(SPACING));
+
+		JButton testButton = new JButton("Test");
+		testButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dataModel.recalculateEdgeImage();
+				testImageCanvas.repaint();
+			}
+		});
+
+		previewPanel.add(testButton);
+
+		previewPanel.add(Box.createVerticalGlue());
+
+		return previewPanel;
+	}
+
+	private JPanel createImagePanel() {
+
+		JPanel imagePanel = new JPanel();
+		imagePanel.setBorder(BorderFactory.createTitledBorder("Preview"));
+		imagePanel.add(testImageCanvas);
+
+		return imagePanel;
+	}
+
+	private void createSliderPanel(JPanel parent, Dimension labelDimension, String sliderLabel, JSlider slider,
 			Hashtable<Integer, JLabel> labelTable, JLabel valueLabel) {
 
-		JPanel panel = new JPanel();
-		panel.setMinimumSize(new Dimension(400, 40));
-		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
-
-		JPanel labelPanel = new JPanel();
-		JLabel label = new JLabel(sliderLabel);
-		label.setMinimumSize(labelDimension);
-		label.setSize(labelDimension);
-		label.setVerticalAlignment(SwingConstants.TOP);
-		labelPanel.add(label);
-		labelPanel.add(Box.createVerticalGlue());
-
-		panel.add(labelPanel);
+		JPanel sliderPanel = new JPanel();
+		sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.LINE_AXIS));
+		sliderPanel.setBorder(BorderFactory.createTitledBorder(sliderLabel));
 
 		slider.setMajorTickSpacing(10);
 		slider.setMinorTickSpacing(5);
 		slider.setPaintTicks(true);
 		slider.setLabelTable(labelTable);
 		slider.setPaintLabels(true);
-		panel.add(slider);
+		sliderPanel.add(slider);
 
-		panel.add(Box.createHorizontalStrut(10));
+		sliderPanel.add(Box.createHorizontalStrut(SPACING));
 
-		panel.add(valueLabel);
-
-		panel.add(Box.createHorizontalGlue());
-
-		parent.add(panel);
-
-		return slider;
-	}
-
-	private JCheckBox createCheckboxPanel(JPanel parent, Dimension labelDimension, String checkboxLabel,
-			JCheckBox checkbox) {
-
-		JPanel panel = new JPanel();
-		panel.setMinimumSize(new Dimension(400, 40));
-		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
-
-		JLabel label = new JLabel(checkboxLabel);
+		JPanel valuePanel = new JPanel();
+		JLabel label = new JLabel(sliderLabel);
 		label.setMinimumSize(labelDimension);
 		label.setSize(labelDimension);
 		label.setVerticalAlignment(SwingConstants.TOP);
-		panel.add(label);
+		valuePanel.add(valueLabel);
+		valuePanel.add(Box.createVerticalGlue());
 
-		panel.add(checkbox);
-		panel.add(Box.createHorizontalGlue());
+		sliderPanel.add(valuePanel);
 
-		parent.add(panel);
+		parent.add(sliderPanel);
+	}
 
-		return checkbox;
+	private void createCheckboxPanel(JPanel parent, Dimension labelDimension, String checkboxLabel,
+			JCheckBox checkbox) {
+
+		JPanel checkboxPanel = new JPanel();
+		checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.LINE_AXIS));
+		checkboxPanel.setBorder(BorderFactory.createTitledBorder(checkboxLabel));
+
+		checkboxPanel.add(checkbox);
+		checkboxPanel.add(Box.createHorizontalGlue());
+
+		parent.add(checkboxPanel);
 	}
 
 	private void createActionsPanel(JPanel parent) {
 
 		JPanel panel = new JPanel();
-		panel.setMinimumSize(new Dimension(400, 40));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
-
-		JButton test = new JButton("Test");
-		test.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-
-		panel.add(test);
-
-		panel.add(Box.createHorizontalStrut(10));
 
 		JButton resetToPrevious = new JButton("Reset to previous");
 		resetToPrevious.addActionListener(new ActionListener() {
@@ -276,6 +328,35 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			}
 		}
 		return new Dimension(maxWidth, maxHeight);
+	}
+
+	private class TestImageCanvas extends JPanel {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(256, 256);
+		}
+
+		@Override
+		public void paint(Graphics g) {
+			super.paint(g);
+			if (dataModel.getSourceImage() != null) {
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.drawImage(dataModel.getSourceImage(), 0, 0, null);
+
+				Composite originalAc = g2d.getComposite();
+
+				AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
+						dataModel.getTransparency() / 100.0f);
+				g2d.setComposite(ac);
+
+				g2d.drawImage(dataModel.getEdgeImage(), 0, 0, null);
+
+				g2d.setComposite(originalAc);
+			}
+		}
 	}
 
 }
