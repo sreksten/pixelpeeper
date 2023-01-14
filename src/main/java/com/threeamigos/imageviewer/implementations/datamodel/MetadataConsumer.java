@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.data;
+package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.io.File;
 
@@ -14,6 +14,9 @@ import com.drew.metadata.exif.makernotes.NikonType1MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.NikonType2MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.PanasonicMakernoteDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.threeamigos.imageviewer.data.ExifMap;
+import com.threeamigos.imageviewer.data.ExifOrientation;
+import com.threeamigos.imageviewer.data.ExifTag;
 
 class MetadataConsumer {
 

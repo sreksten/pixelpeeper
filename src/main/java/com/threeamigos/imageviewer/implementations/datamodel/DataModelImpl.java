@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import com.threeamigos.imageviewer.data.ExifAndImageReader;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
@@ -62,7 +61,7 @@ public class DataModelImpl implements DataModel {
 		if (!files.isEmpty()) {
 			slicesManager.clear();
 			files.parallelStream().forEach(file -> { 
-				ExifAndImageReader reader = new ExifAndImageReader(windowPreferences, cannyEdgeDetectorFactory);
+				ExifImageReaderImpl reader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory);
 				if (reader.readImage(file)) {
 					PictureData pictureData = reader.getPictureData();
 					slicesManager.createImageSlice(pictureData);
@@ -83,7 +82,7 @@ public class DataModelImpl implements DataModel {
 
 			for (File file : directory.listFiles()) {
 				if (file.isFile()) {
-					ExifAndImageReader reader = new ExifAndImageReader(windowPreferences, cannyEdgeDetectorFactory);
+					ExifImageReaderImpl reader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory);
 					ExifMap exifMap = reader.readMetadata(file);
 
 					if (exifMap != null) {

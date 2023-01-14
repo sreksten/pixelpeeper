@@ -1,14 +1,17 @@
-package com.threeamigos.imageviewer.data;
+package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import com.threeamigos.imageviewer.data.ExifMap;
+import com.threeamigos.imageviewer.data.ExifOrientation;
+import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
-public class ExifAndImageReader {
+public class ExifImageReaderImpl {
 
 	private final WindowPreferences windowPreferences;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
@@ -16,7 +19,7 @@ public class ExifAndImageReader {
 	private PictureData pictureData;
 	private int pictureOrientation = ExifOrientation.AS_IS;
 
-	public ExifAndImageReader(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
+	public ExifImageReaderImpl(WindowPreferences windowPreferences, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
 		this.windowPreferences = windowPreferences;
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
 	}
