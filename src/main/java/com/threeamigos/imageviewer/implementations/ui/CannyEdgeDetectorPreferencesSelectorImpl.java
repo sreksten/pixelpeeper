@@ -7,10 +7,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -25,6 +21,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -40,7 +37,8 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
-import com.threeamigos.common.util.interfaces.MessageConsumer;
+import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
@@ -67,11 +65,11 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
 	private final ExifImageReader exifImageReader;
-	private final MessageConsumer messageConsumer;
+	private final MessageHandler messageConsumer;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
 			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader exifImageReader,
-			Component parentComponent, MessageConsumer messageConsumer) {
+			Component parentComponent, MessageHandler messageConsumer) {
 		this.exifImageReader = exifImageReader;
 		this.messageConsumer = messageConsumer;
 
@@ -85,7 +83,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			width = testImage.getWidth();
 			height = testImage.getHeight();
 		} catch (IOException e) {
-			messageConsumer.error(e.getMessage());
+			messageConsumer.handleErrorMessage(e.getMessage());
 		}
 
 		testImageCanvas = new SourceImageCanvas();
@@ -346,35 +344,23 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		return new Dimension(maxWidth, maxHeight);
 	}
 
-	private class SourceImageCanvas extends JPanel {
+	private class SourceImageCanvas extends JPanel implements Consumer<List<File>> {
 
 		private static final long serialVersionUID = 1L;
 
 		SourceImageCanvas() {
-			setDropTarget(new DropTarget() {
-				private static final long serialVersionUID = 1L;
+			DragAndDropSupportHelper.addJavaFileListSupport(this, messageConsumer);
+		}
 
-				public synchronized void drop(DropTargetDropEvent evt) {
-					try {
-						evt.acceptDrop(DnDConstants.ACTION_COPY);
-						if (evt.getTransferable().isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-							@SuppressWarnings("unchecked")
-							List<File> droppedFiles = (List<File>) evt.getTransferable()
-									.getTransferData(DataFlavor.javaFileListFlavor);
-							Optional<BufferedImage> optImage = droppedFiles.stream()
-									.map(file -> loadCropAndResizeImage(file)).filter(Objects::nonNull).findFirst();
-							if (optImage.isPresent()) {
-								dataModel.setTestImage(optImage.get());
-								dataModel.recalculateEdgeImage();
-								repaint();
-							}
-						}
-						evt.dropComplete(true);
-					} catch (Exception e) {
-						messageConsumer.error(e.getMessage());
-					}
-				}
-			});
+		@Override
+		public void accept(List<File> files) {
+			Optional<BufferedImage> optImage = files.stream().map(file -> loadCropAndResizeImage(file))
+					.filter(Objects::nonNull).findFirst();
+			if (optImage.isPresent()) {
+				dataModel.setTestImage(optImage.get());
+				dataModel.recalculateEdgeImage();
+				repaint();
+			}
 		}
 
 		@Override
@@ -421,10 +407,11 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 				}
 				return image;
 			} catch (Exception e) {
-				messageConsumer.error(e.getMessage());
+				messageConsumer.handleErrorMessage(e.getMessage());
 				return null;
 			}
 		}
+
 	}
 
 }

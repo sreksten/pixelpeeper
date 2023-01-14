@@ -1,6 +1,6 @@
 package com.threeamigos.imageviewer.implementations.preferences;
 
-import com.threeamigos.common.util.interfaces.MessageConsumer;
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
@@ -18,7 +18,7 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 		return "canny edge detector";
 	}
 
-	public CannyEdgeDetectorPreferencesImpl(Persister<CannyEdgeDetectorPreferences> persister, MessageConsumer messageConsumer) {
+	public CannyEdgeDetectorPreferencesImpl(Persister<CannyEdgeDetectorPreferences> persister, MessageHandler messageConsumer) {
 		super(persister, messageConsumer);
 
 		loadPostConstruct();

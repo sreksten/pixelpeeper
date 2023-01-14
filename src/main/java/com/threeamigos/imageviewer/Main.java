@@ -12,10 +12,10 @@ import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import com.threeamigos.common.util.implementations.CompositeMessageConsumer;
-import com.threeamigos.common.util.implementations.ConsoleMessageConsumer;
-import com.threeamigos.common.util.implementations.SwingMessageConsumer;
-import com.threeamigos.common.util.interfaces.MessageConsumer;
+import com.threeamigos.common.util.implementations.CompositeMessageHandler;
+import com.threeamigos.common.util.implementations.ConsoleMessageHandler;
+import com.threeamigos.common.util.implementations.SwingMessageHandler;
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgeDetectorFactoryImpl;
@@ -70,8 +70,8 @@ public class Main {
 
 		// A way to show error/warning messages to the user
 
-		MessageConsumer messageConsumer = new CompositeMessageConsumer(new SwingMessageConsumer(),
-				new ConsoleMessageConsumer());
+		MessageHandler messageConsumer = new CompositeMessageHandler(new SwingMessageHandler(),
+				new ConsoleMessageHandler());
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
