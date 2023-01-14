@@ -7,6 +7,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -14,9 +18,13 @@ import java.awt.event.WindowEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -41,6 +49,8 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 	private static final int SPACING = 5;
 
+	private static final int SOURCE_IMAGE_CANVAS_SIZE_DEFAULT = 256;
+
 	private static final String OK_OPTION = "OK";
 	private static final String CANCEL_OPTION = "Cancel";
 
@@ -51,17 +61,19 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 	private static final String CONTRAST_NORMALIZED = "Contrast normalized";
 	private static final String TRANSPARENCY = "Transparency";
 
-	TestImageCanvas testImageCanvas;
+	SourceImageCanvas testImageCanvas;
 
 	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
+	private final MessageConsumer messageConsumer;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(WindowPreferences windowPreferences,
 			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, Component parentComponent,
 			MessageConsumer messageConsumer) {
+		this.messageConsumer = messageConsumer;
 
 		BufferedImage testImage = null;
-		int width = 256;
-		int height = 256;
+		int width = SOURCE_IMAGE_CANVAS_SIZE_DEFAULT;
+		int height = SOURCE_IMAGE_CANVAS_SIZE_DEFAULT;
 
 		try {
 			InputStream inputStream = getClass().getResourceAsStream("/testImage.jpg");
@@ -72,7 +84,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			messageConsumer.error(e.getMessage());
 		}
 
-		testImageCanvas = new TestImageCanvas();
+		testImageCanvas = new SourceImageCanvas();
 		testImageCanvas.setSize(width, height);
 
 		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(windowPreferences, cannyEdgeDetectorPreferences,
@@ -213,15 +225,15 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		previewPanel.add(Box.createVerticalStrut(SPACING));
 
-		JButton testButton = new JButton("Test");
-		testButton.addActionListener(new ActionListener() {
+		JButton recalculateButton = new JButton("Recalculate");
+		recalculateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dataModel.recalculateEdgeImage();
 				testImageCanvas.repaint();
 			}
 		});
 
-		previewPanel.add(testButton);
+		previewPanel.add(recalculateButton);
 
 		previewPanel.add(Box.createVerticalGlue());
 
@@ -330,13 +342,40 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		return new Dimension(maxWidth, maxHeight);
 	}
 
-	private class TestImageCanvas extends JPanel {
+	private class SourceImageCanvas extends JPanel {
 
 		private static final long serialVersionUID = 1L;
 
+		SourceImageCanvas() {
+			setDropTarget(new DropTarget() {
+				private static final long serialVersionUID = 1L;
+
+				public synchronized void drop(DropTargetDropEvent evt) {
+					try {
+						evt.acceptDrop(DnDConstants.ACTION_COPY);
+						if (evt.getTransferable().isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+							@SuppressWarnings("unchecked")
+							List<File> droppedFiles = (List<File>) evt.getTransferable()
+									.getTransferData(DataFlavor.javaFileListFlavor);
+							Optional<BufferedImage> optImage = droppedFiles.stream()
+									.map(file -> loadCropAndResizeImage(file)).filter(Objects::nonNull).findFirst();
+							if (optImage.isPresent()) {
+								dataModel.setTestImage(optImage.get());
+								dataModel.recalculateEdgeImage();
+								repaint();
+							}
+						}
+						evt.dropComplete(true);
+					} catch (Exception e) {
+						messageConsumer.error(e.getMessage());
+					}
+				}
+			});
+		}
+
 		@Override
 		public Dimension getPreferredSize() {
-			return new Dimension(256, 256);
+			return new Dimension(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT);
 		}
 
 		@Override
@@ -355,6 +394,30 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 				g2d.drawImage(dataModel.getEdgeImage(), 0, 0, null);
 
 				g2d.setComposite(originalAc);
+			}
+		}
+
+		private BufferedImage loadCropAndResizeImage(File file) {
+			try {
+				BufferedImage image = ImageIO.read(file);
+				int width = image.getWidth();
+				int height = image.getHeight();
+				if (width > 256 || height > 256) {
+					int minDimension = width >= height ? height : width;
+					image = image.getSubimage((width - minDimension) / 2, (height - minDimension) / 2, minDimension,
+							minDimension);
+					BufferedImage scaledImage = new BufferedImage(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+							SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, image.getType());
+					Graphics2D g2d = scaledImage.createGraphics();
+					g2d.drawImage(image, 0, 0, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+							null);
+					image = scaledImage;
+					g2d.dispose();
+				}
+				return image;
+			} catch (Exception e) {
+				messageConsumer.error(e.getMessage());
+				return null;
 			}
 		}
 	}
