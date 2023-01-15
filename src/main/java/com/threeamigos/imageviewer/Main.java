@@ -133,8 +133,7 @@ public class Main {
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
 				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorPreferences,
-				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, fontService,
-				messageHandler);
+				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 

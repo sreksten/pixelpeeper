@@ -41,7 +41,6 @@ import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSel
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
-import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -63,11 +62,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
-	private final transient FontService fontService;
 
 	private boolean showHelp = false;
-
-	private boolean isEdgeDetectRunning;
 
 	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
 
@@ -75,8 +71,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
 			FileSelector fileSelector, CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
 			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
-			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, FontService fontService,
-			MessageHandler messageHandler) {
+			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
@@ -89,7 +84,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
-		this.fontService = fontService;
 
 		int width = windowPreferences.getMainWindowWidth();
 		int height = windowPreferences.getMainWindowHeight();
