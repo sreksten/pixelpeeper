@@ -7,16 +7,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 
 public abstract class FileBasedAbstractPreferencesPersister<T> implements Persister<T> {
 
+	protected final ExceptionHandler exceptionHandler;
 	private final String preferencesPath;
 	private final boolean preferencesPathAccessible;
 
-	protected FileBasedAbstractPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
+	protected FileBasedAbstractPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
+			ExceptionHandler exceptionHandler) {
+		this.exceptionHandler = exceptionHandler;
 		preferencesPath = rootPathProvider.getRootPath();
 		preferencesPathAccessible = rootPathProvider.isRootPathAccessible();
 	}
@@ -53,7 +57,8 @@ public abstract class FileBasedAbstractPreferencesPersister<T> implements Persis
 			String filename = getFilenameWithPath();
 			File file = new File(filename);
 			if (file.exists() && !file.canWrite()) {
-				return new PreferencesFilePersistResult(getEntityDescription() + " preferences file cannot be written.");
+				return new PreferencesFilePersistResult(
+						getEntityDescription() + " preferences file cannot be written.");
 			}
 			try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
 				saveImpl(writer, entity);

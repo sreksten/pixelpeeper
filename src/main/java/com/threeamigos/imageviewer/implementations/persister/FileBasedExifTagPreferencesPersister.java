@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
@@ -23,10 +24,11 @@ public class FileBasedExifTagPreferencesPersister extends FileBasedAbstractPrefe
 	private static final String OVERRIDING_TAGS_VISIBILITY = "overriding_tags_visibility";
 	private static final String TAG_PREFIX = "TAG_";
 
-	public FileBasedExifTagPreferencesPersister (PreferencesRootPathProvider rootPathProvider) {
-		super(rootPathProvider);
+	public FileBasedExifTagPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
+			ExceptionHandler exceptionHandler) {
+		super(rootPathProvider, exceptionHandler);
 	}
-	
+
 	@Override
 	public String getNamePart() {
 		return EXIF_TAG_PREFERENCES_FILENAME;

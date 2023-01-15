@@ -64,7 +64,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		gaussianKernelWidth = cannyEdgeDetectorPreferences.getGaussianKernelWidth();
 		contrastNormalized = cannyEdgeDetectorPreferences.isContrastNormalized();
 
-		transparencyText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getEdgeImagesTransparency()));
+		transparencyText = new JLabel(String.valueOf(transparency));
 
 		lowThresholdText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getLowThreshold()));
 		highThresholdText = new JLabel(String.valueOf(cannyEdgeDetectorPreferences.getHighThreshold()));
@@ -155,7 +155,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		Object object = e.getSource();
 
 		if (object == transparencySlider) {
-			transparencyText.setText(String.valueOf(denormalizeTransparency(transparencySlider.getValue())));
+			transparencyText.setText(String.valueOf(transparencySlider.getValue()));
 			cannyEdgeDetectorPreferences
 					.setEdgeImagesTransparency(denormalizeTransparency(transparencySlider.getValue()));
 		} else if (object == lowThresholdSlider) {

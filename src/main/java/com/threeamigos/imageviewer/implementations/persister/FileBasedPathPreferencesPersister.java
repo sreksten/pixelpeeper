@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
@@ -21,10 +22,11 @@ public class FileBasedPathPreferencesPersister extends FileBasedAbstractPreferen
 	private static final String PATH_ = "Path ";
 	private static final String _FOR_ = " for ";
 
-	public FileBasedPathPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
-		super(rootPathProvider);
+	public FileBasedPathPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
+			ExceptionHandler exceptionHandler) {
+		super(rootPathProvider, exceptionHandler);
 	}
-	
+
 	@Override
 	public String getNamePart() {
 		return PATH_PREFERENCES_FILENAME;

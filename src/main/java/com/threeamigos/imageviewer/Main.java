@@ -27,13 +27,14 @@ import com.threeamigos.imageviewer.implementations.persister.FileBasedCannyEdgeD
 import com.threeamigos.imageviewer.implementations.persister.FileBasedExifTagPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedPathPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedWindowPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.PreferencesPersisterHelperImpl;
 import com.threeamigos.imageviewer.implementations.preferences.CannyEdgeDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.PreferencesPersisterHelperImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.CannyEdgeDetectorPreferencesSelectorFactoryImpl;
+import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
@@ -49,6 +50,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
+import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
@@ -82,16 +84,17 @@ public class Main {
 		}
 
 		WindowPreferences windowPreferences = new WindowPreferencesImpl(
-				new FileBasedWindowPreferencesPersister(preferencesRootPathProvider), messageHandler);
+				new FileBasedWindowPreferencesPersister(preferencesRootPathProvider, messageHandler), messageHandler);
 
 		PathPreferences pathPreferences = new PathPreferencesImpl(
-				new FileBasedPathPreferencesPersister(preferencesRootPathProvider), messageHandler);
+				new FileBasedPathPreferencesPersister(preferencesRootPathProvider, messageHandler), messageHandler);
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl(
-				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider), messageHandler);
+				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider, messageHandler), messageHandler);
 
 		CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences = new CannyEdgeDetectorPreferencesImpl(
-				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider), messageHandler);
+				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
+				messageHandler);
 
 		PreferencesPersisterHelper preferencesPersisterHelper = new PreferencesPersisterHelperImpl(windowPreferences,
 				pathPreferences, exifTagPreferences, cannyEdgeDetectorPreferences);
@@ -123,9 +126,11 @@ public class Main {
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
+		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, messageHandler);
+
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
 				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorPreferences,
-				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl());
+				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 
@@ -163,20 +168,20 @@ public class Main {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				windowPreferences.setWidth(canvas.getWidth());
-				windowPreferences.setHeight(canvas.getHeight());
+				windowPreferences.setMainWindowWidth(canvas.getWidth());
+				windowPreferences.setMainWindowHeight(canvas.getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				windowPreferences.setX(jframe.getX());
-				windowPreferences.setY(jframe.getY());
+				windowPreferences.setMainWindowX(jframe.getX());
+				windowPreferences.setMainWindowY(jframe.getY());
 			}
 		});
 
 		jframe.pack();
 		jframe.setResizable(true);
-		jframe.setLocation(windowPreferences.getX(), windowPreferences.getY());
+		jframe.setLocation(windowPreferences.getMainWindowX(), windowPreferences.getMainWindowY());
 
 		return jframe;
 	}

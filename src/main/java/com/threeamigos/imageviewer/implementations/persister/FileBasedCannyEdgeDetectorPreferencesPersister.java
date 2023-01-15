@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
+import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
@@ -24,8 +25,9 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	private static final String GAUSSIAN_KERNEL_WIDTH = "gaussian_kernel_width";
 	private static final String CONTRAST_NORMALIZED = "contrast_normalized";
 
-	public FileBasedCannyEdgeDetectorPreferencesPersister(PreferencesRootPathProvider rootPathProvider) {
-		super(rootPathProvider);
+	public FileBasedCannyEdgeDetectorPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
+			ExceptionHandler exceptionHandler) {
+		super(rootPathProvider, exceptionHandler);
 	}
 
 	@Override

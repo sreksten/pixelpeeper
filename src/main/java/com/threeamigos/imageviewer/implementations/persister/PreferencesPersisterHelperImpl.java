@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.implementations.preferences;
+package com.threeamigos.imageviewer.implementations.persister;
 
 import java.util.ArrayList;
 import java.util.List;

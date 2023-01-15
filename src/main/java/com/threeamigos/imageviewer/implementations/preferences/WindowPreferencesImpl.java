@@ -10,10 +10,17 @@ import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPreferences> implements WindowPreferences {
 
-	private int width;
-	private int height;
-	private int x;
-	private int y;
+	private int mainWindowWidth;
+	private int mainWindowHeight;
+	private int mainWindowX;
+	private int mainWindowY;
+
+	private boolean dragAndDropWindowVisible;
+	private int dragAndDropWindowWidth;
+	private int dragAndDropWindowHeight;
+	private int dragAndDropWindowX;
+	private int dragAndDropWindowY;
+
 	private boolean autorotation;
 	private boolean movementAppliesToAllImages;
 
@@ -29,43 +36,93 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	}
 
 	@Override
-	public int getWidth() {
-		return width;
+	public int getMainWindowWidth() {
+		return mainWindowWidth;
 	}
 
 	@Override
-	public void setWidth(int width) {
-		this.width = width;
+	public void setMainWindowWidth(int width) {
+		this.mainWindowWidth = width;
 	}
 
 	@Override
-	public int getHeight() {
-		return height;
+	public int getMainWindowHeight() {
+		return mainWindowHeight;
 	}
 
 	@Override
-	public void setHeight(int height) {
-		this.height = height;
+	public void setMainWindowHeight(int height) {
+		this.mainWindowHeight = height;
 	}
 
 	@Override
-	public int getX() {
-		return x;
+	public int getMainWindowX() {
+		return mainWindowX;
 	}
 
 	@Override
-	public void setX(int x) {
-		this.x = x;
+	public void setMainWindowX(int x) {
+		this.mainWindowX = x;
 	}
 
 	@Override
-	public int getY() {
-		return y;
+	public int getMainWindowY() {
+		return mainWindowY;
 	}
 
 	@Override
-	public void setY(int y) {
-		this.y = y;
+	public void setMainWindowY(int y) {
+		this.mainWindowY = y;
+	}
+
+	@Override
+	public void setDragAndDropWindowVisible(boolean visible) {
+		this.dragAndDropWindowVisible = visible;
+	}
+
+	@Override
+	public boolean isDragAndDropWindowVisible() {
+		return dragAndDropWindowVisible;
+	}
+
+	@Override
+	public void setDragAndDropWindowWidth(int width) {
+		this.dragAndDropWindowWidth = width;
+	}
+
+	@Override
+	public int getDragAndDropWindowWidth() {
+		return dragAndDropWindowWidth;
+	}
+
+	@Override
+	public void setDragAndDropWindowHeight(int height) {
+		this.dragAndDropWindowHeight = height;
+	}
+
+	@Override
+	public int getDragAndDropWindowHeight() {
+		return dragAndDropWindowHeight;
+	}
+
+	@Override
+	public void setDragAndDropWindowX(int x) {
+		this.dragAndDropWindowX = x;
+	}
+
+	@Override
+	public int getDragAndDropWindowX() {
+		return dragAndDropWindowX;
+	}
+
+	@Override
+	public void setDragAndDropWindowY(int y) {
+		this.dragAndDropWindowY = y;
+	}
+
+	@Override
+	public int getDragAndDropWindowY() {
+		return dragAndDropWindowY;
 	}
 
 	@Override
@@ -80,13 +137,9 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 
 	@Override
 	protected void loadDefaultValues() {
-		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-		width = screenDimension.width * 2 / 3;
-		height = screenDimension.height * 2 / 3;
-		x = (screenDimension.width - width) / 2;
-		y = (screenDimension.height - height) / 2;
-		autorotation = AUTOROTATION_DEFAULT;
-		movementAppliesToAllImages = MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
+		loadMainWindowDefaultValues();
+		loadDragAndDropWindowDefaultValues();
+		loadOtherValues();
 	}
 
 	@Override
@@ -97,6 +150,30 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	@Override
 	public boolean isMovementAppliedToAllImages() {
 		return movementAppliesToAllImages;
+	}
+
+	@Override
+	public void loadMainWindowDefaultValues() {
+		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+		mainWindowWidth = screenDimension.width * 2 / 3;
+		mainWindowHeight = screenDimension.height * 2 / 3;
+		mainWindowX = (screenDimension.width - mainWindowWidth) / 2;
+		mainWindowY = (screenDimension.height - mainWindowHeight) / 2;
+	}
+
+	@Override
+	public void loadDragAndDropWindowDefaultValues() {
+		dragAndDropWindowVisible = false;
+		dragAndDropWindowWidth = 300;
+		dragAndDropWindowHeight = 300;
+		dragAndDropWindowX = 0;
+		dragAndDropWindowY = 0;
+	}
+
+	@Override
+	public void loadOtherValues() {
+		autorotation = AUTOROTATION_DEFAULT;
+		movementAppliesToAllImages = MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
 	}
 
 }

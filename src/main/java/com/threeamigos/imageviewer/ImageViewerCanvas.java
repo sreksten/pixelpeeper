@@ -24,6 +24,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
@@ -35,6 +36,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
+import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -56,6 +58,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 	private final transient FileSelector fileSelector;
 	private final transient CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector;
 	private final transient AboutWindow aboutWindow;
+	private final transient DragAndDropWindow dragAndDropWindow;
 
 	private boolean showHelp = false;
 
@@ -65,7 +68,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
 			FileSelector fileSelector, CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
 			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
-			AboutWindow aboutWindow) {
+			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
@@ -75,9 +78,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 		this.fileSelector = fileSelector;
 		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelectorFactory.createSelector(this);
 		this.aboutWindow = aboutWindow;
+		this.dragAndDropWindow = dragAndDropWindow;
+		dragAndDropWindow.setProxyFor(this);
 
-		int width = windowPreferences.getWidth();
-		int height = windowPreferences.getHeight();
+		int width = windowPreferences.getMainWindowWidth();
+		int height = windowPreferences.getMainWindowHeight();
 
 		setSize(width, height);
 		setMinimumSize(getSize());
@@ -138,7 +143,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 
 		});
 
-		DragAndDropSupportHelper.addJavaFileListSupport(this, null);
+		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
 	}
 
 	@Override
@@ -163,6 +168,10 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 				dataModel.reframe(getWidth(), getHeight());
 				repaint();
 			}
+		});
+		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
+			windowPreferences.setDragAndDropWindowVisible(true);
+			dragAndDropWindow.setVisible(true);
 		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
 			showHelp = !showHelp;

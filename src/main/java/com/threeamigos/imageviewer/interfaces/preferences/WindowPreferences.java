@@ -13,21 +13,41 @@ public interface WindowPreferences extends Persistable {
 	public static final boolean AUTOROTATION_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT = true;
 
-	public void setWidth(int width);
+	public void setMainWindowWidth(int width);
 
-	public int getWidth();
+	public int getMainWindowWidth();
 
-	public void setHeight(int height);
+	public void setMainWindowHeight(int height);
 
-	public int getHeight();
+	public int getMainWindowHeight();
 
-	public void setX(int x);
+	public void setMainWindowX(int x);
 
-	public int getX();
+	public int getMainWindowX();
 
-	public void setY(int y);
+	public void setMainWindowY(int y);
 
-	public int getY();
+	public int getMainWindowY();
+
+	public void setDragAndDropWindowVisible(boolean visible);
+
+	public boolean isDragAndDropWindowVisible();
+
+	public void setDragAndDropWindowWidth(int width);
+
+	public int getDragAndDropWindowWidth();
+
+	public void setDragAndDropWindowHeight(int height);
+
+	public int getDragAndDropWindowHeight();
+
+	public void setDragAndDropWindowX(int x);
+
+	public int getDragAndDropWindowX();
+
+	public void setDragAndDropWindowY(int y);
+
+	public int getDragAndDropWindowY();
 
 	public void setAutorotation(boolean autorotation);
 
@@ -36,5 +56,11 @@ public interface WindowPreferences extends Persistable {
 	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
 
 	public boolean isMovementAppliedToAllImages();
+
+	public void loadMainWindowDefaultValues();
+
+	public void loadDragAndDropWindowDefaultValues();
+
+	public void loadOtherValues();
 
 }
