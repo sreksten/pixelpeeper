@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
+import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.data.PictureData;
@@ -81,7 +82,7 @@ public class TagsRenderHelper {
 
 		Font font = fontService.getFont("Arial", Font.BOLD, FONT_HEIGHT * 2);
 		g2d.setFont(font);
-		drawString(g2d, pictureData.getFilename(), x, y, Color.WHITE);
+		BorderedStringRenderer.drawString(g2d, pictureData.getFilename(), x, y, Color.BLACK, Color.WHITE);
 	}
 
 	private void info(ExifTag exifTag) {
@@ -96,24 +97,14 @@ public class TagsRenderHelper {
 			if (tagVisible) {
 				String tagDescription = exifTag.getDescription();
 				String tagValue = pictureData.getTagDescriptive(exifTag);
-				drawString(g2d, String.format("%s: %s", tagDescription, tagValue), x, y,
+				BorderedStringRenderer.drawString(g2d, String.format("%s: %s", tagDescription, tagValue), x, y,
+						Color.BLACK,
 						(commonTagsHelper.getMappedPictures() == 1 || commonTagsHelper.isCommonTag(exifTag))
 								? Color.GREEN
 								: Color.YELLOW);
 				y -= FONT_HEIGHT + VSPACING;
 			}
 		}
-	}
-
-	protected void drawString(Graphics2D graphics, String s, int x, int y, Color color) {
-		graphics.setColor(Color.BLACK);
-		for (int i = x - 1; i <= x + 1; i++) {
-			for (int j = y - 1; j <= y + 1; j++) {
-				graphics.drawString(s, i, j);
-			}
-		}
-		graphics.setColor(color);
-		graphics.drawString(s, x, y);
 	}
 
 }

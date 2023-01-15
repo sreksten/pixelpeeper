@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.interfaces.datamodel;
 
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 import com.threeamigos.imageviewer.data.PictureData;
@@ -10,7 +11,7 @@ import com.threeamigos.imageviewer.data.PictureData;
  * @author Stefano Reksten
  *
  */
-public interface ImageSlicesManager {
+public interface ImageSlicesManager extends PropertyChangeListener {
 
 	/**
 	 * Clears all associated slices to load new images
@@ -38,5 +39,16 @@ public interface ImageSlicesManager {
 	public void setActiveSlice(int x, int y);
 
 	public void resetActiveSlice();
+
+	/**
+	 * Asks all slices to recalculate edge images
+	 */
+	public void recalculateEdges();
+
+	// Communication part
+
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+
+	public void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

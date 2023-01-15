@@ -1,12 +1,15 @@
 package com.threeamigos.imageviewer.data;
 
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collection;
 
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
 import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 
 public class PictureData {
 
@@ -16,14 +19,18 @@ public class PictureData {
 	private final String filename;
 	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
 	private boolean orientationAdjusted = false;
 
 	private int width;
 	private int height;
 	private BufferedImage image;
-	private BufferedImage edgeImage;
+	private boolean edgeCalculationInProgress;
+	private BufferedImage edgesImage;
 
-	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file, CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
+	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
+			CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
 		this.width = width;
 		this.height = height;
 		this.orientation = orientation;
@@ -32,6 +39,8 @@ public class PictureData {
 		this.file = file;
 		this.filename = file.getName();
 		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
 
 	public int getWidth() {
@@ -97,19 +106,46 @@ public class PictureData {
 			height = tmp;
 		}
 	}
-	
-	public boolean isEdgePictureLoaded() {
-		return edgeImage != null;
+
+	public boolean isEdgesImagePresent() {
+		return edgesImage != null;
 	}
 
-	public BufferedImage getEdgeImage() {
-		if (edgeImage == null) {
-			CannyEdgeDetector detector = cannyEdgeDetectorFactory.getCannyEdgeDetector();
-			detector.setSourceImage(image);
-			detector.process();
-			edgeImage = detector.getEdgesImage();
+	public BufferedImage getEdgesImage() {
+		if (edgesImage == null) {
+			startEdgesCalculation();
 		}
-		return edgeImage;
+		return edgesImage;
 	}
-	
+
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
+	public void startEdgesCalculation() {
+		synchronized (this) {
+			if (!edgeCalculationInProgress) {
+				edgeCalculationInProgress = true;
+				propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
+				Thread thread = new Thread(new Runnable() {
+					public void run() {
+						CannyEdgeDetector detector = cannyEdgeDetectorFactory.getCannyEdgeDetector();
+						detector.setSourceImage(image);
+						detector.process();
+						edgesImage = detector.getEdgesImage();
+						propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED,
+								null, this);
+						edgeCalculationInProgress = false;
+					}
+				});
+				thread.setDaemon(true);
+				thread.start();
+			}
+		}
+	}
+
 }

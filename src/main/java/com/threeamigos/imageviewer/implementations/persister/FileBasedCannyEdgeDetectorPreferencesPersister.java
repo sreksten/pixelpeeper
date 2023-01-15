@@ -43,8 +43,8 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	@Override
 	protected void loadImpl(BufferedReader reader, CannyEdgeDetectorPreferences cannyEdgesDetectorPreferences)
 			throws IOException, IllegalArgumentException {
-		boolean showEdgeImages = CannyEdgeDetectorPreferences.SHOWING_EDGE_IMAGES_DEFAULT;
-		int edgeImagesTransparency = CannyEdgeDetectorPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT;
+		boolean showEdges = CannyEdgeDetectorPreferences.SHOW_EDGES_DEFAULT;
+		int edgesTransparency = CannyEdgeDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT;
 		float lowThreshold = CannyEdgeDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT;
 		float highThreshold = CannyEdgeDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT;
 		float gaussianKernelRadius = CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT;
@@ -58,9 +58,9 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 				String key = st.nextToken();
 				String value = st.nextToken();
 				if (SHOW_EDGE_IMAGES.equals(key)) {
-					showEdgeImages = Boolean.valueOf(value);
+					showEdges = Boolean.valueOf(value);
 				} else if (EDGE_IMAGES_TRANSPARENCY.equals(key)) {
-					edgeImagesTransparency = Integer.parseInt(value);
+					edgesTransparency = Integer.parseInt(value);
 				} else if (LOW_THRESHOLD.equalsIgnoreCase(key)) {
 					lowThreshold = Float.parseFloat(value);
 				} else if (HIGH_THRESHOLD.equalsIgnoreCase(key)) {
@@ -77,8 +77,8 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 
 		checkBoundaries(lowThreshold, highThreshold, gaussianKernelRadius, gaussianKernelWidth);
 
-		cannyEdgesDetectorPreferences.setShowEdgeImages(showEdgeImages);
-		cannyEdgesDetectorPreferences.setEdgeImagesTransparency(edgeImagesTransparency);
+		cannyEdgesDetectorPreferences.setShowEdges(showEdges);
+		cannyEdgesDetectorPreferences.setEdgesTransparency(edgesTransparency);
 
 		cannyEdgesDetectorPreferences.setLowThreshold(lowThreshold);
 		cannyEdgesDetectorPreferences.setHighThreshold(highThreshold);
@@ -110,8 +110,8 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	@Override
 	protected void saveImpl(PrintWriter writer, CannyEdgeDetectorPreferences cannyEdgesDetectorPreferences)
 			throws IOException {
-		writer.println(SHOW_EDGE_IMAGES + "=" + cannyEdgesDetectorPreferences.isShowEdgeImages());
-		writer.println(EDGE_IMAGES_TRANSPARENCY + "=" + cannyEdgesDetectorPreferences.getEdgeImagesTransparency());
+		writer.println(SHOW_EDGE_IMAGES + "=" + cannyEdgesDetectorPreferences.isShowEdges());
+		writer.println(EDGE_IMAGES_TRANSPARENCY + "=" + cannyEdgesDetectorPreferences.getEdgesTransparency());
 
 		writer.println(LOW_THRESHOLD + "=" + cannyEdgesDetectorPreferences.getLowThreshold());
 		writer.println(HIGH_THRESHOLD + "=" + cannyEdgesDetectorPreferences.getHighThreshold());

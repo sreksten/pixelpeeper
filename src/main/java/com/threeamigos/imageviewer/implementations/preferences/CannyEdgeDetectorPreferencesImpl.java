@@ -8,8 +8,8 @@ import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPrefe
 public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgeDetectorPreferences>
 		implements CannyEdgeDetectorPreferences {
 
-	private boolean showEdgeImages;
-	private int edgeImagesTransparency = 0;
+	private boolean showEdges;
+	private int edgesTransparency = 0;
 
 	private float lowThreshold = 2.5f;
 	private float highThreshold = 7.5f;
@@ -30,23 +30,23 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 	}
 
 	@Override
-	public void setShowEdgeImages(boolean showEdgeImages) {
-		this.showEdgeImages = showEdgeImages;
+	public void setShowEdges(boolean showEdges) {
+		this.showEdges = showEdges;
 	}
 
 	@Override
-	public boolean isShowEdgeImages() {
-		return showEdgeImages;
+	public boolean isShowEdges() {
+		return showEdges;
 	}
 
 	@Override
-	public void setEdgeImagesTransparency(int edgeImagesTransparency) {
-		this.edgeImagesTransparency = edgeImagesTransparency;
+	public void setEdgesTransparency(int edgesTransparency) {
+		this.edgesTransparency = edgesTransparency;
 	}
 
 	@Override
-	public int getEdgeImagesTransparency() {
-		return edgeImagesTransparency;
+	public int getEdgesTransparency() {
+		return edgesTransparency;
 	}
 
 	@Override
@@ -101,6 +101,9 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 
 	@Override
 	protected void loadDefaultValues() {
+		showEdges = false;
+		edgesTransparency = 30;
+
 		lowThreshold = 2.5f;
 		highThreshold = 7.5f;
 		gaussianKernelRadius = 2f;

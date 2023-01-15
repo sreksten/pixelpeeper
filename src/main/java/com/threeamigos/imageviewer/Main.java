@@ -53,6 +53,7 @@ import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSel
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
+import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -101,6 +102,8 @@ public class Main {
 
 		// Data model
 
+		FontService fontService = new FontServiceImpl();
+
 		CannyEdgeDetectorFactory cannyEdgeDetectorFactory = new CannyEdgeDetectorFactoryImpl(
 				cannyEdgeDetectorPreferences);
 
@@ -110,7 +113,7 @@ public class Main {
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
-				cannyEdgeDetectorPreferences, new FontServiceImpl());
+				cannyEdgeDetectorPreferences, fontService);
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
@@ -120,7 +123,7 @@ public class Main {
 		// User Interface
 
 		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				cannyEdgeDetectorPreferences, imageReader, messageHandler);
+				cannyEdgeDetectorPreferences, dataModel, imageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
@@ -130,7 +133,8 @@ public class Main {
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
 				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorPreferences,
-				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
+				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, fontService,
+				messageHandler);
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 

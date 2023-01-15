@@ -1,10 +1,11 @@
 package com.threeamigos.imageviewer.interfaces.datamodel;
 
 import java.awt.Graphics2D;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
-public interface DataModel {
+public interface DataModel extends PropertyChangeListener {
 
 	// Preferences part
 
@@ -21,10 +22,12 @@ public interface DataModel {
 	public void setMovementAppliedToAllImagesTemporarilyInverted(
 			boolean isMovementAppliedToAllImagesTemporarilyInverted);
 
-	public boolean isShowEdgeImages();
-	
-	public void toggleShowingEdgeImages();
-	
+	public boolean isShowEdges();
+
+	public void toggleShowingEdges();
+
+	public void calculateEdges();
+
 	// Graphics part
 
 	public void reframe(int width, int height);
@@ -48,5 +51,11 @@ public interface DataModel {
 	public void browseDirectory(File directory);
 
 	public boolean hasLoadedImages();
+
+	// Communication part
+
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+
+	public void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

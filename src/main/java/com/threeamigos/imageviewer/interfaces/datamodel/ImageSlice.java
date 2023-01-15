@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.interfaces.datamodel;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
 
 import com.threeamigos.imageviewer.data.PictureData;
 
@@ -71,5 +72,16 @@ public interface ImageSlice {
 	 * Rotates the image if needed
 	 */
 	public void adjustRotation(boolean autorotation);
+
+	/**
+	 * Asks to recalculate the edge images
+	 */
+	public void startEdgesCalculation();
+
+	// Communication part
+
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+
+	public void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

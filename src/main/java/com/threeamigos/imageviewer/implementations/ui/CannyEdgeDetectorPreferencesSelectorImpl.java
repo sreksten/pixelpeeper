@@ -39,6 +39,7 @@ import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
@@ -61,12 +62,15 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 	SourceImageCanvas testImageCanvas;
 
-	private final CannyEdgeDetectorPreferencesSelectorDataModel dataModel;
+	private final DataModel dataModel;
 	private final ExifImageReader exifImageReader;
 	private final ExceptionHandler exceptionHandler;
+	private final CannyEdgeDetectorPreferencesSelectorDataModel preferencesSelectorDataModel;
 
 	public CannyEdgeDetectorPreferencesSelectorImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
-			ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
+			DataModel dataModel, ExifImageReader exifImageReader, Component parentComponent,
+			ExceptionHandler exceptionHandler) {
+		this.dataModel = dataModel;
 		this.exifImageReader = exifImageReader;
 		this.exceptionHandler = exceptionHandler;
 
@@ -86,9 +90,10 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		testImageCanvas = new SourceImageCanvas();
 		testImageCanvas.setSize(width, height);
 
-		dataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(cannyEdgeDetectorPreferences, testImageCanvas);
-		dataModel.setTestImage(testImage);
-		dataModel.recalculateEdgeImage();
+		preferencesSelectorDataModel = new CannyEdgeDetectorPreferencesSelectorDataModel(cannyEdgeDetectorPreferences,
+				testImageCanvas);
+		preferencesSelectorDataModel.setTestImage(testImage);
+		preferencesSelectorDataModel.startEdgesCalculation();
 	}
 
 	@Override
@@ -107,7 +112,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				dataModel.cancelSelection();
+				preferencesSelectorDataModel.cancelSelection();
 				dialog.setVisible(false);
 			}
 		});
@@ -118,9 +123,9 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		dialog.setVisible(true);
 
 		if (CANCEL_OPTION.equals(optionPane.getValue())) {
-			dataModel.cancelSelection();
+			preferencesSelectorDataModel.cancelSelection();
 		} else if (OK_OPTION.equals(optionPane.getValue())) {
-			dataModel.acceptSelection();
+			preferencesSelectorDataModel.acceptSelection();
 			selectionSuccessful = true;
 		}
 
@@ -180,32 +185,36 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		JPanel slidersPanel = new JPanel();
 		slidersPanel.setLayout(new BoxLayout(slidersPanel, BoxLayout.PAGE_AXIS));
 
-		createSliderPanel(slidersPanel, labelDimension, LOW_THRESHOLD, dataModel.lowThresholdSlider,
-				thresholdSliderLabelTable, dataModel.lowThresholdText);
+		createSliderPanel(slidersPanel, labelDimension, LOW_THRESHOLD, preferencesSelectorDataModel.lowThresholdSlider,
+				thresholdSliderLabelTable, preferencesSelectorDataModel.lowThresholdText);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(slidersPanel, labelDimension, HIGH_THRESHOLD, dataModel.highThresholdSlider,
-				thresholdSliderLabelTable, dataModel.highThresholdText);
+		createSliderPanel(slidersPanel, labelDimension, HIGH_THRESHOLD,
+				preferencesSelectorDataModel.highThresholdSlider, thresholdSliderLabelTable,
+				preferencesSelectorDataModel.highThresholdText);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_RADIUS, dataModel.gaussianKernelRadiusSlider,
-				gaussianKernelRadiusSliderLabelTable, dataModel.gaussianKernelRadiusText);
+		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_RADIUS,
+				preferencesSelectorDataModel.gaussianKernelRadiusSlider, gaussianKernelRadiusSliderLabelTable,
+				preferencesSelectorDataModel.gaussianKernelRadiusText);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_WIDTH, dataModel.gaussianKernelWidthSlider,
-				gaussianKernelWidthSliderLabelTable, dataModel.gaussianKernelWidthText);
+		createSliderPanel(slidersPanel, labelDimension, GAUSSIAN_KERNEL_WIDTH,
+				preferencesSelectorDataModel.gaussianKernelWidthSlider, gaussianKernelWidthSliderLabelTable,
+				preferencesSelectorDataModel.gaussianKernelWidthText);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createCheckboxPanel(slidersPanel, labelDimension, CONTRAST_NORMALIZED, dataModel.contrastNormalizedCheckbox);
+		createCheckboxPanel(slidersPanel, labelDimension, CONTRAST_NORMALIZED,
+				preferencesSelectorDataModel.contrastNormalizedCheckbox);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
-		createSliderPanel(slidersPanel, labelDimension, TRANSPARENCY, dataModel.transparencySlider,
-				transparencySliderLabelTable, dataModel.transparencyText);
+		createSliderPanel(slidersPanel, labelDimension, TRANSPARENCY, preferencesSelectorDataModel.transparencySlider,
+				transparencySliderLabelTable, preferencesSelectorDataModel.transparencyText);
 
 		slidersPanel.add(Box.createVerticalStrut(SPACING));
 
@@ -223,11 +232,10 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 
 		previewPanel.add(Box.createVerticalStrut(SPACING));
 
-		JButton recalculateButton = new JButton("Recalculate");
+		JButton recalculateButton = new JButton("Apply to images");
 		recalculateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				dataModel.recalculateEdgeImage();
-				testImageCanvas.repaint();
+				dataModel.calculateEdges();
 			}
 		});
 
@@ -298,7 +306,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		resetToPrevious.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dataModel.reset();
+				preferencesSelectorDataModel.reset();
 			}
 		});
 
@@ -310,7 +318,7 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		resetToDefault.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dataModel.resetToDefault();
+				preferencesSelectorDataModel.resetToDefault();
 			}
 		});
 
@@ -353,8 +361,8 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 			Optional<BufferedImage> optImage = files.stream().map(file -> loadCropAndResizeImage(file))
 					.filter(Objects::nonNull).findFirst();
 			if (optImage.isPresent()) {
-				dataModel.setTestImage(optImage.get());
-				dataModel.recalculateEdgeImage();
+				preferencesSelectorDataModel.setTestImage(optImage.get());
+				preferencesSelectorDataModel.startEdgesCalculation();
 				repaint();
 			}
 		}
@@ -367,8 +375,9 @@ public class CannyEdgeDetectorPreferencesSelectorImpl implements CannyEdgeDetect
 		@Override
 		public void paint(Graphics g) {
 			super.paint(g);
-			ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, dataModel.getSourceImage(),
-					dataModel.getEdgeImage(), 0, 0, dataModel.getEdgeImagesTransparency());
+			ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, preferencesSelectorDataModel.getSourceImage(),
+					preferencesSelectorDataModel.getEdgesImage(), 0, 0,
+					preferencesSelectorDataModel.getEdgesTransparency());
 		}
 
 		private BufferedImage loadCropAndResizeImage(File file) {

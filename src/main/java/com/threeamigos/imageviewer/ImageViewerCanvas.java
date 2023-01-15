@@ -12,6 +12,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
@@ -28,6 +30,7 @@ import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
@@ -38,6 +41,7 @@ import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSel
 import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
+import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -46,7 +50,7 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
  * @author Stefano Reksten
  *
  */
-public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
+public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, PropertyChangeListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,8 +63,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 	private final transient CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
+	private final transient FontService fontService;
 
 	private boolean showHelp = false;
+
+	private boolean isEdgeDetectRunning;
 
 	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
 
@@ -68,18 +75,21 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
 			FileSelector fileSelector, CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
 			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
-			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
+			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, FontService fontService,
+			MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.dataModel = dataModel;
+		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
 		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelectorFactory.createSelector(this);
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
+		this.fontService = fontService;
 
 		int width = windowPreferences.getMainWindowWidth();
 		int height = windowPreferences.getMainWindowHeight();
@@ -187,9 +197,9 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 
 		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
 		menuBar.add(edgesDetectorMenu);
-		addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
-				cannyEdgeDetectorPreferences.isShowEdgeImages(), event -> {
-					cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
+		addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M, cannyEdgeDetectorPreferences.isShowEdges(),
+				event -> {
+					cannyEdgeDetectorPreferences.setShowEdges(!cannyEdgeDetectorPreferences.isShowEdges());
 					repaint();
 				});
 		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyEvent.VK_C, event -> {
@@ -295,6 +305,23 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>> {
 		Graphics2D graphics = (Graphics2D) gfx;
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		dataModel.repaint(graphics);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationStarted();
+		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationCompleted();
+		}
+	}
+
+	private void handleEdgeCalculationStarted() {
+		repaint();
+	}
+
+	private void handleEdgeCalculationCompleted() {
+		repaint();
 	}
 
 }

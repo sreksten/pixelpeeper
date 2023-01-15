@@ -4,16 +4,21 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
+import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
-public class ImageSliceImpl implements ImageSlice {
+public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	private final PictureData pictureData;
 	private final CommonTagsHelper commonTagsHelper;
@@ -21,19 +26,26 @@ public class ImageSliceImpl implements ImageSlice {
 	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final FontService fontService;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
 	private Rectangle location;
 	private int screenXOffset;
 	private int screenYOffset;
 
 	private boolean selected;
 
+	private boolean edgeCalculationInProgress;
+
 	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
 			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, FontService fontService) {
 		this.pictureData = pictureData;
+		pictureData.addPropertyChangeListener(this);
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.fontService = fontService;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
 
 	@Override
@@ -141,18 +153,23 @@ public class ImageSliceImpl implements ImageSlice {
 
 		BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
 				imageSliceHeight);
-		BufferedImage edgeImage = cannyEdgeDetectorPreferences.isShowEdgeImages()
-				? pictureData.getEdgeImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
-						imageSliceHeight)
-				: null;
+		BufferedImage edgesImage = null;
+
+		if (cannyEdgeDetectorPreferences.isShowEdges()) {
+			edgesImage = pictureData.getEdgesImage();
+			if (edgesImage != null) {
+				edgesImage = edgesImage.getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
+						imageSliceHeight);
+			}
+		}
 
 		synchronized (g2d) {
 
 			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
 			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-					cannyEdgeDetectorPreferences.isShowEdgeImages() ? edgeImage : null, locationX, locationY,
-					cannyEdgeDetectorPreferences.getEdgeImagesTransparency());
+					cannyEdgeDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
+					cannyEdgeDetectorPreferences.getEdgesTransparency());
 
 			if (selected) {
 				g2d.setColor(Color.RED);
@@ -161,6 +178,11 @@ public class ImageSliceImpl implements ImageSlice {
 
 			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData,
 					tagPreferences, commonTagsHelper).render();
+
+			if (edgeCalculationInProgress) {
+				BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
+						Color.BLACK, Color.WHITE);
+			}
 		}
 
 	}
@@ -172,6 +194,40 @@ public class ImageSliceImpl implements ImageSlice {
 		} else {
 			pictureData.undoOrientationCorrection();
 		}
+	}
+
+	@Override
+	public void startEdgesCalculation() {
+		pictureData.startEdgesCalculation();
+	}
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationStarted(evt);
+		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationCompleted(evt);
+		}
+	}
+
+	private void handleEdgeCalculationStarted(PropertyChangeEvent evt) {
+		edgeCalculationInProgress = true;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
+	}
+
+	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
+		edgeCalculationInProgress = false;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, this);
 	}
 
 }

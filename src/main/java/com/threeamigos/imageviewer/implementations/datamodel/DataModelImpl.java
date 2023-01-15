@@ -1,6 +1,9 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Graphics2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +19,7 @@ import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
@@ -29,24 +33,29 @@ public class DataModelImpl implements DataModel {
 
 	private final ExifTagsFilter exifTagsFilter;
 	private final CommonTagsHelper commonTagsHelper;
-	private final ImageSlicesManager slicesManager;
+	private final ImageSlicesManager imageSlicesManager;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
 	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
 	private final ExifImageReader imageReader;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager slicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
+			ImageSlicesManager imageSlicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
 			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
-		this.slicesManager = slicesManager;
+		this.imageSlicesManager = imageSlicesManager;
+		imageSlicesManager.addPropertyChangeListener(this);
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.imageReader = imageReader;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 
 		List<String> lastFilenames = pathPreferences.getLastFilenames();
 		if (!lastFilenames.isEmpty()) {
@@ -62,15 +71,15 @@ public class DataModelImpl implements DataModel {
 	@Override
 	public void loadFiles(List<File> files) {
 		if (!files.isEmpty()) {
-			slicesManager.clear();
+			imageSlicesManager.clear();
 			files.parallelStream().forEach(file -> {
 				PictureData pictureData = imageReader.readImage(file);
 				if (pictureData != null) {
-					slicesManager.createImageSlice(pictureData);
+					imageSlicesManager.createImageSlice(pictureData);
 				}
 			});
-			slicesManager.resetMovement();
-			commonTagsHelper.updateCommonTags(slicesManager.getImageSlices().stream()
+			imageSlicesManager.resetMovement();
+			commonTagsHelper.updateCommonTags(imageSlicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
 			pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
 		}
@@ -165,12 +174,12 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void reframe(int width, int height) {
-		slicesManager.reframeImageSlices(width, height);
+		imageSlicesManager.reframeImageSlices(width, height);
 	}
 
 	@Override
 	public void repaint(Graphics2D graphics) {
-		slicesManager.getImageSlices().parallelStream().forEach(slice -> slice.paint(graphics));
+		imageSlicesManager.getImageSlices().parallelStream().forEach(slice -> slice.paint(graphics));
 	}
 
 	@Override
@@ -182,14 +191,14 @@ public class DataModelImpl implements DataModel {
 	public void toggleAutorotation() {
 		boolean autorotation = !windowPreferences.isAutorotation();
 		windowPreferences.setAutorotation(autorotation);
-		for (ImageSlice slice : slicesManager.getImageSlices()) {
+		for (ImageSlice slice : imageSlicesManager.getImageSlices()) {
 			slice.adjustRotation(autorotation);
 		}
 	}
 
 	@Override
 	public boolean hasLoadedImages() {
-		return slicesManager.hasLoadedImages();
+		return imageSlicesManager.hasLoadedImages();
 	}
 
 	@Override
@@ -198,22 +207,22 @@ public class DataModelImpl implements DataModel {
 		if (isMovementAppliedToAllImagesTemporarilyInverted) {
 			isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
 		}
-		slicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
+		imageSlicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
 	}
 
 	@Override
 	public void resetMovement() {
-		slicesManager.resetMovement();
+		imageSlicesManager.resetMovement();
 	}
 
 	@Override
 	public void setActiveSlice(int x, int y) {
-		slicesManager.setActiveSlice(x, y);
+		imageSlicesManager.setActiveSlice(x, y);
 	}
 
 	@Override
 	public void resetActiveSlice() {
-		slicesManager.resetActiveSlice();
+		imageSlicesManager.resetActiveSlice();
 	}
 
 	@Override
@@ -243,13 +252,48 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public boolean isShowEdgeImages() {
-		return cannyEdgeDetectorPreferences.isShowEdgeImages();
+	public boolean isShowEdges() {
+		return cannyEdgeDetectorPreferences.isShowEdges();
 	}
 
 	@Override
-	public void toggleShowingEdgeImages() {
-		cannyEdgeDetectorPreferences.setShowEdgeImages(!cannyEdgeDetectorPreferences.isShowEdgeImages());
+	public void toggleShowingEdges() {
+		cannyEdgeDetectorPreferences.setShowEdges(!cannyEdgeDetectorPreferences.isShowEdges());
+	}
+
+	@Override
+	public void calculateEdges() {
+		System.out.println("DataModelImpl: asking ImageSlicesManagerImpl to recalculate edge images");
+		imageSlicesManager.recalculateEdges();
+		System.out.println("DataModelImpl: informing that edge images recalculation started");
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+	}
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationStarted(evt);
+		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+			handleEdgeCalculationCompleted(evt);
+		}
+	}
+
+	private void handleEdgeCalculationStarted(PropertyChangeEvent evt) {
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+	}
+
+	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
 	}
 
 }

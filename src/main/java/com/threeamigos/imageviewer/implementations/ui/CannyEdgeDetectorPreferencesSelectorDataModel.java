@@ -26,7 +26,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 	private final Component component;
 
 	private BufferedImage sourceImage;
-	private BufferedImage edgeImage;
+	private BufferedImage edgesImage;
 
 	private int transparency;
 
@@ -56,7 +56,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
 		this.component = component;
 
-		transparency = normalizeTransparency(cannyEdgeDetectorPreferences.getEdgeImagesTransparency());
+		transparency = normalizeTransparency(cannyEdgeDetectorPreferences.getEdgesTransparency());
 
 		lowThreshold = normalize(cannyEdgeDetectorPreferences.getLowThreshold());
 		highThreshold = normalize(cannyEdgeDetectorPreferences.getHighThreshold());
@@ -81,11 +81,11 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 	}
 
 	void cancelSelection() {
-		cannyEdgeDetectorPreferences.setEdgeImagesTransparency(normalizeTransparency(transparency));
+		cannyEdgeDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparency));
 	}
 
 	void acceptSelection() {
-		cannyEdgeDetectorPreferences.setEdgeImagesTransparency(normalizeTransparency(transparencySlider.getValue()));
+		cannyEdgeDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencySlider.getValue()));
 
 		cannyEdgeDetectorPreferences.setLowThreshold(denormalize(lowThresholdSlider.getValue()));
 		cannyEdgeDetectorPreferences.setHighThreshold(denormalize(highThresholdSlider.getValue()));
@@ -95,7 +95,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 	}
 
 	void reset() {
-		cannyEdgeDetectorPreferences.setEdgeImagesTransparency(transparency);
+		cannyEdgeDetectorPreferences.setEdgesTransparency(transparency);
 
 		lowThresholdSlider.setValue(lowThreshold);
 		highThresholdSlider.setValue(highThreshold);
@@ -109,9 +109,9 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 
 	void resetToDefault() {
 		cannyEdgeDetectorPreferences
-				.setEdgeImagesTransparency(CannyEdgeDetectorPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT);
+				.setEdgesTransparency(CannyEdgeDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
 		transparencySlider
-				.setValue(normalizeTransparency(CannyEdgeDetectorPreferences.EDGE_IMAGES_TRANSPARENCY_DEFAULT));
+				.setValue(normalizeTransparency(CannyEdgeDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT));
 
 		lowThresholdSlider.setValue(normalize(CannyEdgeDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT));
 		highThresholdSlider.setValue(normalize(CannyEdgeDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT));
@@ -157,7 +157,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		if (object == transparencySlider) {
 			transparencyText.setText(String.valueOf(transparencySlider.getValue()));
 			cannyEdgeDetectorPreferences
-					.setEdgeImagesTransparency(denormalizeTransparency(transparencySlider.getValue()));
+					.setEdgesTransparency(denormalizeTransparency(transparencySlider.getValue()));
 		} else if (object == lowThresholdSlider) {
 			lowThresholdText.setText(String.valueOf(denormalize(lowThresholdSlider.getValue())));
 			if (lowThresholdSlider.getValue() > highThresholdSlider.getValue()) {
@@ -176,7 +176,7 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 			gaussianKernelWidthText.setText(String.valueOf(gaussianKernelWidthSlider.getValue()));
 		}
 
-		recalculateEdgeImage();
+		startEdgesCalculation();
 		component.repaint();
 	}
 
@@ -185,19 +185,19 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 	}
 
 	@Override
-	public void setShowEdgeImages(boolean showEdgeImages) {
+	public void setShowEdges(boolean showEdges) {
 	}
 
 	@Override
-	public boolean isShowEdgeImages() {
+	public boolean isShowEdges() {
 		return true;
 	}
 
-	public int getEdgeImagesTransparency() {
+	public int getEdgesTransparency() {
 		return denormalizeTransparency(transparencySlider.getValue());
 	}
 
-	public void setEdgeImagesTransparency(int transparency) {
+	public void setEdgesTransparency(int transparency) {
 		transparencySlider.setValue(normalizeTransparency(transparency));
 	}
 
@@ -251,12 +251,12 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		contrastNormalizedCheckbox.setSelected(contrastNormalized);
 	}
 
-	void recalculateEdgeImage() {
+	void startEdgesCalculation() {
 		if (sourceImage != null) {
 			CannyEdgeDetector cannyEdgeDetector = new CannyEdgeDetectorImpl(this);
 			cannyEdgeDetector.setSourceImage(sourceImage);
 			cannyEdgeDetector.process();
-			edgeImage = cannyEdgeDetector.getEdgesImage();
+			edgesImage = cannyEdgeDetector.getEdgesImage();
 		}
 	}
 
@@ -268,8 +268,8 @@ public class CannyEdgeDetectorPreferencesSelectorDataModel implements CannyEdgeD
 		return sourceImage;
 	}
 
-	BufferedImage getEdgeImage() {
-		return edgeImage;
+	BufferedImage getEdgesImage() {
+		return edgesImage;
 	}
 
 }
