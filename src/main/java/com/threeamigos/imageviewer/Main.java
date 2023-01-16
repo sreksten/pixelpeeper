@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
@@ -76,7 +77,7 @@ public class Main {
 	// TODO: lens manufacturer
 
 	// TODO: do not save unmodified preferences
-	
+
 	// TODO: when toggling auorotation calculation should be stopped and restarted
 
 	public Main() {
@@ -154,19 +155,16 @@ public class Main {
 				preferencesPersisterHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
-		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
-
 		JMenuBar menuBar = new JMenuBar();
-
-		jframe.setJMenuBar(menuBar);
-
 		imageViewerCanvas.addMenus(menuBar);
+
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 
 		jframe.setVisible(true);
 
 	}
 
-	private JFrame prepareFrame(ImageViewerCanvas canvas, WindowPreferences windowPreferences,
+	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, WindowPreferences windowPreferences,
 			PreferencesPersisterHelper preferencesPersisterHelper) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
@@ -180,18 +178,22 @@ public class Main {
 			}
 		});
 
-		jframe.setLayout(null);
+		jframe.setJMenuBar(menuBar);
+
 		Container container = jframe.getContentPane();
 		container.setPreferredSize(new Dimension(canvas.getWidth(), canvas.getHeight()));
-		jframe.add(canvas);
-		canvas.setLocation(0, 0);
+		jframe.add(canvas, BorderLayout.CENTER);
+
+		jframe.pack();
+		jframe.setResizable(true);
+		jframe.setLocation(windowPreferences.getMainWindowX(), windowPreferences.getMainWindowY());
 
 		jframe.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				windowPreferences.setMainWindowWidth(jframe.getWidth());
-				windowPreferences.setMainWindowHeight(jframe.getHeight());
+				windowPreferences.setMainWindowWidth(canvas.getWidth());
+				windowPreferences.setMainWindowHeight(canvas.getHeight());
 			}
 
 			@Override
@@ -200,10 +202,6 @@ public class Main {
 				windowPreferences.setMainWindowY(jframe.getY());
 			}
 		});
-
-		jframe.pack();
-		jframe.setResizable(true);
-		jframe.setLocation(windowPreferences.getMainWindowX(), windowPreferences.getMainWindowY());
 
 		return jframe;
 	}
