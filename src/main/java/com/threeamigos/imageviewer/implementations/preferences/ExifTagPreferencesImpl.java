@@ -12,9 +12,12 @@ import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 
 public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPreferences> implements ExifTagPreferences {
 
-	private boolean tagsVisible = true;
-	private boolean overridingTagsVisibility = false;
+	private boolean tagsVisibleAtStart;
+	private boolean overridingTagsVisibilityAtStart;
+	private Map<ExifTag, ExifTagVisibility> tagsMapAtStart;
 
+	private boolean tagsVisible = TAGS_VISIBLE_DEFAULT;
+	private boolean overridingTagsVisibility = OVERRIDING_TAGS_VISIBILITY_DEFAULT;
 	private Map<ExifTag, ExifTagVisibility> tagsMap;
 
 	@Override
@@ -28,6 +31,7 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 		tagsMap = new EnumMap<>(ExifTag.class);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -70,5 +74,18 @@ public class ExifTagPreferencesImpl extends AbstractPreferencesImpl<ExifTagPrefe
 	@Override
 	public void setOverridingTagsVisibility(boolean overridingTagsVisibility) {
 		this.overridingTagsVisibility = overridingTagsVisibility;
+	}
+
+	private void copyPreferencesAtStart() {
+		tagsVisibleAtStart = tagsVisible;
+		overridingTagsVisibilityAtStart = overridingTagsVisibility;
+		tagsMapAtStart = new EnumMap<>(ExifTag.class);
+		tagsMap.forEach(tagsMapAtStart::put);
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return tagsVisible != tagsVisibleAtStart || overridingTagsVisibility != overridingTagsVisibilityAtStart
+				|| !tagsMap.equals(tagsMapAtStart);
 	}
 }

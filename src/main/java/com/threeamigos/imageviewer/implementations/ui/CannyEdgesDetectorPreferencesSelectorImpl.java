@@ -30,8 +30,8 @@ public class CannyEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDete
 			ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
 		super(edgesDetectorPreferences, dataModel, exifImageReader, parentComponent, exceptionHandler);
 
-		preferencesSelectorDataModel = new CannyEdgesDetectorPreferencesSelectorDataModel(edgesDetectorPreferences,
-				cannyEdgesDetectorPreferences, testImageCanvas);
+		preferencesSelectorDataModel = new CannyEdgesDetectorPreferencesSelectorDataModel(dataModel,
+				edgesDetectorPreferences, cannyEdgesDetectorPreferences, testImageCanvas);
 		preferencesSelectorDataModel.setSourceImage(testImage);
 		preferencesSelectorDataModel.startEdgesCalculation();
 	}

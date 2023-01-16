@@ -9,6 +9,10 @@ import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferenc
 public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesDetectorPreferences>
 		implements EdgesDetectorPreferences {
 
+	private boolean showEdgesAtStart;
+	private int edgesTransparencyAtStart;
+	private EdgesDetectorFlavour flavourAtStart;
+
 	private boolean showEdges;
 	private int edgesTransparency;
 	private EdgesDetectorFlavour flavour;
@@ -23,6 +27,7 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 		super(persister, errorMessageHandler);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -62,4 +67,15 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 		flavour = EdgesDetectorPreferences.EDGES_DETECTOR_FLAVOUR_DEFAULT;
 	}
 
+	private void copyPreferencesAtStart() {
+		showEdgesAtStart = showEdges;
+		edgesTransparencyAtStart = edgesTransparency;
+		flavourAtStart = flavour;
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return showEdges != showEdgesAtStart || edgesTransparency != edgesTransparencyAtStart
+				|| flavour != flavourAtStart;
+	}
 }

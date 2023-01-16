@@ -9,6 +9,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
@@ -18,6 +19,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	static final int MIN_TRANSPARENCY = 0;
 	static final int MAX_TRANSPARENCY = 100;
 
+	protected final DataModel dataModel;
 	protected final EdgesDetectorPreferences edgesDetectorPreferences;
 	protected final Component component;
 
@@ -30,8 +32,9 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 	final JSlider transparencySlider;
 
-	AbstractEdgesDetectorPreferencesSelectorDataModel(EdgesDetectorPreferences edgesDetectorPreferences,
-			Component component) {
+	AbstractEdgesDetectorPreferencesSelectorDataModel(DataModel dataModel,
+			EdgesDetectorPreferences edgesDetectorPreferences, Component component) {
+		this.dataModel = dataModel;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.component = component;
 
@@ -53,6 +56,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	}
 
 	abstract void acceptSelectionFlavour();
+
+	abstract boolean isSelectionModified();
 
 	final void reset() {
 		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);

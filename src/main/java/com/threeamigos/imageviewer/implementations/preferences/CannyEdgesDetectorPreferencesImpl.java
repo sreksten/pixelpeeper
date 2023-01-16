@@ -8,6 +8,12 @@ import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPref
 public class CannyEdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgesDetectorPreferences>
 		implements CannyEdgesDetectorPreferences {
 
+	private float lowThresholdAtStart;
+	private float highThresholdAtStart;
+	private float gaussianKernelRadiusAtStart;
+	private int gaussianKernelWidthAtStart;
+	private boolean contrastNormalizedAtStart;
+
 	private float lowThreshold;
 	private float highThreshold;
 	private float gaussianKernelRadius;
@@ -24,6 +30,7 @@ public class CannyEdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<C
 		super(persister, errorMessageHandler);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -83,6 +90,21 @@ public class CannyEdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<C
 		gaussianKernelRadius = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT;
 		gaussianKernelWidth = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT;
 		contrastNormalized = CannyEdgesDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT;
+	}
+
+	private void copyPreferencesAtStart() {
+		lowThresholdAtStart = lowThreshold;
+		highThresholdAtStart = highThreshold;
+		gaussianKernelRadiusAtStart = gaussianKernelRadius;
+		gaussianKernelWidthAtStart = gaussianKernelWidth;
+		contrastNormalizedAtStart = contrastNormalized;
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return lowThreshold != lowThresholdAtStart || highThreshold != highThresholdAtStart
+				|| gaussianKernelRadius != gaussianKernelRadiusAtStart
+				|| gaussianKernelWidth != gaussianKernelWidthAtStart || contrastNormalized != contrastNormalizedAtStart;
 	}
 
 }

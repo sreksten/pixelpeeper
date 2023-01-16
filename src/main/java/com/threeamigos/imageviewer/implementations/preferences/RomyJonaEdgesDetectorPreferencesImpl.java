@@ -8,6 +8,9 @@ import com.threeamigos.imageviewer.interfaces.preferences.RomyJonaEdgesDetectorP
 public class RomyJonaEdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<RomyJonaEdgesDetectorPreferences>
 		implements RomyJonaEdgesDetectorPreferences {
 
+	private int puppamentoAtStart;
+	private boolean aNastroAtStart;
+
 	private int puppamento;
 	private boolean aNastro;
 
@@ -21,6 +24,7 @@ public class RomyJonaEdgesDetectorPreferencesImpl extends AbstractPreferencesImp
 		super(persister, errorMessageHandler);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -47,5 +51,15 @@ public class RomyJonaEdgesDetectorPreferencesImpl extends AbstractPreferencesImp
 	protected void loadDefaultValues() {
 		puppamento = RomyJonaEdgesDetectorPreferences.PUPPAMENTO_PREFERENCES_DEFAULT;
 		aNastro = RomyJonaEdgesDetectorPreferences.A_NASTRO_PREFERENCES_DEFAULT;
+	}
+
+	private void copyPreferencesAtStart() {
+		puppamentoAtStart = puppamento;
+		aNastroAtStart = aNastro;
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return puppamento != puppamentoAtStart || aNastro != aNastroAtStart;
 	}
 }

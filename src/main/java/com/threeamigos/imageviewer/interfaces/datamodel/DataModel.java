@@ -34,6 +34,8 @@ public interface DataModel extends PropertyChangeListener {
 
 	public void repaint(Graphics2D graphics);
 
+	public void requestRepaint();
+
 	public void setMovementAppliedToAllImages(boolean movementAppliesToAllFrames);
 
 	public void move(int deltaX, int deltaY);

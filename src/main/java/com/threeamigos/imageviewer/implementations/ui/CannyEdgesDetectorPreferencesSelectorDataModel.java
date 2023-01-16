@@ -9,6 +9,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgesDetectorImpl;
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
@@ -41,9 +42,10 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 	JSlider gaussianKernelWidthSlider;
 	JCheckBox contrastNormalizedCheckbox;
 
-	CannyEdgesDetectorPreferencesSelectorDataModel(EdgesDetectorPreferences edgesDetectorPreferences,
+	CannyEdgesDetectorPreferencesSelectorDataModel(DataModel dataModel,
+			EdgesDetectorPreferences edgesDetectorPreferences,
 			CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences, Component component) {
-		super(edgesDetectorPreferences, component);
+		super(dataModel, edgesDetectorPreferences, component);
 		this.cannyEdgesDetectorPreferences = cannyEdgesDetectorPreferences;
 
 		lowThresholdBackup = normalize(cannyEdgesDetectorPreferences.getLowThreshold());
@@ -184,6 +186,21 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 	@Override
 	protected EdgesDetector getEdgesDetectorImplementation() {
 		return new CannyEdgesDetectorImpl(this);
+	}
+
+	@Override
+	boolean isSelectionModified() {
+		return normalize(cannyEdgesDetectorPreferences.getLowThreshold()) != lowThresholdSlider.getValue()
+				|| normalize(cannyEdgesDetectorPreferences.getHighThreshold()) != highThresholdSlider.getValue()
+				|| normalize(cannyEdgesDetectorPreferences.getGaussianKernelRadius()) != gaussianKernelRadiusSlider
+						.getValue()
+				|| cannyEdgesDetectorPreferences.getGaussianKernelWidth() != gaussianKernelWidthSlider.getValue()
+				|| cannyEdgesDetectorPreferences.isContrastNormalized() != contrastNormalizedCheckbox.isSelected();
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return false;
 	}
 
 }

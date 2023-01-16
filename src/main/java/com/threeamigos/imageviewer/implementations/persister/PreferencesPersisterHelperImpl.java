@@ -23,7 +23,15 @@ public class PreferencesPersisterHelperImpl implements PreferencesPersisterHelpe
 
 	@Override
 	public void persist() {
-		persistables.forEach(Persistable::persist);
+		// persistables.stream().filter(Persistable::hasChanged).forEach(Persistable::persist);
+		for (Persistable persistable : persistables) {
+			if (persistable.hasChanged()) {
+				System.out.println("Persistable " + persistable + " has changed, saving it");
+				persistable.persist();
+			} else {
+				System.out.println("Persistable " + persistable + " has NOT changed");
+			}
+		}
 	}
 
 }

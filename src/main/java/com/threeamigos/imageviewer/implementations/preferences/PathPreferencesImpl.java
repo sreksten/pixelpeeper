@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.preferences;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,6 +10,9 @@ import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 
 public class PathPreferencesImpl extends AbstractPreferencesImpl<PathPreferences> implements PathPreferences {
+
+	private String lastPathAtStart;
+	private List<String> lastFilenamesAtStart;
 
 	private String lastPath;
 	private List<String> lastFilenames;
@@ -22,6 +26,7 @@ public class PathPreferencesImpl extends AbstractPreferencesImpl<PathPreferences
 		super(persister, errorMmessageHandler);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -48,6 +53,18 @@ public class PathPreferencesImpl extends AbstractPreferencesImpl<PathPreferences
 	@Override
 	public List<String> getLastFilenames() {
 		return lastFilenames;
+	}
+
+	private void copyPreferencesAtStart() {
+		lastPathAtStart = lastPath;
+		lastFilenamesAtStart = new ArrayList<>();
+		lastFilenamesAtStart.addAll(lastFilenames);
+	}
+
+	@Override
+	public boolean hasChanged() {
+		// TODO Auto-generated method stub
+		return lastPath != lastPathAtStart || !lastFilenames.equals(lastFilenamesAtStart);
 	}
 
 }

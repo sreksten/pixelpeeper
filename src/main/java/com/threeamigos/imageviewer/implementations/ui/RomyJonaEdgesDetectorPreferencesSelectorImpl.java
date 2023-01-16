@@ -27,8 +27,8 @@ public class RomyJonaEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesD
 			ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
 		super(edgesDetectorPreferences, dataModel, exifImageReader, parentComponent, exceptionHandler);
 
-		preferencesSelectorDataModel = new RomyJonaEdgesDetectorPreferencesSelectorDataModel(edgesDetectorPreferences,
-				romyJonaEdgesDetectorPreferences, testImageCanvas);
+		preferencesSelectorDataModel = new RomyJonaEdgesDetectorPreferencesSelectorDataModel(dataModel,
+				edgesDetectorPreferences, romyJonaEdgesDetectorPreferences, testImageCanvas);
 		preferencesSelectorDataModel.setSourceImage(testImage);
 		preferencesSelectorDataModel.startEdgesCalculation();
 	}

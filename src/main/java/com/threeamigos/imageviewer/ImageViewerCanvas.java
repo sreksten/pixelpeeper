@@ -331,6 +331,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			handleEdgeCalculationStarted();
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationCompleted();
+		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
+			handleRequestRepaint();
 		}
 	}
 
@@ -339,6 +341,10 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	}
 
 	private void handleEdgeCalculationCompleted() {
+		repaint();
+	}
+
+	private void handleRequestRepaint() {
 		repaint();
 	}
 

@@ -6,4 +6,6 @@ public interface CommunicationMessages {
 
 	public static final String EDGES_CALCULATION_COMPLETED = "EdgesCalculationCompleted";
 
+	public static final String REQUEST_REPAINT = "RequestRepaint";
+
 }

@@ -10,6 +10,20 @@ import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 
 public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPreferences> implements WindowPreferences {
 
+	private int mainWindowWidthAtStart;
+	private int mainWindowHeightAtStart;
+	private int mainWindowXAtStart;
+	private int mainWindowYAtStart;
+
+	private boolean dragAndDropWindowVisibleAtStart;
+	private int dragAndDropWindowWidthAtStart;
+	private int dragAndDropWindowHeightAtStart;
+	private int dragAndDropWindowXAtStart;
+	private int dragAndDropWindowYAtStart;
+
+	private boolean autorotationAtStart;
+	private boolean movementAppliesToAllImagesAtStart;
+
 	private int mainWindowWidth;
 	private int mainWindowHeight;
 	private int mainWindowX;
@@ -33,6 +47,7 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 		super(persister, errorMessageHandler);
 
 		loadPostConstruct();
+		copyPreferencesAtStart();
 	}
 
 	@Override
@@ -174,6 +189,35 @@ public class WindowPreferencesImpl extends AbstractPreferencesImpl<WindowPrefere
 	public void loadOtherValues() {
 		autorotation = AUTOROTATION_DEFAULT;
 		movementAppliesToAllImages = MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT;
+	}
+
+	private void copyPreferencesAtStart() {
+		mainWindowWidthAtStart = mainWindowWidth;
+		mainWindowHeightAtStart = mainWindowHeight;
+		mainWindowXAtStart = mainWindowX;
+		mainWindowYAtStart = mainWindowY;
+
+		dragAndDropWindowVisibleAtStart = dragAndDropWindowVisible;
+		dragAndDropWindowWidthAtStart = dragAndDropWindowWidth;
+		dragAndDropWindowHeightAtStart = dragAndDropWindowHeight;
+		dragAndDropWindowXAtStart = dragAndDropWindowX;
+		dragAndDropWindowYAtStart = dragAndDropWindowY;
+
+		autorotationAtStart = autorotation;
+		movementAppliesToAllImagesAtStart = movementAppliesToAllImages;
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return mainWindowWidth != mainWindowWidthAtStart || mainWindowHeight != mainWindowHeightAtStart
+				|| mainWindowX != mainWindowXAtStart || mainWindowY != mainWindowYAtStart ||
+
+				dragAndDropWindowVisible != dragAndDropWindowVisibleAtStart
+				|| dragAndDropWindowWidth != dragAndDropWindowWidthAtStart
+				|| dragAndDropWindowHeight != dragAndDropWindowHeightAtStart
+				|| dragAndDropWindowX != dragAndDropWindowXAtStart || dragAndDropWindowY != dragAndDropWindowYAtStart ||
+
+				autorotation != autorotationAtStart || movementAppliesToAllImages != movementAppliesToAllImagesAtStart;
 	}
 
 }

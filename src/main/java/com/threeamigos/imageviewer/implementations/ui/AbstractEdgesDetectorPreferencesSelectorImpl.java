@@ -185,8 +185,15 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		recalculateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				edgesDetectorPreferences.setShowEdges(true);
-				preferencesSelectorDataModel.acceptSelection();
-				dataModel.calculateEdges();
+				// TODO qui occorrerebbe controllare se sia variata unicamente la trasparenza e
+				// nel caso chiamare solo dataModel.requestRepaint();
+				// invece di richiamare calculateEdges
+				if (preferencesSelectorDataModel.isSelectionModified()) {
+					preferencesSelectorDataModel.acceptSelection();
+					dataModel.calculateEdges();
+				} else {
+					dataModel.requestRepaint();
+				}
 			}
 		});
 

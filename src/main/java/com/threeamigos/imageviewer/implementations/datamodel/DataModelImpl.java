@@ -268,6 +268,11 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
+	public void requestRepaint() {
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+	}
+
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
 		propertyChangeSupport.addPropertyChangeListener(pcl);
 	}

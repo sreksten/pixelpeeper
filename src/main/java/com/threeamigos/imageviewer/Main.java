@@ -75,10 +75,9 @@ public class Main {
 
 	// TODO: lens manufacturer
 
-	// TODO: when transparency is modified it is useless to recalculate edges
-	// TODO: recalculation may be spared if no parameters have changed
-
 	// TODO: do not save unmodified preferences
+	
+	// TODO: when toggling auorotation calculation should be stopped and restarted
 
 	public Main() {
 
@@ -191,8 +190,8 @@ public class Main {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				windowPreferences.setMainWindowWidth(canvas.getWidth());
-				windowPreferences.setMainWindowHeight(canvas.getHeight());
+				windowPreferences.setMainWindowWidth(jframe.getWidth());
+				windowPreferences.setMainWindowHeight(jframe.getHeight());
 			}
 
 			@Override
