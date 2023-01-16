@@ -14,7 +14,7 @@ import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
@@ -23,7 +23,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private final PictureData pictureData;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
-	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
+	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -37,12 +37,12 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private boolean edgeCalculationInProgress;
 
 	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, FontService fontService) {
+			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
 		this.pictureData = pictureData;
 		pictureData.addPropertyChangeListener(this);
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
-		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -155,7 +155,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 				imageSliceHeight);
 		BufferedImage edgesImage = null;
 
-		if (cannyEdgeDetectorPreferences.isShowEdges()) {
+		if (edgesDetectorPreferences.isShowEdges()) {
 			edgesImage = pictureData.getEdgesImage();
 			if (edgesImage != null) {
 				edgesImage = edgesImage.getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
@@ -168,8 +168,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
 			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-					cannyEdgeDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
-					cannyEdgeDetectorPreferences.getEdgesTransparency());
+					edgesDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
+					edgesDetectorPreferences.getEdgesTransparency());
 
 			if (selected) {
 				g2d.setColor(Color.RED);

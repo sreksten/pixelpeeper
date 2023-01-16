@@ -8,16 +8,13 @@ import java.util.StringTokenizer;
 import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
 
-public class FileBasedCannyEdgeDetectorPreferencesPersister
-		extends FileBasedAbstractPreferencesPersister<CannyEdgeDetectorPreferences>
-		implements Persister<CannyEdgeDetectorPreferences> {
+public class FileBasedCannyEdgesDetectorPreferencesPersister
+		extends FileBasedAbstractPreferencesPersister<CannyEdgesDetectorPreferences>
+		implements Persister<CannyEdgesDetectorPreferences> {
 
-	private static final String CANNY_EDGE_DETECTOR_PREFERENCES_FILENAME = "canny_edge_detector.preferences";
-
-	private static final String SHOW_EDGE_IMAGES = "show_edge_images";
-	private static final String EDGE_IMAGES_TRANSPARENCY = "edge_images_transparency";
+	private static final String CANNY_EDGES_DETECTOR_PREFERENCES_FILENAME = "canny_edge_detector.preferences";
 
 	private static final String LOW_THRESHOLD = "low_threshold";
 	private static final String HIGH_THRESHOLD = "high_threshold";
@@ -25,14 +22,14 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	private static final String GAUSSIAN_KERNEL_WIDTH = "gaussian_kernel_width";
 	private static final String CONTRAST_NORMALIZED = "contrast_normalized";
 
-	public FileBasedCannyEdgeDetectorPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
+	public FileBasedCannyEdgesDetectorPreferencesPersister(PreferencesRootPathProvider rootPathProvider,
 			ExceptionHandler exceptionHandler) {
 		super(rootPathProvider, exceptionHandler);
 	}
 
 	@Override
 	public String getNamePart() {
-		return CANNY_EDGE_DETECTOR_PREFERENCES_FILENAME;
+		return CANNY_EDGES_DETECTOR_PREFERENCES_FILENAME;
 	}
 
 	@Override
@@ -41,15 +38,13 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	}
 
 	@Override
-	protected void loadImpl(BufferedReader reader, CannyEdgeDetectorPreferences cannyEdgesDetectorPreferences)
+	protected void loadImpl(BufferedReader reader, CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences)
 			throws IOException, IllegalArgumentException {
-		boolean showEdges = CannyEdgeDetectorPreferences.SHOW_EDGES_DEFAULT;
-		int edgesTransparency = CannyEdgeDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT;
-		float lowThreshold = CannyEdgeDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT;
-		float highThreshold = CannyEdgeDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT;
-		float gaussianKernelRadius = CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT;
-		int gaussianKernelWidth = CannyEdgeDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT;
-		boolean contrastNormalized = CannyEdgeDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT;
+		float lowThreshold = CannyEdgesDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT;
+		float highThreshold = CannyEdgesDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT;
+		float gaussianKernelRadius = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT;
+		int gaussianKernelWidth = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT;
+		boolean contrastNormalized = CannyEdgesDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT;
 
 		String line;
 		while ((line = reader.readLine()) != null) {
@@ -57,11 +52,7 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 				StringTokenizer st = new StringTokenizer(line, "=");
 				String key = st.nextToken();
 				String value = st.nextToken();
-				if (SHOW_EDGE_IMAGES.equals(key)) {
-					showEdges = Boolean.valueOf(value);
-				} else if (EDGE_IMAGES_TRANSPARENCY.equals(key)) {
-					edgesTransparency = Integer.parseInt(value);
-				} else if (LOW_THRESHOLD.equalsIgnoreCase(key)) {
+				if (LOW_THRESHOLD.equalsIgnoreCase(key)) {
 					lowThreshold = Float.parseFloat(value);
 				} else if (HIGH_THRESHOLD.equalsIgnoreCase(key)) {
 					highThreshold = Float.parseFloat(value);
@@ -76,9 +67,6 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 		}
 
 		checkBoundaries(lowThreshold, highThreshold, gaussianKernelRadius, gaussianKernelWidth);
-
-		cannyEdgesDetectorPreferences.setShowEdges(showEdges);
-		cannyEdgesDetectorPreferences.setEdgesTransparency(edgesTransparency);
 
 		cannyEdgesDetectorPreferences.setLowThreshold(lowThreshold);
 		cannyEdgesDetectorPreferences.setHighThreshold(highThreshold);
@@ -108,11 +96,8 @@ public class FileBasedCannyEdgeDetectorPreferencesPersister
 	}
 
 	@Override
-	protected void saveImpl(PrintWriter writer, CannyEdgeDetectorPreferences cannyEdgesDetectorPreferences)
+	protected void saveImpl(PrintWriter writer, CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences)
 			throws IOException {
-		writer.println(SHOW_EDGE_IMAGES + "=" + cannyEdgesDetectorPreferences.isShowEdges());
-		writer.println(EDGE_IMAGES_TRANSPARENCY + "=" + cannyEdgesDetectorPreferences.getEdgesTransparency());
-
 		writer.println(LOW_THRESHOLD + "=" + cannyEdgesDetectorPreferences.getLowThreshold());
 		writer.println(HIGH_THRESHOLD + "=" + cannyEdgesDetectorPreferences.getHighThreshold());
 		writer.println(GAUSSIAN_KERNEL_RADIUS + "=" + cannyEdgesDetectorPreferences.getGaussianKernelRadius());

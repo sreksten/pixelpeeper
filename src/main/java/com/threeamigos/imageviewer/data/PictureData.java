@@ -7,9 +7,9 @@ import java.io.File;
 import java.util.Collection;
 
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
-import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
-import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetector;
+import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetectorFactory;
 
 public class PictureData {
 
@@ -17,7 +17,7 @@ public class PictureData {
 	private final ExifMap exifMap;
 	private final File file;
 	private final String filename;
-	private final CannyEdgeDetectorFactory cannyEdgeDetectorFactory;
+	private final EdgesDetectorFactory edgesDetectorFactory;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -30,7 +30,7 @@ public class PictureData {
 	private BufferedImage edgesImage;
 
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
-			CannyEdgeDetectorFactory cannyEdgeDetectorFactory) {
+			EdgesDetectorFactory edgesDetectorFactory) {
 		this.width = width;
 		this.height = height;
 		this.orientation = orientation;
@@ -38,7 +38,7 @@ public class PictureData {
 		this.image = image;
 		this.file = file;
 		this.filename = file.getName();
-		this.cannyEdgeDetectorFactory = cannyEdgeDetectorFactory;
+		this.edgesDetectorFactory = edgesDetectorFactory;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
@@ -133,7 +133,7 @@ public class PictureData {
 				propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
 				Thread thread = new Thread(new Runnable() {
 					public void run() {
-						CannyEdgeDetector detector = cannyEdgeDetectorFactory.getCannyEdgeDetector();
+						EdgesDetector detector = edgesDetectorFactory.getEdgesDetector();
 						detector.setSourceImage(image);
 						detector.process();
 						edgesImage = detector.getEdgesImage();

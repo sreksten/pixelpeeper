@@ -14,7 +14,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
@@ -22,7 +22,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
-	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
+	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -33,10 +33,10 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private ImageSlice activeSlice;
 
 	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, FontService fontService) {
+			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
-		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -74,7 +74,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
 		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
-				cannyEdgeDetectorPreferences, fontService);
+				edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
 		return imageSlice;
@@ -125,7 +125,6 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 				imageSlices.forEach(ImageSlice::startEdgesCalculation);
 			}
 		}
-		System.out.println("ImageSlicesManagerImpl: notifying that edge image recalculation was started");
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
 	}
 

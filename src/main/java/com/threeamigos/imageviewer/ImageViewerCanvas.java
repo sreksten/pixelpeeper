@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -32,14 +33,15 @@ import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
-import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelector;
-import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
+import com.threeamigos.imageviewer.interfaces.ui.EdgesDetectorPreferencesSelector;
+import com.threeamigos.imageviewer.interfaces.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -55,32 +57,36 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private final transient WindowPreferences windowPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
-	private final transient CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
+	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
+	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient DataModel dataModel;
 	private final transient PreferencesPersisterHelper preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
-	private final transient CannyEdgeDetectorPreferencesSelector cannyEdgeDetectorPreferencesSelector;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
 
 	private boolean showHelp = false;
+	private transient EdgesDetectorPreferencesSelector edgesDetectorPreferencesSelector;
 
-	private Map<ExifTag, JMenu> menusByTag = new EnumMap<>(ExifTag.class);
+	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
+	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
+			EdgesDetectorFlavour.class);
 
 	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
 			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
-			FileSelector fileSelector, CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences,
-			CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorPreferencesSelectorFactory,
-			AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
+			FileSelector fileSelector, EdgesDetectorPreferences edgesDetectorPreferences,
+			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory, AboutWindow aboutWindow,
+			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.exifTagPreferences = exifTagPreferences;
-		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
-		this.cannyEdgeDetectorPreferencesSelector = cannyEdgeDetectorPreferencesSelectorFactory.createSelector(this);
+		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
+		this.edgesDetectorPreferencesSelector = edgesDetectorPreferencesSelectorFactory.createSelector(this);
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
@@ -191,13 +197,22 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
 		menuBar.add(edgesDetectorMenu);
-		addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M, cannyEdgeDetectorPreferences.isShowEdges(),
+		JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
+		edgesDetectorMenu.add(edgesDetectorFlavourMenuItem);
+		for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.values()) {
+			JMenuItem flavourMenuItem = addCheckboxMenuItem(edgesDetectorFlavourMenuItem, flavour.getDescription(), -1,
+					edgesDetectorPreferences.getEdgesDetectorFlavour() == flavour, event -> {
+						updateEdgesDetectorFlavour(flavour);
+					});
+			edgesDetectorFlavourMenuItemsByFlavour.put(flavour, flavourMenuItem);
+		}
+		addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M, edgesDetectorPreferences.isShowEdges(),
 				event -> {
-					cannyEdgeDetectorPreferences.setShowEdges(!cannyEdgeDetectorPreferences.isShowEdges());
+					edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
 					repaint();
 				});
 		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyEvent.VK_C, event -> {
-			cannyEdgeDetectorPreferencesSelector.selectParameters(this);
+			edgesDetectorPreferencesSelector.selectParameters(this);
 		});
 
 		JMenu imageHandlingMenu = new JMenu("Image handling");
@@ -226,7 +241,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		tagsMenu.addSeparator();
 		for (ExifTag exifTag : ExifTag.values()) {
 			JMenu exifTagMenu = new JMenu(exifTag.getDescription());
-			menusByTag.put(exifTag, exifTagMenu);
+			exifTagMenusByTag.put(exifTag, exifTagMenu);
 			tagsMenu.add(exifTagMenu);
 			addCheckboxMenuItem(exifTagMenu, ExifTagVisibility.YES.getDescription(), -1,
 					exifTagPreferences.getTagVisibility(exifTag) == ExifTagVisibility.YES, event -> {
@@ -249,8 +264,17 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		}
 	}
 
+	private void updateEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
+		edgesDetectorPreferences.setEdgesDetectorFlavour(flavour);
+		this.edgesDetectorPreferencesSelector = edgesDetectorPreferencesSelectorFactory.createSelector(this);
+		for (Entry<EdgesDetectorFlavour, JMenuItem> entry : edgesDetectorFlavourMenuItemsByFlavour.entrySet()) {
+			entry.getValue().setSelected(edgesDetectorPreferences.getEdgesDetectorFlavour() == entry.getKey());
+		}
+		dataModel.calculateEdges();
+	}
+
 	private void updateExifTagMenu(ExifTag exifTag) {
-		JMenu exifTagMenu = menusByTag.get(exifTag);
+		JMenu exifTagMenu = exifTagMenusByTag.get(exifTag);
 		Component[] items = exifTagMenu.getMenuComponents();
 		ExifTagVisibility exifTagVisibility = exifTagPreferences.getTagVisibility(exifTag);
 		for (int i = 0; i < items.length; i++) {

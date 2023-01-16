@@ -24,7 +24,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
@@ -36,7 +36,7 @@ public class DataModelImpl implements DataModel {
 	private final ImageSlicesManager imageSlicesManager;
 	private final WindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
-	private final CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences;
+	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -45,14 +45,14 @@ public class DataModelImpl implements DataModel {
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
 			ImageSlicesManager imageSlicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
-			CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences, ExifImageReader imageReader) {
+			EdgesDetectorPreferences edgesDetectorPreferences, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
 		this.windowPreferences = windowPreferences;
 		this.pathPreferences = pathPreferences;
-		this.cannyEdgeDetectorPreferences = cannyEdgeDetectorPreferences;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.imageReader = imageReader;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -253,19 +253,17 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isShowEdges() {
-		return cannyEdgeDetectorPreferences.isShowEdges();
+		return edgesDetectorPreferences.isShowEdges();
 	}
 
 	@Override
 	public void toggleShowingEdges() {
-		cannyEdgeDetectorPreferences.setShowEdges(!cannyEdgeDetectorPreferences.isShowEdges());
+		edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
 	}
 
 	@Override
 	public void calculateEdges() {
-		System.out.println("DataModelImpl: asking ImageSlicesManagerImpl to recalculate edge images");
 		imageSlicesManager.recalculateEdges();
-		System.out.println("DataModelImpl: informing that edge images recalculation started");
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
 	}
 

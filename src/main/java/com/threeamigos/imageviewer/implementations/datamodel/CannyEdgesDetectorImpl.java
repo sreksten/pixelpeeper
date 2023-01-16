@@ -3,8 +3,8 @@ package com.threeamigos.imageviewer.implementations.datamodel;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetector;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgesDetector;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
 
 /**
  * <p>
@@ -46,7 +46,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPrefe
  *
  */
 
-public class CannyEdgeDetectorImpl implements CannyEdgeDetector {
+public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
 
 	// statics
 
@@ -82,12 +82,12 @@ public class CannyEdgeDetectorImpl implements CannyEdgeDetector {
 	 * Constructs a new detector with default parameters.
 	 */
 
-	public CannyEdgeDetectorImpl(CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences) {
-		lowThreshold = cannyEdgeDetectorPreferences.getLowThreshold();
-		highThreshold = cannyEdgeDetectorPreferences.getHighThreshold();
-		gaussianKernelRadius = cannyEdgeDetectorPreferences.getGaussianKernelRadius();
-		gaussianKernelWidth = cannyEdgeDetectorPreferences.getGaussianKernelWidth();
-		contrastNormalized = cannyEdgeDetectorPreferences.isContrastNormalized();
+	public CannyEdgesDetectorImpl(CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences) {
+		lowThreshold = cannyEdgesDetectorPreferences.getLowThreshold();
+		highThreshold = cannyEdgesDetectorPreferences.getHighThreshold();
+		gaussianKernelRadius = cannyEdgesDetectorPreferences.getGaussianKernelRadius();
+		gaussianKernelWidth = cannyEdgesDetectorPreferences.getGaussianKernelWidth();
+		contrastNormalized = cannyEdgesDetectorPreferences.isContrastNormalized();
 	}
 
 	// accessors

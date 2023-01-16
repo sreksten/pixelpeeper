@@ -3,50 +3,27 @@ package com.threeamigos.imageviewer.implementations.preferences;
 import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
 
-public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgeDetectorPreferences>
-		implements CannyEdgeDetectorPreferences {
+public class CannyEdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<CannyEdgesDetectorPreferences>
+		implements CannyEdgesDetectorPreferences {
 
-	private boolean showEdges;
-	private int edgesTransparency = 0;
-
-	private float lowThreshold = 2.5f;
-	private float highThreshold = 7.5f;
-	private float gaussianKernelRadius = 2f;
-	private int gaussianKernelWidth = 16;
-	private boolean contrastNormalized = false;
+	private float lowThreshold;
+	private float highThreshold;
+	private float gaussianKernelRadius;
+	private int gaussianKernelWidth;
+	private boolean contrastNormalized;
 
 	@Override
 	protected String getEntityDescription() {
 		return "canny edge detector";
 	}
 
-	public CannyEdgeDetectorPreferencesImpl(Persister<CannyEdgeDetectorPreferences> persister,
+	public CannyEdgesDetectorPreferencesImpl(Persister<CannyEdgesDetectorPreferences> persister,
 			ErrorMessageHandler errorMessageHandler) {
 		super(persister, errorMessageHandler);
 
 		loadPostConstruct();
-	}
-
-	@Override
-	public void setShowEdges(boolean showEdges) {
-		this.showEdges = showEdges;
-	}
-
-	@Override
-	public boolean isShowEdges() {
-		return showEdges;
-	}
-
-	@Override
-	public void setEdgesTransparency(int edgesTransparency) {
-		this.edgesTransparency = edgesTransparency;
-	}
-
-	@Override
-	public int getEdgesTransparency() {
-		return edgesTransparency;
 	}
 
 	@Override
@@ -101,14 +78,11 @@ public class CannyEdgeDetectorPreferencesImpl extends AbstractPreferencesImpl<Ca
 
 	@Override
 	protected void loadDefaultValues() {
-		showEdges = false;
-		edgesTransparency = 30;
-
-		lowThreshold = 2.5f;
-		highThreshold = 7.5f;
-		gaussianKernelRadius = 2f;
-		gaussianKernelWidth = 16;
-		contrastNormalized = false;
+		lowThreshold = CannyEdgesDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT;
+		highThreshold = CannyEdgesDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT;
+		gaussianKernelRadius = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT;
+		gaussianKernelWidth = CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_WIDTH_DEFAULT;
+		contrastNormalized = CannyEdgesDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT;
 	}
 
 }

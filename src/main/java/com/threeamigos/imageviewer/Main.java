@@ -18,39 +18,45 @@ import com.threeamigos.common.util.implementations.SwingMessageHandler;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.PreferencesRootPathProvider;
-import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgeDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
-import com.threeamigos.imageviewer.implementations.persister.FileBasedCannyEdgeDetectorPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.FileBasedCannyEdgesDetectorPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.FileBasedEdgesDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedExifTagPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedPathPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.FileBasedRomyJonaEdgesDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.FileBasedWindowPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.PreferencesPersisterHelperImpl;
-import com.threeamigos.imageviewer.implementations.preferences.CannyEdgeDetectorPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.CannyEdgesDetectorPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.EdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.PathPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
-import com.threeamigos.imageviewer.implementations.ui.CannyEdgeDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
+import com.threeamigos.imageviewer.implementations.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
-import com.threeamigos.imageviewer.interfaces.datamodel.CannyEdgeDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgeDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
+import com.threeamigos.imageviewer.interfaces.preferences.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.CannyEdgeDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
+import com.threeamigos.imageviewer.interfaces.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
@@ -93,37 +99,46 @@ public class Main {
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl(
 				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider, messageHandler), messageHandler);
 
-		CannyEdgeDetectorPreferences cannyEdgeDetectorPreferences = new CannyEdgeDetectorPreferencesImpl(
-				new FileBasedCannyEdgeDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
+		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl(
+				new FileBasedEdgesDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
+				messageHandler);
+
+		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl(
+				new FileBasedCannyEdgesDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
+				messageHandler);
+
+		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl(
+				new FileBasedRomyJonaEdgesDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
 				messageHandler);
 
 		PreferencesPersisterHelper preferencesPersisterHelper = new PreferencesPersisterHelperImpl(windowPreferences,
-				pathPreferences, exifTagPreferences, cannyEdgeDetectorPreferences);
+				pathPreferences, exifTagPreferences, edgesDetectorPreferences, cannyEdgesDetectorPreferences,
+				romyJonaEdgesDetectorPreferences);
 
 		// Data model
 
+		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
+				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
+
 		FontService fontService = new FontServiceImpl();
 
-		CannyEdgeDetectorFactory cannyEdgeDetectorFactory = new CannyEdgeDetectorFactoryImpl(
-				cannyEdgeDetectorPreferences);
-
-		ExifImageReader imageReader = new ExifImageReaderImpl(windowPreferences, cannyEdgeDetectorFactory,
-				messageHandler);
+		ExifImageReader imageReader = new ExifImageReaderImpl(windowPreferences, edgesDetectorFactory, messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
-				cannyEdgeDetectorPreferences, fontService);
+				edgesDetectorPreferences, fontService);
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, cannyEdgeDetectorPreferences, imageReader);
+				pathPreferences, edgesDetectorPreferences, imageReader);
 
 		// User Interface
 
-		CannyEdgeDetectorPreferencesSelectorFactory cannyEdgeDetectorParametersSelectorFactory = new CannyEdgeDetectorPreferencesSelectorFactoryImpl(
-				cannyEdgeDetectorPreferences, dataModel, imageReader, messageHandler);
+		EdgesDetectorPreferencesSelectorFactory edgesDetectorParametersSelectorFactory = new EdgesDetectorPreferencesSelectorFactoryImpl(
+				edgesDetectorPreferences, cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences, dataModel,
+				imageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
@@ -132,8 +147,8 @@ public class Main {
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, messageHandler);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
-				preferencesPersisterHelper, mouseTracker, fileSelector, cannyEdgeDetectorPreferences,
-				cannyEdgeDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
+				preferencesPersisterHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
+				edgesDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JFrame jframe = prepareFrame(imageViewerCanvas, windowPreferences, preferencesPersisterHelper);
 
