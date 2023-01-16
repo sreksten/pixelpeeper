@@ -24,11 +24,11 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 
 	private final CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences;
 
-	private int lowThreshold;
-	private int highThreshold;
-	private int gaussianKernelRadius;
-	private int gaussianKernelWidth;
-	private boolean contrastNormalized;
+	private int lowThresholdBackup;
+	private int highThresholdBackup;
+	private int gaussianKernelRadiusBackup;
+	private int gaussianKernelWidthBackup;
+	private boolean contrastNormalizedBackup;
 
 	JLabel lowThresholdText;
 	JLabel highThresholdText;
@@ -46,25 +46,30 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		super(edgesDetectorPreferences, component);
 		this.cannyEdgesDetectorPreferences = cannyEdgesDetectorPreferences;
 
-		lowThreshold = normalize(cannyEdgesDetectorPreferences.getLowThreshold());
-		highThreshold = normalize(cannyEdgesDetectorPreferences.getHighThreshold());
-		gaussianKernelRadius = normalize(cannyEdgesDetectorPreferences.getGaussianKernelRadius());
-		gaussianKernelWidth = cannyEdgesDetectorPreferences.getGaussianKernelWidth();
-		contrastNormalized = cannyEdgesDetectorPreferences.isContrastNormalized();
+		lowThresholdBackup = normalize(cannyEdgesDetectorPreferences.getLowThreshold());
+		highThresholdBackup = normalize(cannyEdgesDetectorPreferences.getHighThreshold());
+		gaussianKernelRadiusBackup = normalize(cannyEdgesDetectorPreferences.getGaussianKernelRadius());
+		gaussianKernelWidthBackup = cannyEdgesDetectorPreferences.getGaussianKernelWidth();
+		contrastNormalizedBackup = cannyEdgesDetectorPreferences.isContrastNormalized();
 
 		lowThresholdText = new JLabel(String.valueOf(cannyEdgesDetectorPreferences.getLowThreshold()));
 		highThresholdText = new JLabel(String.valueOf(cannyEdgesDetectorPreferences.getHighThreshold()));
 		gaussianKernelRadiusText = new JLabel(String.valueOf(cannyEdgesDetectorPreferences.getGaussianKernelRadius()));
 		gaussianKernelWidthText = new JLabel(String.valueOf(cannyEdgesDetectorPreferences.getGaussianKernelWidth()));
 
-		lowThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, lowThreshold);
-		highThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, highThreshold);
-		gaussianKernelRadiusSlider = createSlider(1, 100, gaussianKernelRadius);
-		gaussianKernelWidthSlider = createSlider(2, 32, gaussianKernelWidth);
-		contrastNormalizedCheckbox = createCheckbox(contrastNormalized);
+		lowThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, lowThresholdBackup);
+		highThresholdSlider = createSlider(MIN_THRESHOLD, MAX_THRESHOLD, highThresholdBackup);
+		gaussianKernelRadiusSlider = createSlider(1, 100, gaussianKernelRadiusBackup);
+		gaussianKernelWidthSlider = createSlider(2, 32, gaussianKernelWidthBackup);
+		contrastNormalizedCheckbox = createCheckbox(contrastNormalizedBackup);
 	}
 
 	void cancelSelectionFlavour() {
+		cannyEdgesDetectorPreferences.setLowThreshold(denormalize(lowThresholdBackup));
+		cannyEdgesDetectorPreferences.setHighThreshold(denormalize(highThresholdBackup));
+		cannyEdgesDetectorPreferences.setGaussianKernelRadius(denormalize(gaussianKernelRadiusBackup));
+		cannyEdgesDetectorPreferences.setGaussianKernelWidth(gaussianKernelWidthBackup);
+		cannyEdgesDetectorPreferences.setContrastNormalized(contrastNormalizedBackup);
 	}
 
 	void acceptSelectionFlavour() {
@@ -76,11 +81,11 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 	}
 
 	void resetFlavour() {
-		lowThresholdSlider.setValue(lowThreshold);
-		highThresholdSlider.setValue(highThreshold);
-		gaussianKernelRadiusSlider.setValue(gaussianKernelRadius);
-		gaussianKernelWidthSlider.setValue(gaussianKernelWidth);
-		contrastNormalizedCheckbox.setSelected(contrastNormalized);
+		lowThresholdSlider.setValue(lowThresholdBackup);
+		highThresholdSlider.setValue(highThresholdBackup);
+		gaussianKernelRadiusSlider.setValue(gaussianKernelRadiusBackup);
+		gaussianKernelWidthSlider.setValue(gaussianKernelWidthBackup);
+		contrastNormalizedCheckbox.setSelected(contrastNormalizedBackup);
 	}
 
 	void resetToDefaultFlavour() {
@@ -138,7 +143,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 
 	@Override
 	public float getHighThreshold() {
-		return denormalize(highThreshold);
+		return denormalize(highThresholdBackup);
 	}
 
 	@Override

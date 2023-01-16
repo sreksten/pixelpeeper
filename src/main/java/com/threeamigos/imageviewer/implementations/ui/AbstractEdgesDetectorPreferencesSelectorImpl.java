@@ -114,6 +114,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
 		if (CANCEL_OPTION.equals(optionPane.getValue())) {
 			preferencesSelectorDataModel.cancelSelection();
+			dataModel.calculateEdges();
 		} else if (OK_OPTION.equals(optionPane.getValue())) {
 			preferencesSelectorDataModel.acceptSelection();
 			dataModel.calculateEdges();

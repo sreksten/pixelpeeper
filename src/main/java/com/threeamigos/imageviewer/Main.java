@@ -75,6 +75,11 @@ public class Main {
 
 	// TODO: lens manufacturer
 
+	// TODO: when transparency is modified it is useless to recalculate edges
+	// TODO: recalculation may be spared if no parameters have changed
+
+	// TODO: do not save unmodified preferences
+
 	public Main() {
 
 		// A way to show error/warning messages to the user

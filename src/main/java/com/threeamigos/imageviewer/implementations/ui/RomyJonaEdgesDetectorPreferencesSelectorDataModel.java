@@ -19,8 +19,8 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 
 	private final RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences;
 
-	private int puppamento;
-	private boolean aNastro;
+	private int puppamentoBackup;
+	private boolean aNastroBackup;
 
 	JLabel puppamentoText;
 
@@ -32,16 +32,18 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 		super(edgesDetectorPreferences, component);
 		this.romyJonaEdgesDetectorPreferences = romyJonaEdgesDetectorPreferences;
 
-		puppamento = romyJonaEdgesDetectorPreferences.getPuppamento();
-		aNastro = romyJonaEdgesDetectorPreferences.isANastro();
+		puppamentoBackup = romyJonaEdgesDetectorPreferences.getPuppamento();
+		aNastroBackup = romyJonaEdgesDetectorPreferences.isANastro();
 
 		puppamentoText = new JLabel(String.valueOf(romyJonaEdgesDetectorPreferences.getPuppamento()));
 
-		puppamentoSlider = createSlider(1, 3, puppamento);
-		aNastroCheckbox = createCheckbox(aNastro);
+		puppamentoSlider = createSlider(1, 3, puppamentoBackup);
+		aNastroCheckbox = createCheckbox(aNastroBackup);
 	}
 
 	void cancelSelectionFlavour() {
+		romyJonaEdgesDetectorPreferences.setPuppamento(puppamentoBackup);
+		romyJonaEdgesDetectorPreferences.setANastro(aNastroBackup);
 	}
 
 	void acceptSelectionFlavour() {
@@ -50,8 +52,8 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 	}
 
 	void resetFlavour() {
-		puppamentoSlider.setValue(puppamento);
-		aNastroCheckbox.setSelected(aNastro);
+		puppamentoSlider.setValue(puppamentoBackup);
+		aNastroCheckbox.setSelected(aNastroBackup);
 	}
 
 	void resetToDefaultFlavour() {

@@ -24,7 +24,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	private BufferedImage sourceImage;
 	private BufferedImage edgesImage;
 
-	private int transparency;
+	private int transparencyBackup;
 
 	final JLabel transparencyText;
 
@@ -35,13 +35,13 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.component = component;
 
-		transparency = normalizeTransparency(edgesDetectorPreferences.getEdgesTransparency());
-		transparencyText = new JLabel(String.valueOf(transparency));
-		transparencySlider = createSlider(MIN_TRANSPARENCY, MAX_TRANSPARENCY, transparency);
+		transparencyBackup = normalizeTransparency(edgesDetectorPreferences.getEdgesTransparency());
+		transparencyText = new JLabel(String.valueOf(transparencyBackup));
+		transparencySlider = createSlider(MIN_TRANSPARENCY, MAX_TRANSPARENCY, transparencyBackup);
 	}
 
 	final void cancelSelection() {
-		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparency));
+		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencyBackup));
 		cancelSelectionFlavour();
 	}
 
@@ -55,10 +55,10 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	abstract void acceptSelectionFlavour();
 
 	final void reset() {
-		edgesDetectorPreferences.setEdgesTransparency(transparency);
+		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
 
 		resetFlavour();
-		transparencySlider.setValue(transparency);
+		transparencySlider.setValue(transparencyBackup);
 
 		component.repaint();
 	}
