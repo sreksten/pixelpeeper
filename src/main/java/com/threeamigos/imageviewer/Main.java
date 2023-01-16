@@ -76,8 +76,6 @@ public class Main {
 
 	// TODO: lens manufacturer
 
-	// TODO: do not save unmodified preferences
-
 	// TODO: when toggling auorotation calculation should be stopped and restarted
 
 	public Main() {
