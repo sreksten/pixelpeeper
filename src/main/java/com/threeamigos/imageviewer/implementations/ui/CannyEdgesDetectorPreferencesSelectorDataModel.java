@@ -6,7 +6,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.threeamigos.imageviewer.implementations.datamodel.CannyEdgesDetectorImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -16,7 +15,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 
 public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdgesDetectorPreferencesSelectorDataModel
-		implements EdgesDetectorPreferences, CannyEdgesDetectorPreferences, ChangeListener {
+		implements CannyEdgesDetectorPreferences {
 
 	private static final float NORMALIZATION_VALUE = 10.0f;
 
@@ -66,7 +65,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		contrastNormalizedCheckbox = createCheckbox(contrastNormalizedBackup);
 	}
 
-	void cancelSelectionFlavour() {
+	void cancelSelection() {
 		cannyEdgesDetectorPreferences.setLowThreshold(denormalize(lowThresholdBackup));
 		cannyEdgesDetectorPreferences.setHighThreshold(denormalize(highThresholdBackup));
 		cannyEdgesDetectorPreferences.setGaussianKernelRadius(denormalize(gaussianKernelRadiusBackup));
@@ -74,7 +73,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		cannyEdgesDetectorPreferences.setContrastNormalized(contrastNormalizedBackup);
 	}
 
-	void acceptSelectionFlavour() {
+	void acceptSelection() {
 		cannyEdgesDetectorPreferences.setLowThreshold(denormalize(lowThresholdSlider.getValue()));
 		cannyEdgesDetectorPreferences.setHighThreshold(denormalize(highThresholdSlider.getValue()));
 		cannyEdgesDetectorPreferences.setGaussianKernelRadius(denormalize(gaussianKernelRadiusSlider.getValue()));
@@ -82,7 +81,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		cannyEdgesDetectorPreferences.setContrastNormalized(contrastNormalizedCheckbox.isSelected());
 	}
 
-	void resetFlavour() {
+	void reset() {
 		lowThresholdSlider.setValue(lowThresholdBackup);
 		highThresholdSlider.setValue(highThresholdBackup);
 		gaussianKernelRadiusSlider.setValue(gaussianKernelRadiusBackup);
@@ -90,7 +89,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		contrastNormalizedCheckbox.setSelected(contrastNormalizedBackup);
 	}
 
-	void resetToDefaultFlavour() {
+	void resetToDefault() {
 		lowThresholdSlider.setValue(normalize(CannyEdgesDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT));
 		highThresholdSlider.setValue(normalize(CannyEdgesDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT));
 		gaussianKernelRadiusSlider.setValue(normalize(CannyEdgesDetectorPreferences.GAUSSIAN_KERNEL_RADIUS_DEFAULT));
@@ -106,7 +105,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		return value / NORMALIZATION_VALUE;
 	}
 
-	public void stateChangedFlavour(ChangeEvent e) {
+	public void handleStateChanged(ChangeEvent e) {
 		Object object = e.getSource();
 
 		if (object == lowThresholdSlider) {
@@ -196,11 +195,6 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 						.getValue()
 				|| cannyEdgesDetectorPreferences.getGaussianKernelWidth() != gaussianKernelWidthSlider.getValue()
 				|| cannyEdgesDetectorPreferences.isContrastNormalized() != contrastNormalizedCheckbox.isSelected();
-	}
-
-	@Override
-	public boolean hasChanged() {
-		return false;
 	}
 
 }

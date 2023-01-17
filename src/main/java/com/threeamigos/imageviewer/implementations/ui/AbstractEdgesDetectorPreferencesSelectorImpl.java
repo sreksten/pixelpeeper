@@ -106,7 +106,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				preferencesSelectorDataModel.cancelSelection();
+				preferencesSelectorDataModel.abstractCancelSelection();
 				dialog.setVisible(false);
 			}
 		});
@@ -117,14 +117,14 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		dialog.setVisible(true);
 
 		if (CANCEL_OPTION.equals(optionPane.getValue())) {
-			preferencesSelectorDataModel.cancelSelection();
+			preferencesSelectorDataModel.abstractCancelSelection();
 			if (isShowEdgesAtStart) {
 				dataModel.calculateEdges();
 			}
 			edgesDetectorPreferences.setShowEdges(isShowEdgesAtStart);
 			dataModel.requestRepaint();
 		} else if (OK_OPTION.equals(optionPane.getValue())) {
-			preferencesSelectorDataModel.acceptSelection();
+			preferencesSelectorDataModel.abstractAcceptSelection();
 			dataModel.calculateEdges();
 		}
 
@@ -194,7 +194,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 			public void actionPerformed(ActionEvent e) {
 				edgesDetectorPreferences.setShowEdges(true);
 				if (preferencesSelectorDataModel.isAnyCalculationParameterModified()) {
-					preferencesSelectorDataModel.acceptSelection();
+					preferencesSelectorDataModel.abstractAcceptSelection();
 					dataModel.calculateEdges();
 				} else {
 					dataModel.requestRepaint();
@@ -269,7 +269,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		resetToPrevious.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				preferencesSelectorDataModel.reset();
+				preferencesSelectorDataModel.abstractReset();
 			}
 		});
 
@@ -281,7 +281,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		resetToDefault.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				preferencesSelectorDataModel.resetToDefault();
+				preferencesSelectorDataModel.abstractResetToDefault();
 			}
 		});
 

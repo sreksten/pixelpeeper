@@ -6,7 +6,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.threeamigos.imageviewer.implementations.datamodel.RomyJonaEdgesDetectorImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -16,7 +15,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferenc
 import com.threeamigos.imageviewer.interfaces.preferences.RomyJonaEdgesDetectorPreferences;
 
 public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractEdgesDetectorPreferencesSelectorDataModel
-		implements EdgesDetectorPreferences, RomyJonaEdgesDetectorPreferences, ChangeListener {
+		implements RomyJonaEdgesDetectorPreferences {
 
 	private final RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences;
 
@@ -43,27 +42,27 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 		aNastroCheckbox = createCheckbox(aNastroBackup);
 	}
 
-	void cancelSelectionFlavour() {
+	void cancelSelection() {
 		romyJonaEdgesDetectorPreferences.setPuppamento(puppamentoBackup);
 		romyJonaEdgesDetectorPreferences.setANastro(aNastroBackup);
 	}
 
-	void acceptSelectionFlavour() {
+	void acceptSelection() {
 		romyJonaEdgesDetectorPreferences.setPuppamento(puppamentoSlider.getValue());
 		romyJonaEdgesDetectorPreferences.setANastro(aNastroCheckbox.isSelected());
 	}
 
-	void resetFlavour() {
+	void reset() {
 		puppamentoSlider.setValue(puppamentoBackup);
 		aNastroCheckbox.setSelected(aNastroBackup);
 	}
 
-	void resetToDefaultFlavour() {
+	void resetToDefault() {
 		puppamentoSlider.setValue(RomyJonaEdgesDetectorPreferences.PUPPAMENTO_PREFERENCES_DEFAULT);
 		aNastroCheckbox.setSelected(RomyJonaEdgesDetectorPreferences.A_NASTRO_PREFERENCES_DEFAULT);
 	}
 
-	public void stateChangedFlavour(ChangeEvent e) {
+	public void handleStateChanged(ChangeEvent e) {
 		Object object = e.getSource();
 
 		if (object == puppamentoSlider) {
@@ -105,11 +104,6 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 	boolean isAnyCalculationParameterModified() {
 		return romyJonaEdgesDetectorPreferences.getPuppamento() != puppamentoSlider.getValue()
 				|| romyJonaEdgesDetectorPreferences.isANastro() != aNastroCheckbox.isSelected();
-	}
-
-	@Override
-	public boolean hasChanged() {
-		return false;
 	}
 
 }

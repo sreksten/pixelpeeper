@@ -43,41 +43,41 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 		transparencySlider = createSlider(MIN_TRANSPARENCY, MAX_TRANSPARENCY, transparencyBackup);
 	}
 
-	final void cancelSelection() {
+	final void abstractCancelSelection() {
 		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencyBackup));
-		cancelSelectionFlavour();
+		cancelSelection();
 	}
 
-	abstract void cancelSelectionFlavour();
+	abstract void cancelSelection();
 
-	final void acceptSelection() {
+	final void abstractAcceptSelection() {
 		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencySlider.getValue()));
-		acceptSelectionFlavour();
+		acceptSelection();
 	}
 
-	abstract void acceptSelectionFlavour();
+	abstract void acceptSelection();
 
 	abstract boolean isAnyCalculationParameterModified();
 
-	final void reset() {
+	final void abstractReset() {
 		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
 
-		resetFlavour();
+		reset();
 		transparencySlider.setValue(transparencyBackup);
 
 		component.repaint();
 	}
 
-	abstract void resetFlavour();
+	abstract void reset();
 
-	final void resetToDefault() {
+	final void abstractResetToDefault() {
 		edgesDetectorPreferences.setEdgesTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
 		transparencySlider.setValue(normalizeTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT));
-		resetToDefaultFlavour();
+		resetToDefault();
 		component.repaint();
 	}
 
-	abstract void resetToDefaultFlavour();
+	abstract void resetToDefault();
 
 	protected final JSlider createSlider(int minValue, int maxValue, int currentValue) {
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, currentValue);
@@ -107,42 +107,14 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 			transparencyText.setText(String.valueOf(transparencySlider.getValue()));
 			edgesDetectorPreferences.setEdgesTransparency(denormalizeTransparency(transparencySlider.getValue()));
 		} else {
-			stateChangedFlavour(e);
+			handleStateChanged(e);
 		}
 
 		startEdgesCalculation();
 		component.repaint();
 	}
 
-	protected abstract void stateChangedFlavour(ChangeEvent e);
-
-	@Override
-	public final void persist() {
-	}
-
-	@Override
-	public final void setShowEdges(boolean showEdges) {
-	}
-
-	@Override
-	public final boolean isShowEdges() {
-		return true;
-	}
-
-	@Override
-	public final void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
-	}
-
-	@Override
-	public abstract EdgesDetectorFlavour getEdgesDetectorFlavour();
-
-	public final int getEdgesTransparency() {
-		return denormalizeTransparency(transparencySlider.getValue());
-	}
-
-	public final void setEdgesTransparency(int transparency) {
-		transparencySlider.setValue(normalizeTransparency(transparency));
-	}
+	protected abstract void handleStateChanged(ChangeEvent e);
 
 	public final void startEdgesCalculation() {
 		if (sourceImage != null) {
@@ -165,6 +137,43 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 	final BufferedImage getEdgesImage() {
 		return edgesImage;
+	}
+
+	// EdgesDetectorPreferences
+
+	@Override
+	public final void setShowEdges(boolean showEdges) {
+	}
+
+	@Override
+	public final boolean isShowEdges() {
+		return true;
+	}
+
+	public final void setEdgesTransparency(int transparency) {
+		transparencySlider.setValue(normalizeTransparency(transparency));
+	}
+
+	public final int getEdgesTransparency() {
+		return denormalizeTransparency(transparencySlider.getValue());
+	}
+
+	@Override
+	public final void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
+	}
+
+	@Override
+	public abstract EdgesDetectorFlavour getEdgesDetectorFlavour();
+
+	// Persistable part of EdgeDetectorPreferences
+
+	@Override
+	public boolean hasChanged() {
+		return false;
+	}
+
+	@Override
+	public final void persist() {
 	}
 
 }
