@@ -102,7 +102,7 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 	}
 
 	@Override
-	boolean isSelectionModified() {
+	boolean isAnyCalculationParameterModified() {
 		return romyJonaEdgesDetectorPreferences.getPuppamento() != puppamentoSlider.getValue()
 				|| romyJonaEdgesDetectorPreferences.isANastro() != aNastroCheckbox.isSelected();
 	}

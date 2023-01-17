@@ -63,6 +63,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 	private ExifImageReader exifImageReader;
 	private ExceptionHandler exceptionHandler;
 
+	private boolean isShowEdgesAtStart;
+
 	protected AbstractEdgesDetectorPreferencesSelectorDataModel preferencesSelectorDataModel;
 
 	public AbstractEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,
@@ -86,6 +88,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		}
 		testImageCanvas = new SourceImageCanvas();
 		testImageCanvas.setSize(width, height);
+
+		isShowEdgesAtStart = edgesDetectorPreferences.isShowEdges();
 	}
 
 	@Override
@@ -114,7 +118,11 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
 		if (CANCEL_OPTION.equals(optionPane.getValue())) {
 			preferencesSelectorDataModel.cancelSelection();
-			dataModel.calculateEdges();
+			if (isShowEdgesAtStart) {
+				dataModel.calculateEdges();
+			}
+			edgesDetectorPreferences.setShowEdges(isShowEdgesAtStart);
+			dataModel.requestRepaint();
 		} else if (OK_OPTION.equals(optionPane.getValue())) {
 			preferencesSelectorDataModel.acceptSelection();
 			dataModel.calculateEdges();
@@ -185,10 +193,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		recalculateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				edgesDetectorPreferences.setShowEdges(true);
-				// TODO qui occorrerebbe controllare se sia variata unicamente la trasparenza e
-				// nel caso chiamare solo dataModel.requestRepaint();
-				// invece di richiamare calculateEdges
-				if (preferencesSelectorDataModel.isSelectionModified()) {
+				if (preferencesSelectorDataModel.isAnyCalculationParameterModified()) {
 					preferencesSelectorDataModel.acceptSelection();
 					dataModel.calculateEdges();
 				} else {

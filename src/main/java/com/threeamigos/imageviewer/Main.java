@@ -50,10 +50,10 @@ import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.CannyEdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
+import com.threeamigos.imageviewer.interfaces.preferences.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
@@ -76,7 +76,11 @@ public class Main {
 
 	// TODO: lens manufacturer
 
-	// TODO: when toggling auorotation calculation should be stopped and restarted
+	// TODO: when toggling autorotation calculation should be stopped and restarted
+
+	// TODO: when the edges preference window is changed to a non-dialog window, the
+	// menu should be
+	// switched off (or the window itself should be shut down and called once again)
 
 	public Main() {
 
@@ -102,7 +106,7 @@ public class Main {
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl(
 				new FileBasedExifTagPreferencesPersister(preferencesRootPathProvider, messageHandler), messageHandler);
 
-		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl(
+		PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl(
 				new FileBasedEdgesDetectorPreferencesPersister(preferencesRootPathProvider, messageHandler),
 				messageHandler);
 
@@ -125,7 +129,8 @@ public class Main {
 
 		FontService fontService = new FontServiceImpl();
 
-		ExifImageReader imageReader = new ExifImageReaderImpl(windowPreferences, edgesDetectorFactory, messageHandler);
+		ExifImageReader exifImageReader = new ExifImageReaderImpl(windowPreferences, edgesDetectorFactory,
+				messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
@@ -135,13 +140,13 @@ public class Main {
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, edgesDetectorPreferences, imageReader);
+				pathPreferences, edgesDetectorPreferences, exifImageReader);
 
 		// User Interface
 
 		EdgesDetectorPreferencesSelectorFactory edgesDetectorParametersSelectorFactory = new EdgesDetectorPreferencesSelectorFactoryImpl(
 				edgesDetectorPreferences, cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences, dataModel,
-				imageReader, messageHandler);
+				exifImageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 

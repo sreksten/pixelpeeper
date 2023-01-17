@@ -57,7 +57,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 	abstract void acceptSelectionFlavour();
 
-	abstract boolean isSelectionModified();
+	abstract boolean isAnyCalculationParameterModified();
 
 	final void reset() {
 		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
@@ -166,4 +166,5 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	final BufferedImage getEdgesImage() {
 		return edgesImage;
 	}
+
 }

@@ -189,7 +189,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 	}
 
 	@Override
-	boolean isSelectionModified() {
+	boolean isAnyCalculationParameterModified() {
 		return normalize(cannyEdgesDetectorPreferences.getLowThreshold()) != lowThresholdSlider.getValue()
 				|| normalize(cannyEdgesDetectorPreferences.getHighThreshold()) != highThresholdSlider.getValue()
 				|| normalize(cannyEdgesDetectorPreferences.getGaussianKernelRadius()) != gaussianKernelRadiusSlider

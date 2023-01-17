@@ -1,13 +1,18 @@
 package com.threeamigos.imageviewer.implementations.preferences;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
 import com.threeamigos.imageviewer.implementations.ui.AbstractPreferencesImpl;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PropertyChangeAwareEdgesDetectorPreferences;
 
 public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesDetectorPreferences>
-		implements EdgesDetectorPreferences {
+		implements PropertyChangeAwareEdgesDetectorPreferences {
 
 	private boolean showEdgesAtStart;
 	private int edgesTransparencyAtStart;
@@ -16,6 +21,8 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 	private boolean showEdges;
 	private int edgesTransparency;
 	private EdgesDetectorFlavour flavour;
+
+	private final PropertyChangeSupport propertyChangeSupport;
 
 	@Override
 	protected String getEntityDescription() {
@@ -26,6 +33,8 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 			ErrorMessageHandler errorMessageHandler) {
 		super(persister, errorMessageHandler);
 
+		propertyChangeSupport = new PropertyChangeSupport(this);
+
 		loadPostConstruct();
 		copyPreferencesAtStart();
 	}
@@ -33,6 +42,7 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 	@Override
 	public void setShowEdges(boolean showEdges) {
 		this.showEdges = showEdges;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_VISIBILITY, !showEdges, showEdges);
 	}
 
 	@Override
@@ -78,4 +88,15 @@ public class EdgesDetectorPreferencesImpl extends AbstractPreferencesImpl<EdgesD
 		return showEdges != showEdgesAtStart || edgesTransparency != edgesTransparencyAtStart
 				|| flavour != flavourAtStart;
 	}
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
 }
