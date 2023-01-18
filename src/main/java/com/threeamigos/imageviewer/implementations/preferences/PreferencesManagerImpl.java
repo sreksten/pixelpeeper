@@ -1,9 +1,9 @@
 package com.threeamigos.imageviewer.implementations.preferences;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.persister.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
 

@@ -1,7 +1,7 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
+import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
-import com.threeamigos.imageviewer.interfaces.persister.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 
 public class EdgesDetectorPreferencesStatusTracker implements StatusTracker<EdgesDetectorPreferences> {

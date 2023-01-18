@@ -1,4 +1,4 @@
-package com.threeamigos.imageviewer.interfaces.persister;
+package com.threeamigos.imageviewer.interfaces;
 
 public interface StatusTracker<T> {
 

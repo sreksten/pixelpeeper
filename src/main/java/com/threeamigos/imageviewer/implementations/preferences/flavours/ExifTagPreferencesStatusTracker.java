@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
-import com.threeamigos.imageviewer.interfaces.persister.StatusTracker;
+import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 
 public class ExifTagPreferencesStatusTracker implements StatusTracker<ExifTagPreferences> {

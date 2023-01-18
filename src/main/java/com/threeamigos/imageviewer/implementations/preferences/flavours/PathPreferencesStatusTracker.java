@@ -3,7 +3,7 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.threeamigos.imageviewer.interfaces.persister.StatusTracker;
+import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 
 public class PathPreferencesStatusTracker implements StatusTracker<PathPreferences> {
