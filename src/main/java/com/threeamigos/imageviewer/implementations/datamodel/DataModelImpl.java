@@ -24,9 +24,9 @@ import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
-import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 
 public class DataModelImpl implements DataModel {

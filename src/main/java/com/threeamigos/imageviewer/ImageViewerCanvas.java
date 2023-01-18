@@ -33,15 +33,17 @@ import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
-import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorFlavour;
-import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.PreferencesPersisterHelper;
-import com.threeamigos.imageviewer.interfaces.preferences.PropertyChangeAwareEdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
+import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
+import com.threeamigos.imageviewer.interfaces.persister.PersistableHelper;
+import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
+import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
-import com.threeamigos.imageviewer.interfaces.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -60,7 +62,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
 	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient DataModel dataModel;
-	private final transient PreferencesPersisterHelper preferencesPersisterHelper;
+	private final transient PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
@@ -73,8 +75,9 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			EdgesDetectorFlavour.class);
 
 	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
-			DataModel dataModel, PreferencesPersisterHelper preferencesPersisterHelper, MouseTracker mouseTracker,
-			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
+			DataModel dataModel, PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper,
+			MouseTracker mouseTracker, FileSelector fileSelector,
+			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory, AboutWindow aboutWindow,
 			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();

@@ -15,7 +15,7 @@ import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 
 public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {

@@ -14,8 +14,8 @@ import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.preferences.EdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {

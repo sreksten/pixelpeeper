@@ -8,8 +8,8 @@ import java.util.Collection;
 
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetector;
-import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
+import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 
 public class PictureData {
 

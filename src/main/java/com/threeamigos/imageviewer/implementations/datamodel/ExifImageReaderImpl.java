@@ -8,9 +8,9 @@ import javax.imageio.ImageIO;
 import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.datamodel.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
-import com.threeamigos.imageviewer.interfaces.preferences.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 
 public class ExifImageReaderImpl implements ExifImageReader {
 

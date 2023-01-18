@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import com.threeamigos.imageviewer.interfaces.preferences.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 
 public class FileSelectorImpl implements FileSelector {
