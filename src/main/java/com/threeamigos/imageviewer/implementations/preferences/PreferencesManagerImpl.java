@@ -28,7 +28,7 @@ public class PreferencesManagerImpl<T extends Preferences> implements Preference
 			}
 			preferences.loadDefaultValues();
 		}
-		statusTracker.hasChanged();
+		statusTracker.loadInitialValues();
 	}
 
 	@Override
