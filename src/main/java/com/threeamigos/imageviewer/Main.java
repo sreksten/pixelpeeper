@@ -108,7 +108,7 @@ public class Main {
 			System.exit(0);
 		}
 
-		PersistableHelper<PreferencesManager<? extends Preferences>> persisterHelper = new PersistableHelperImpl<>();
+		PersistableHelper<PreferencesManager<? extends Preferences>> persistableHelper = new PersistableHelperImpl<>();
 
 		WindowPreferences windowPreferences = new WindowPreferencesImpl();
 		StatusTracker<WindowPreferences> windowPreferencesStatusTracker = new WindowPreferencesStatusTracker(
@@ -117,7 +117,7 @@ public class Main {
 				preferencesRootPathProvider, messageHandler);
 		PreferencesManager<WindowPreferences> windowPreferencesManager = new PreferencesManagerImpl<>(windowPreferences,
 				windowPreferencesStatusTracker, windowPreferencesPersister, messageHandler);
-		persisterHelper.add(windowPreferencesManager);
+		persistableHelper.add(windowPreferencesManager);
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
 		StatusTracker<PathPreferences> pathPreferencesStatusTracker = new PathPreferencesStatusTracker(pathPreferences);
@@ -125,7 +125,7 @@ public class Main {
 				preferencesRootPathProvider, messageHandler);
 		PreferencesManager<PathPreferences> pathPreferencesManager = new PreferencesManagerImpl<>(pathPreferences,
 				pathPreferencesStatusTracker, pathPreferencesPersister, messageHandler);
-		persisterHelper.add(pathPreferencesManager);
+		persistableHelper.add(pathPreferencesManager);
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl();
 		StatusTracker<ExifTagPreferences> exifTagPreferencesStatusTracker = new ExifTagPreferencesStatusTracker(
@@ -134,7 +134,7 @@ public class Main {
 				preferencesRootPathProvider, messageHandler);
 		PreferencesManager<ExifTagPreferences> exifTagPreferencesManager = new PreferencesManagerImpl<>(
 				exifTagPreferences, exifTagPreferencesStatusTracker, exifTagPreferencesPersister, messageHandler);
-		persisterHelper.add(exifTagPreferencesManager);
+		persistableHelper.add(exifTagPreferencesManager);
 
 		PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
 		StatusTracker<EdgesDetectorPreferences> edgesDetectorPreferencesStatusTracker = new EdgesDetectorPreferencesStatusTracker(
@@ -144,7 +144,7 @@ public class Main {
 		PreferencesManager<EdgesDetectorPreferences> edgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
 				edgesDetectorPreferences, edgesDetectorPreferencesStatusTracker, edgesDetectorPreferencesPersister,
 				messageHandler);
-		persisterHelper.add(edgesDetectorPreferencesManager);
+		persistableHelper.add(edgesDetectorPreferencesManager);
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
 		StatusTracker<CannyEdgesDetectorPreferences> cannyEdgesDetectorPreferencesStatusTracker = new CannyEdgesDetectorPreferencesStatusTracker(
@@ -154,7 +154,7 @@ public class Main {
 		PreferencesManager<CannyEdgesDetectorPreferences> cannyEdgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
 				cannyEdgesDetectorPreferences, cannyEdgesDetectorPreferencesStatusTracker,
 				cannyEdgesDetectorPreferencesPersister, messageHandler);
-		persisterHelper.add(cannyEdgesDetectorPreferencesManager);
+		persistableHelper.add(cannyEdgesDetectorPreferencesManager);
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
 		StatusTracker<RomyJonaEdgesDetectorPreferences> romyJonaEdgesDetectorPreferencesStatusTracker = new RomyJonaEdgesDetectorPreferencesStatusTracker(
@@ -164,7 +164,7 @@ public class Main {
 		PreferencesManager<RomyJonaEdgesDetectorPreferences> romyJonaEdgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
 				romyJonaEdgesDetectorPreferences, romyJonaEdgesDetectorPreferencesStatusTracker,
 				romyJonaEdgesDetectorPreferencesPersister, messageHandler);
-		persisterHelper.add(romyJonaEdgesDetectorPreferencesManager);
+		persistableHelper.add(romyJonaEdgesDetectorPreferencesManager);
 
 		// Data model
 
@@ -199,13 +199,13 @@ public class Main {
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, messageHandler);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
-				persisterHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
+				persistableHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);
 
-		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, persisterHelper);
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, persistableHelper);
 
 		jframe.setVisible(true);
 
