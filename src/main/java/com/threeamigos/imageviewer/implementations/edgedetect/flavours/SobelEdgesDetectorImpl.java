@@ -40,11 +40,19 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 				int val21 = getGrayScale(sourceImage.getRGB(i + 1, j));
 				int val22 = getGrayScale(sourceImage.getRGB(i + 1, j + 1));
 
-				int gx = ((-1 * val00) + (0 * val01) + (1 * val02)) + ((-2 * val10) + (0 * val11) + (2 * val12))
-						+ ((-1 * val20) + (0 * val21) + (1 * val22));
+				// gx =
+				// ((-1 * val00) + (0 * val01) + (1 * val02)) +
+				// ((-2 * val10) + (0 * val11) + (2 * val12)) +
+				// ((-1 * val20) + (0 * val21) + (1 * val22))
 
-				int gy = ((-1 * val00) + (-2 * val01) + (-1 * val02)) + ((0 * val10) + (0 * val11) + (0 * val12))
-						+ ((1 * val20) + (2 * val21) + (1 * val22));
+				int gx = -val00 + val02 - val10 - val10 + val12 + val12 - val20 + val22;
+
+				// gy =
+				// ((-1 * val00) + (-2 * val01) + (-1 * val02)) +
+				// ((0 * val10) + (0 * val11) + (0 * val12)) +
+				// ((1 * val20) + (2 * val21) + (1 * val22))
+
+				int gy = -val00 - val01 - val01 - val02 + val20 + val21 + val21 + val22;
 
 				double gval = Math.sqrt((gx * gx) + (gy * gy));
 				int g = (int) gval;
