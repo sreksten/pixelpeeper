@@ -5,14 +5,13 @@ import com.threeamigos.imageviewer.interfaces.persister.FilePersistResult;
 class FilePersistResultImpl implements FilePersistResult {
 
 	public static final FilePersistResultImpl notFound(String fileDescription) {
-		FilePersistResultImpl persistResult = new FilePersistResultImpl(
-				"No " + fileDescription + " preferences file found");
+		FilePersistResultImpl persistResult = new FilePersistResultImpl("No " + fileDescription + " file found");
 		persistResult.notFound = true;
 		return persistResult;
 	}
 
 	public static final FilePersistResultImpl cannotBeRead(String fileDescription) {
-		return new FilePersistResultImpl(fileDescription + " preferences file cannot be read");
+		return new FilePersistResultImpl(fileDescription + " file cannot be read");
 	}
 
 	public static final FilePersistResultImpl pathNotAccessible() {
