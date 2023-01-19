@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.implementations.edgedetect;
 
 import com.threeamigos.imageviewer.implementations.edgedetect.flavours.CannyEdgesDetectorImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.flavours.RomyJonaEdgesDetectorImpl;
+import com.threeamigos.imageviewer.implementations.edgedetect.flavours.SobelEdgesDetectorImpl;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
@@ -29,6 +30,8 @@ public class EdgesDetectorFactoryImpl implements EdgesDetectorFactory {
 			return new CannyEdgesDetectorImpl(cannyEdgesDetectorPreferences);
 		case ROMY_JONA_EDGES_DETECTOR:
 			return new RomyJonaEdgesDetectorImpl(romyJonaEdgesDetectorPreferences);
+		case SOBEL_EDGES_DETECTOR:
+			return new SobelEdgesDetectorImpl();
 		default:
 			throw new IllegalArgumentException();
 		}

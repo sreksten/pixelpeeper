@@ -101,6 +101,8 @@ public class Main {
 
 	// TODO: the drag and drop window should add some text / image
 
+	// BUGFIX: empty messages if preferences files are empty/not valid
+
 	public Main() {
 
 		// A way to show error/warning messages to the user

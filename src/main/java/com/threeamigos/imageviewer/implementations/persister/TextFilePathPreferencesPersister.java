@@ -57,20 +57,17 @@ public class TextFilePathPreferencesPersister extends TextFilePersister<PathPref
 			}
 		}
 		if (path == null) {
-			throw new IllegalArgumentException("No path found in " + getEntityDescription() + " preferences file");
+			throw new IllegalArgumentException("No path found in " + getEntityDescription() + " file");
 		}
 		File file = new File(path);
 		if (!file.exists()) {
-			throw new IllegalArgumentException(
-					PATH_ + path + _FOR_ + getEntityDescription() + " preferences does not exist");
+			throw new IllegalArgumentException(PATH_ + path + _FOR_ + getEntityDescription() + " does not exist");
 		}
 		if (!file.isDirectory()) {
-			throw new IllegalArgumentException(
-					PATH_ + path + _FOR_ + getEntityDescription() + " preferences is not a directory");
+			throw new IllegalArgumentException(PATH_ + path + _FOR_ + getEntityDescription() + " is not a directory");
 		}
 		if (!file.canRead()) {
-			throw new IllegalArgumentException(
-					PATH_ + path + _FOR_ + getEntityDescription() + " preferences cannot be read");
+			throw new IllegalArgumentException(PATH_ + path + _FOR_ + getEntityDescription() + " cannot be read");
 		}
 		pathPreferences.setLastPath(path);
 
@@ -78,15 +75,15 @@ public class TextFilePathPreferencesPersister extends TextFilePersister<PathPref
 			file = new File(path + File.separator + filename);
 			if (!file.exists()) {
 				throw new IllegalArgumentException(
-						"File " + filename + _FOR_ + getEntityDescription() + " preferences does not exist");
+						"File " + filename + _FOR_ + getEntityDescription() + " does not exist");
 			}
 			if (!file.isFile()) {
 				throw new IllegalArgumentException(
-						"File " + filename + _FOR_ + getEntityDescription() + " preferences is not a file");
+						"File " + filename + _FOR_ + getEntityDescription() + " is not a file");
 			}
 			if (!file.canRead()) {
 				throw new IllegalArgumentException(
-						"File " + filename + _FOR_ + getEntityDescription() + " preferences cannot be read");
+						"File " + filename + _FOR_ + getEntityDescription() + " cannot be read");
 			}
 		}
 		pathPreferences.setLastFilenames(filenames);

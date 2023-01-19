@@ -41,6 +41,9 @@ public class EdgesDetectorPreferencesSelectorFactoryImpl implements EdgesDetecto
 		case ROMY_JONA_EDGES_DETECTOR:
 			return new RomyJonaEdgesDetectorPreferencesSelectorImpl(edgesDetectorPreferences,
 					romyJonaEdgesDetectorPreferences, dataModel, exifImageReader, component, exceptionHandler);
+		case SOBEL_EDGES_DETECTOR:
+			return new SobelEdgesDetectorPreferencesSelectorImpl(edgesDetectorPreferences, dataModel, exifImageReader,
+					component, exceptionHandler);
 		default:
 			throw new IllegalArgumentException();
 		}
