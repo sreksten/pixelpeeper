@@ -58,8 +58,8 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
-import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.persister.PersistableHelper;
+import com.threeamigos.imageviewer.interfaces.persister.Persister;
 import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
@@ -93,6 +93,13 @@ public class Main {
 	// TODO: when the edges preference window is changed to a non-dialog window, the
 	// menu should be
 	// switched off (or the window itself should be shut down and called once again)
+
+	// TODO: ExifImageReader should be split in two separate classes
+	// TODO: ImageReader should use java default, apache or other image libraries
+
+	// TODO: set up an unique queue for message processing?
+
+	// TODO: the drag and drop window should add some text / image
 
 	public Main() {
 
