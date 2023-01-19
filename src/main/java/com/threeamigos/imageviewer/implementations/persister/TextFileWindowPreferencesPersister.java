@@ -46,7 +46,7 @@ public class TextFileWindowPreferencesPersister extends TextFilePersister<Window
 	}
 
 	@Override
-	protected void load(BufferedReader reader, WindowPreferences windowPreferences)
+	protected void loadFromText(BufferedReader reader, WindowPreferences windowPreferences)
 			throws IOException, IllegalArgumentException {
 		Integer mainWindowWidth = null;
 		Integer mainWindowHeight = null;

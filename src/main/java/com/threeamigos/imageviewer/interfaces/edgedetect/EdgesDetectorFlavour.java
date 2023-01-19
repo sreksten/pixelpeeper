@@ -2,7 +2,10 @@ package com.threeamigos.imageviewer.interfaces.edgedetect;
 
 public enum EdgesDetectorFlavour {
 
-	CANNY_EDGES_DETECTOR("Canny Edges Detector"), ROMY_JONA_EDGES_DETECTOR("Romy Jona Detector");
+	// Implements the Canny edge detection algorithm
+	CANNY_EDGES_DETECTOR("Canny Edges Detector"),
+	// A test edge detector just to check the code
+	ROMY_JONA_EDGES_DETECTOR("Romy Jona Edges Detector");
 
 	private final String description;
 

@@ -141,6 +141,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+			// We don't care about this
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationCompleted(evt);
 		}

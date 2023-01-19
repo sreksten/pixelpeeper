@@ -39,7 +39,7 @@ public class TextFileExifTagPreferencesPersister extends TextFilePersister<ExifT
 	}
 
 	@Override
-	protected void load(BufferedReader reader, ExifTagPreferences exifTagPreferences) throws IOException {
+	protected void loadFromText(BufferedReader reader, ExifTagPreferences exifTagPreferences) throws IOException {
 
 		boolean tagsVisible = ExifTagPreferences.TAGS_VISIBLE_DEFAULT;
 		boolean overridingTagsVisibility = ExifTagPreferences.OVERRIDING_TAGS_VISIBILITY_DEFAULT;

@@ -34,7 +34,7 @@ public class TextFileRomyJonaEdgesDetectorPreferencesPersister extends
 	}
 
 	@Override
-	protected void load(BufferedReader reader, RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences)
+	protected void loadFromText(BufferedReader reader, RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences)
 			throws IOException, IllegalArgumentException {
 		int puppamento = RomyJonaEdgesDetectorPreferences.PUPPAMENTO_PREFERENCES_DEFAULT;
 		boolean aNastro = RomyJonaEdgesDetectorPreferences.A_NASTRO_PREFERENCES_DEFAULT;

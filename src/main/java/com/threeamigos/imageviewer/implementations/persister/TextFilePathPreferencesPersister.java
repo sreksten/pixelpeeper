@@ -37,7 +37,7 @@ public class TextFilePathPreferencesPersister extends TextFilePersister<PathPref
 	}
 
 	@Override
-	protected void load(BufferedReader reader, PathPreferences pathPreferences)
+	protected void loadFromText(BufferedReader reader, PathPreferences pathPreferences)
 			throws IOException, IllegalArgumentException {
 		String line;
 		String path = null;

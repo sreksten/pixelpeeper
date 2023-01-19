@@ -55,7 +55,6 @@ class MetadataConsumer {
 
 		} catch (Exception e) {
 
-			e.printStackTrace();
 			return false;
 
 		}

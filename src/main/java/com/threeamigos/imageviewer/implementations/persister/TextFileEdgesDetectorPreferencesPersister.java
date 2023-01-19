@@ -36,7 +36,7 @@ public class TextFileEdgesDetectorPreferencesPersister extends TextFilePersister
 	}
 
 	@Override
-	protected void load(BufferedReader reader, EdgesDetectorPreferences edgesDetectorPreferences)
+	protected void loadFromText(BufferedReader reader, EdgesDetectorPreferences edgesDetectorPreferences)
 			throws IOException, IllegalArgumentException {
 		boolean showEdges = EdgesDetectorPreferences.SHOW_EDGES_DEFAULT;
 		int edgesTransparency = EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT;

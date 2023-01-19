@@ -8,8 +8,7 @@ import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 
-public class EdgesDetectorPreferencesImpl
-		implements EdgesDetectorPreferences, PropertyChangeAwareEdgesDetectorPreferences {
+public class EdgesDetectorPreferencesImpl implements PropertyChangeAwareEdgesDetectorPreferences {
 
 	private boolean showEdges;
 	private int edgesTransparency;

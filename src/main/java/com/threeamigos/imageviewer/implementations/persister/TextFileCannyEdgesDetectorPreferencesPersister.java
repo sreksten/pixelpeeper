@@ -37,7 +37,7 @@ public class TextFileCannyEdgesDetectorPreferencesPersister extends TextFilePers
 	}
 
 	@Override
-	protected void load(BufferedReader reader, CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences)
+	protected void loadFromText(BufferedReader reader, CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences)
 			throws IOException, IllegalArgumentException {
 		float lowThreshold = CannyEdgesDetectorPreferences.LOW_THRESHOLD_PREFERENCES_DEFAULT;
 		float highThreshold = CannyEdgesDetectorPreferences.HIGH_THRESHOLD_PREFERENCES_DEFAULT;

@@ -26,13 +26,9 @@ public class ExifImageReaderImpl implements ExifImageReader {
 	}
 
 	public ExifMap readMetadata(File file) {
-		try {
-			MetadataConsumer metadataConsumer = new MetadataConsumer(file);
-			if (metadataConsumer.consume()) {
-				return metadataConsumer.getExifMap();
-			}
-		} catch (Exception e) {
-			exceptionHandler.handleException(e);
+		MetadataConsumer metadataConsumer = new MetadataConsumer(file);
+		if (metadataConsumer.consume()) {
+			return metadataConsumer.getExifMap();
 		}
 		return null;
 	}
