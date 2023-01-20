@@ -125,7 +125,10 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 			dataModel.requestRepaint();
 		} else if (OK_OPTION.equals(optionPane.getValue())) {
 			preferencesSelectorDataModel.abstractAcceptSelection();
-			dataModel.calculateEdges();
+			if (preferencesSelectorDataModel.isAnyCalculationParameterModified()) {
+				dataModel.calculateEdges();
+			}
+			dataModel.requestRepaint();
 		}
 
 		dialog.dispose();

@@ -3,6 +3,7 @@ package com.threeamigos.imageviewer.implementations.datamodel;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -163,27 +164,28 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			}
 		}
 
-		synchronized (g2d) {
+		Shape previousClip = g2d.getClip();
 
-			g2d.setClip(locationX, locationY, locationWidth, locationHeight);
+		g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
-			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-					edgesDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
-					edgesDetectorPreferences.getEdgesTransparency());
+		ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
+				edgesDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
+				edgesDetectorPreferences.getEdgesTransparency());
 
-			if (selected) {
-				g2d.setColor(Color.RED);
-				g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
-			}
-
-			new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData,
-					tagPreferences, commonTagsHelper).render();
-
-			if (edgeCalculationInProgress) {
-				BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
-						Color.BLACK, Color.WHITE);
-			}
+		if (selected) {
+			g2d.setColor(Color.RED);
+			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
 		}
+
+		new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
+				commonTagsHelper).render();
+
+		if (edgeCalculationInProgress) {
+			BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
+					Color.BLACK, Color.WHITE);
+		}
+
+		g2d.setClip(previousClip);
 
 	}
 

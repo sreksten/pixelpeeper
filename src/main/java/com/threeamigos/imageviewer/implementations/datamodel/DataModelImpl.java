@@ -179,7 +179,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void repaint(Graphics2D graphics) {
-		imageSlicesManager.getImageSlices().parallelStream().forEach(slice -> slice.paint(graphics));
+		imageSlicesManager.getImageSlices().stream().forEach(slice -> slice.paint(graphics));
 	}
 
 	@Override

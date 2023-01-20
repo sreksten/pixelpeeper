@@ -7,6 +7,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -29,6 +31,7 @@ import com.threeamigos.imageviewer.implementations.persister.PersistableHelperIm
 import com.threeamigos.imageviewer.implementations.persister.TextFileCannyEdgesDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextFileEdgesDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextFileExifTagPreferencesPersister;
+import com.threeamigos.imageviewer.implementations.persister.TextFileGridPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextFilePathPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextFileRomyJonaEdgesDetectorPreferencesPersister;
 import com.threeamigos.imageviewer.implementations.persister.TextFileWindowPreferencesPersister;
@@ -39,6 +42,8 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDet
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesStatusTracker;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
@@ -51,6 +56,7 @@ import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
+import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridImageDecorator;
 import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -65,6 +71,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
@@ -73,6 +80,7 @@ import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
+import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -127,6 +135,14 @@ public class Main {
 		PreferencesManager<WindowPreferences> windowPreferencesManager = new PreferencesManagerImpl<>(windowPreferences,
 				windowPreferencesStatusTracker, windowPreferencesPersister, messageHandler);
 		persistableHelper.add(windowPreferencesManager);
+
+		GridPreferences gridPreferences = new GridPreferencesImpl();
+		StatusTracker<GridPreferences> gridPreferencesStatusTracker = new GridPreferencesStatusTracker(gridPreferences);
+		Persister<GridPreferences> gridPreferencesPersister = new TextFileGridPreferencesPersister(
+				preferencesRootPathProvider, messageHandler);
+		PreferencesManager<GridPreferences> gridPreferencesManager = new PreferencesManagerImpl<>(gridPreferences,
+				gridPreferencesStatusTracker, gridPreferencesPersister, messageHandler);
+		persistableHelper.add(gridPreferencesManager);
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
 		StatusTracker<PathPreferences> pathPreferencesStatusTracker = new PathPreferencesStatusTracker(pathPreferences);
@@ -207,9 +223,13 @@ public class Main {
 
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, messageHandler);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, exifTagPreferences, dataModel,
-				persistableHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
-				edgesDetectorParametersSelectorFactory, new AboutWindowImpl(), dragAndDropWindow, messageHandler);
+		Collection<ImageDecorator> decorators = new ArrayList<>();
+		decorators.add(new GridImageDecorator(windowPreferences, gridPreferences));
+
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
+				exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
+				edgesDetectorParametersSelectorFactory, decorators, new AboutWindowImpl(), dragAndDropWindow,
+				messageHandler);
 
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);

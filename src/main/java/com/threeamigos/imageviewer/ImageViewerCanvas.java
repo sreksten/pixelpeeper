@@ -15,7 +15,9 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,11 +42,13 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
+import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -58,12 +62,14 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private static final long serialVersionUID = 1L;
 
 	private final transient WindowPreferences windowPreferences;
+	private final transient GridPreferences gridPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
 	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
 	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient DataModel dataModel;
 	private final transient PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper;
 	private final transient FileSelector fileSelector;
+	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
 
@@ -73,15 +79,19 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
 	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
 			EdgesDetectorFlavour.class);
+	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
 
-	public ImageViewerCanvas(WindowPreferences windowPreferences, ExifTagPreferences exifTagPreferences,
-			DataModel dataModel, PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper,
+	public ImageViewerCanvas(WindowPreferences windowPreferences, GridPreferences gridPreferences,
+			ExifTagPreferences exifTagPreferences, DataModel dataModel,
+			PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper,
 			MouseTracker mouseTracker, FileSelector fileSelector,
 			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
-			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory, AboutWindow aboutWindow,
-			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
+			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
+			Collection<ImageDecorator> decorators, AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow,
+			MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
+		this.gridPreferences = gridPreferences;
 		this.exifTagPreferences = exifTagPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		edgesDetectorPreferences.addPropertyChangeListener(this);
@@ -90,6 +100,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.fileSelector = fileSelector;
 		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
+		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
@@ -200,6 +211,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
 		menuBar.add(edgesDetectorMenu);
+		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
+				edgesDetectorPreferences.isShowEdges(), event -> {
+					edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
+					repaint();
+				});
 		JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
 		edgesDetectorMenu.add(edgesDetectorFlavourMenuItem);
 		for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.values()) {
@@ -209,11 +225,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			edgesDetectorFlavourMenuItemsByFlavour.put(flavour, flavourMenuItem);
 		}
-		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
-				edgesDetectorPreferences.isShowEdges(), event -> {
-					edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
-					repaint();
-				});
 		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyEvent.VK_C, event -> {
 			edgesDetectorPreferencesSelectorFactory.createSelector(this).selectParameters(this);
 		});
@@ -229,6 +240,22 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
+		addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M, gridPreferences.isGridVisible(), event -> {
+			gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
+			repaint();
+		});
+		JMenu gridSpacingMenu = new JMenu("Grid spacing");
+		imageHandlingMenu.add(gridSpacingMenu);
+		for (int gridSpacing = 25; gridSpacing <= 200; gridSpacing += 25) {
+			final int currentSpacing = gridSpacing;
+			JMenuItem gridSpacingItem = addCheckboxMenuItem(gridSpacingMenu, String.valueOf(gridSpacing), -1,
+					gridSpacing == gridPreferences.getGridSpacing(), event -> {
+						gridPreferences.setGridSpacing(currentSpacing);
+						updateGridSpacingMenu(currentSpacing);
+						repaint();
+					});
+			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
+		}
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
@@ -273,6 +300,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			entry.getValue().setSelected(edgesDetectorPreferences.getEdgesDetectorFlavour() == entry.getKey());
 		}
 		dataModel.calculateEdges();
+	}
+
+	private void updateGridSpacingMenu(final int gridSpacing) {
+		for (Map.Entry<Integer, JMenuItem> entry : gridSpacingBySize.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == gridSpacing);
+		}
 	}
 
 	private void updateExifTagMenu(ExifTag exifTag) {
@@ -322,9 +355,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	@Override
 	public void paintComponent(Graphics gfx) {
 		super.paintComponent(gfx);
-		Graphics2D graphics = (Graphics2D) gfx;
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		dataModel.repaint(graphics);
+		Graphics2D g2d = (Graphics2D) gfx;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		dataModel.repaint(g2d);
+		for (ImageDecorator decorator : decorators) {
+			decorator.paint(g2d);
+		}
 	}
 
 	@Override

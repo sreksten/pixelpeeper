@@ -38,20 +38,20 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.component = component;
 
-		transparencyBackup = normalizeTransparency(edgesDetectorPreferences.getEdgesTransparency());
+		transparencyBackup = edgesDetectorPreferences.getEdgesTransparency();
 		transparencyText = new JLabel(String.valueOf(transparencyBackup));
 		transparencySlider = createSlider(MIN_TRANSPARENCY, MAX_TRANSPARENCY, transparencyBackup);
 	}
 
 	final void abstractCancelSelection() {
-		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencyBackup));
+		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
 		cancelSelection();
 	}
 
 	abstract void cancelSelection();
 
 	final void abstractAcceptSelection() {
-		edgesDetectorPreferences.setEdgesTransparency(normalizeTransparency(transparencySlider.getValue()));
+		edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
 		acceptSelection();
 	}
 
@@ -72,7 +72,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 	final void abstractResetToDefault() {
 		edgesDetectorPreferences.setEdgesTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
-		transparencySlider.setValue(normalizeTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT));
+		transparencySlider.setValue(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
 		resetToDefault();
 		component.repaint();
 	}
@@ -92,20 +92,12 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 		return checkbox;
 	}
 
-	private final int normalizeTransparency(int transparency) {
-		return MAX_TRANSPARENCY - transparency;
-	}
-
-	private final int denormalizeTransparency(int transparency) {
-		return normalizeTransparency(transparency);
-	}
-
 	public final void stateChanged(ChangeEvent e) {
 		Object object = e.getSource();
 
 		if (object == transparencySlider) {
 			transparencyText.setText(String.valueOf(transparencySlider.getValue()));
-			edgesDetectorPreferences.setEdgesTransparency(denormalizeTransparency(transparencySlider.getValue()));
+			edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
 		} else {
 			handleStateChanged(e);
 		}
@@ -151,11 +143,11 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 	}
 
 	public final void setEdgesTransparency(int transparency) {
-		transparencySlider.setValue(normalizeTransparency(transparency));
+		transparencySlider.setValue(transparency);
 	}
 
 	public final int getEdgesTransparency() {
-		return denormalizeTransparency(transparencySlider.getValue());
+		return transparencySlider.getValue();
 	}
 
 	@Override
