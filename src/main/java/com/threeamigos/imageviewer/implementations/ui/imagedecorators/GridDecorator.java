@@ -7,14 +7,14 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferenc
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 
-public class GridImageDecorator implements ImageDecorator {
+public class GridDecorator implements ImageDecorator {
 
 	private static final int SPACING = 25;
 
 	private final WindowPreferences windowPreferences;
 	private final GridPreferences gridPreferences;
 
-	public GridImageDecorator(WindowPreferences windowPreferences, GridPreferences gridPreferences) {
+	public GridDecorator(WindowPreferences windowPreferences, GridPreferences gridPreferences) {
 		this.windowPreferences = windowPreferences;
 		this.gridPreferences = gridPreferences;
 	}
