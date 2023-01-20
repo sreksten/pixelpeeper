@@ -1,7 +1,11 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
-import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -11,22 +15,31 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
+import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private static final long serialVersionUID = 1L;
 
+	private final WindowPreferences windowPreferences;
+	private final FontService fontService;
 	private final MessageHandler messageHandler;
 	private Consumer<List<File>> proxifiedObject;
 
-	public DragAndDropWindowImpl(WindowPreferences windowPreferences, MessageHandler messageHandler) {
+	public DragAndDropWindowImpl(WindowPreferences windowPreferences, FontService fontService,
+			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
+		this.windowPreferences = windowPreferences;
+		this.fontService = fontService;
+		this.messageHandler = messageHandler;
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -37,9 +50,10 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			}
 		});
 
-		setLayout(null);
-		Container container = getContentPane();
-		container.setPreferredSize(new Dimension(300, 300));
+		setLayout(new BorderLayout());
+
+		JPanel decorativePanel = new DecorativePanel();
+		add(decorativePanel, BorderLayout.CENTER);
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -61,7 +75,6 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		setSize(windowPreferences.getDragAndDropWindowWidth(), windowPreferences.getDragAndDropWindowHeight());
 		setVisible(windowPreferences.isDragAndDropWindowVisible());
 
-		this.messageHandler = messageHandler;
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
 	}
 
@@ -79,6 +92,51 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 						.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 			}
 		}
+	}
+
+	private class DecorativePanel extends JPanel {
+
+		public void paintComponent(Graphics gfx) {
+			super.paintComponent(gfx);
+			Graphics2D g2d = (Graphics2D) gfx;
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			int windowWidth = windowPreferences.getDragAndDropWindowWidth();
+			int windowHeight = windowPreferences.getDragAndDropWindowHeight();
+
+			int fontHeight = windowHeight / 20;
+			if (fontHeight < 12) {
+				fontHeight = 12;
+			}
+
+			Font font = fontService.getFont("Arial", Font.BOLD, fontHeight);
+			g2d.setFont(font);
+
+			final int vertSpacing = fontHeight / 2;
+
+			int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
+
+			String word;
+			int wordWidth;
+
+			word = "Drop";
+			wordWidth = g2d.getFontMetrics().stringWidth(word);
+			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+					Color.LIGHT_GRAY);
+			startY += fontHeight + vertSpacing;
+
+			word = "files";
+			wordWidth = g2d.getFontMetrics().stringWidth(word);
+			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+					Color.LIGHT_GRAY);
+			startY += fontHeight + vertSpacing;
+
+			word = "here";
+			wordWidth = g2d.getFontMetrics().stringWidth(word);
+			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+					Color.LIGHT_GRAY);
+		}
+
 	}
 
 }

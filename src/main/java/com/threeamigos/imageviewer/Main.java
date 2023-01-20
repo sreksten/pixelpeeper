@@ -96,8 +96,6 @@ public class Main {
 
 	// TODO: lens manufacturer
 
-	// TODO: when toggling autorotation calculation should be stopped and restarted
-
 	// TODO: when the edges preference window is changed to a non-dialog window, the
 	// menu should be
 	// switched off (or the window itself should be shut down and called once again)
@@ -106,8 +104,6 @@ public class Main {
 	// TODO: ImageReader should use java default, apache or other image libraries
 
 	// TODO: set up an unique queue for message processing?
-
-	// TODO: the drag and drop window should add some text / image
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
@@ -221,7 +217,7 @@ public class Main {
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
-		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, messageHandler);
+		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, fontService, messageHandler);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 		decorators.add(new GridImageDecorator(windowPreferences, gridPreferences));
