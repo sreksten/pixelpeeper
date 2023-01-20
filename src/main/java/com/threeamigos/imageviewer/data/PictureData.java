@@ -27,6 +27,8 @@ public class PictureData {
 	private int height;
 	private BufferedImage image;
 	private boolean edgeCalculationInProgress;
+	private boolean edgeCalculationAborted;
+	private EdgesDetector detector;
 	private BufferedImage edgesImage;
 
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
@@ -130,20 +132,38 @@ public class PictureData {
 		synchronized (this) {
 			if (!edgeCalculationInProgress) {
 				edgeCalculationInProgress = true;
+				edgeCalculationAborted = false;
 				propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
 				Thread thread = new Thread(new Runnable() {
 					public void run() {
-						EdgesDetector detector = edgesDetectorFactory.getEdgesDetector();
+						detector = edgesDetectorFactory.getEdgesDetector();
 						detector.setSourceImage(image);
 						detector.process();
-						edgesImage = detector.getEdgesImage();
-						propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED,
-								null, this);
+						if (!edgeCalculationAborted) {
+							edgesImage = detector.getEdgesImage();
+							propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED,
+									null, this);
+						}
 						edgeCalculationInProgress = false;
+						detector = null;
 					}
 				});
 				thread.setDaemon(true);
 				thread.start();
+			}
+		}
+	}
+
+	public void releaseEdges() {
+		edgesImage = null;
+		if (detector != null) {
+			edgeCalculationAborted = true;
+			detector.abort();
+			while (detector != null) {
+				try {
+					Thread.sleep(5);
+				} catch (InterruptedException e) {
+				}
 			}
 		}
 	}

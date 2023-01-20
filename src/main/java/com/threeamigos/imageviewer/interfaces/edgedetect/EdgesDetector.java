@@ -8,6 +8,8 @@ public interface EdgesDetector {
 
 	public void process();
 
+	public void abort();
+
 	public BufferedImage getEdgesImage();
 
 }

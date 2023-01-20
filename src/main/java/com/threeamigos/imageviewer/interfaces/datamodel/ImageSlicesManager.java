@@ -43,7 +43,9 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 	/**
 	 * Asks all slices to recalculate edge images
 	 */
-	public void recalculateEdges();
+	public void calculateEdges();
+
+	public void releaseEdges();
 
 	// Communication part
 

@@ -8,6 +8,7 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 
 	private BufferedImage sourceImage;
 	private BufferedImage edgesImage;
+	private boolean isAborted;
 
 	@Override
 	public void setSourceImage(BufferedImage sourceImage) {
@@ -17,6 +18,8 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 	@Override
 	public void process() {
 
+		isAborted = false;
+
 		int x = sourceImage.getWidth();
 		int y = sourceImage.getHeight();
 
@@ -25,7 +28,7 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 		int[][] edgeColors = new int[x][y];
 		int maxGradient = -1;
 
-		for (int i = 1; i < x - 1; i++) {
+		for (int i = 1; i < x - 1 && !isAborted; i++) {
 			for (int j = 1; j < y - 1; j++) {
 
 				int val00 = getGrayScale(sourceImage.getRGB(i - 1, j - 1));
@@ -67,7 +70,7 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 
 		double scale = 255.0 / maxGradient;
 
-		for (int i = 1; i < x - 1; i++) {
+		for (int i = 1; i < x - 1 && !isAborted; i++) {
 			for (int j = 1; j < y - 1; j++) {
 				int edgeColor = edgeColors[i][j];
 				edgeColor = (int) (edgeColor * scale);
@@ -76,6 +79,15 @@ public class SobelEdgesDetectorImpl implements SobelEdgesDetector {
 				edgesImage.setRGB(i, j, edgeColor);
 			}
 		}
+
+		if (isAborted) {
+			edgesImage = null;
+		}
+	}
+
+	@Override
+	public void abort() {
+		isAborted = true;
 	}
 
 	@Override

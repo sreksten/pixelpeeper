@@ -204,6 +204,12 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	}
 
 	@Override
+	public void releaseEdges() {
+		pictureData.releaseEdges();
+		edgeCalculationInProgress = false;
+	}
+
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
 		propertyChangeSupport.addPropertyChangeListener(pcl);
 	}

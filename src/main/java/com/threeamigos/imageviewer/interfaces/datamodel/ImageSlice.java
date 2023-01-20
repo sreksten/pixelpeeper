@@ -78,6 +78,11 @@ public interface ImageSlice {
 	 */
 	public void startEdgesCalculation();
 
+	/**
+	 * Asks to clear the edges image and release the memory
+	 */
+	public void releaseEdges();
+
 	// Communication part
 
 	public void addPropertyChangeListener(PropertyChangeListener listener);

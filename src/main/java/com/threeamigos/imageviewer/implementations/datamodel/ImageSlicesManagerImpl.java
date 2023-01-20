@@ -28,7 +28,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private List<ImageSlice> imageSlices = new ArrayList<>();
-	private List<ImageSlice> imageSlicesRecalculatingEdges = new ArrayList<>();
+	private List<ImageSlice> imageSlicesCalculatingEdges = new ArrayList<>();
 
 	private ImageSlice activeSlice;
 
@@ -118,14 +118,21 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void recalculateEdges() {
-		synchronized (imageSlicesRecalculatingEdges) {
-			if (imageSlicesRecalculatingEdges.isEmpty()) {
-				imageSlicesRecalculatingEdges.addAll(imageSlices);
-				imageSlices.forEach(ImageSlice::startEdgesCalculation);
+	public void calculateEdges() {
+		synchronized (imageSlicesCalculatingEdges) {
+			if (!imageSlicesCalculatingEdges.isEmpty()) {
+				imageSlices.forEach(ImageSlice::releaseEdges);
+				imageSlicesCalculatingEdges.clear();
 			}
+			imageSlicesCalculatingEdges.addAll(imageSlices);
+			imageSlices.forEach(ImageSlice::startEdgesCalculation);
 		}
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+	}
+
+	@Override
+	public void releaseEdges() {
+		imageSlices.forEach(ImageSlice::releaseEdges);
 	}
 
 	@Override
@@ -149,7 +156,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
 		ImageSlice imageSlice = (ImageSlice) evt.getNewValue();
-		imageSlicesRecalculatingEdges.remove(imageSlice);
+		imageSlicesCalculatingEdges.remove(imageSlice);
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
 	}
 }

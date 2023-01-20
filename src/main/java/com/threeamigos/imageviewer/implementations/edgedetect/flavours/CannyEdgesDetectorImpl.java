@@ -280,6 +280,10 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
 		writeEdges(data);
 	}
 
+	@Override
+	public void abort() {
+	}
+
 	// private utility methods
 
 	private void initArrays() {

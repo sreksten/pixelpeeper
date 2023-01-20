@@ -56,6 +56,9 @@ public class RomyJonaEdgesDetectorImpl implements RomyJonaEdgesDetector {
 		edgesImage = newImage;
 	}
 
+	public void abort() {
+	}
+
 	@Override
 	public BufferedImage getEdgesImage() {
 		return edgesImage;

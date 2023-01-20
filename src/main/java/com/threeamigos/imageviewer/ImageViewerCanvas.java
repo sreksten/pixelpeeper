@@ -213,7 +213,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		menuBar.add(edgesDetectorMenu);
 		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
 				edgesDetectorPreferences.isShowEdges(), event -> {
-					edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
+					dataModel.toggleShowingEdges();
 					repaint();
 				});
 		JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
@@ -299,7 +299,9 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		for (Entry<EdgesDetectorFlavour, JMenuItem> entry : edgesDetectorFlavourMenuItemsByFlavour.entrySet()) {
 			entry.getValue().setSelected(edgesDetectorPreferences.getEdgesDetectorFlavour() == entry.getKey());
 		}
-		dataModel.calculateEdges();
+		if (edgesDetectorPreferences.isShowEdges()) {
+			dataModel.calculateEdges();
+		}
 	}
 
 	private void updateGridSpacingMenu(final int gridSpacing) {

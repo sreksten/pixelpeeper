@@ -258,12 +258,16 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void toggleShowingEdges() {
-		edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
+		boolean isShowEdges = !edgesDetectorPreferences.isShowEdges();
+		edgesDetectorPreferences.setShowEdges(isShowEdges);
+		if (!isShowEdges) {
+			imageSlicesManager.releaseEdges();
+		}
 	}
 
 	@Override
 	public void calculateEdges() {
-		imageSlicesManager.recalculateEdges();
+		imageSlicesManager.calculateEdges();
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
 	}
 
