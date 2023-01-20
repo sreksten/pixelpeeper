@@ -86,18 +86,24 @@ public class PictureData {
 	}
 
 	public void correctOrientation() {
-		if (!orientationAdjusted) {
-			image = ExifOrientationHelper.correctOrientation(image, orientation);
-			swapDimensionsIfNeeded();
-			orientationAdjusted = true;
+		if (orientation != ExifOrientationHelper.AS_IS) {
+			releaseEdges();
+			if (!orientationAdjusted) {
+				image = ExifOrientationHelper.correctOrientation(image, orientation);
+				swapDimensionsIfNeeded();
+				orientationAdjusted = true;
+			}
 		}
 	}
 
 	public void undoOrientationCorrection() {
-		if (orientationAdjusted) {
-			image = ExifOrientationHelper.undoOrientationCorrection(image, orientation);
-			swapDimensionsIfNeeded();
-			orientationAdjusted = false;
+		if (orientation != ExifOrientationHelper.AS_IS) {
+			releaseEdges();
+			if (orientationAdjusted) {
+				image = ExifOrientationHelper.undoOrientationCorrection(image, orientation);
+				swapDimensionsIfNeeded();
+				orientationAdjusted = false;
+			}
 		}
 	}
 
