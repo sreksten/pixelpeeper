@@ -54,6 +54,7 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJona
 import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
+import com.threeamigos.imageviewer.implementations.ui.ChainedInputAdapter;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
@@ -244,10 +245,12 @@ public class Main {
 		decorators.add(new GridDecorator(windowPreferences, gridPreferences));
 		decorators.add(new BigPointerDecorator(bigPointerPreferences, mouseTracker));
 
+		ChainedInputAdapter chainedInputAdapter = new ChainedInputAdapter();
+
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
 				bigPointerPreferences, exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector,
-				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, decorators, new AboutWindowImpl(),
-				dragAndDropWindow, messageHandler);
+				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputAdapter, decorators,
+				new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);

@@ -10,11 +10,8 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -37,6 +34,8 @@ import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
+import com.threeamigos.imageviewer.implementations.ui.ChainedInputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
@@ -70,14 +69,17 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient GridPreferences gridPreferences;
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
-	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
-	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient DataModel dataModel;
 	private final transient PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper;
+	private final transient MouseTracker mouseTracker;
 	private final transient FileSelector fileSelector;
+	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
+	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
+	private final transient ChainedInputAdapter chainedInputAdapter;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
+	private final transient MessageHandler messageHandler;
 
 	private final Cursor emptyCursor;
 
@@ -96,133 +98,44 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			MouseTracker mouseTracker, FileSelector fileSelector,
 			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
-			Collection<ImageDecorator> decorators, AboutWindow aboutWindow, DragAndDropWindow dragAndDropWindow,
-			MessageHandler messageHandler) {
+			ChainedInputAdapter chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
+			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
-		this.edgesDetectorPreferences = edgesDetectorPreferences;
-		edgesDetectorPreferences.addPropertyChangeListener(this);
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
+		this.mouseTracker = mouseTracker;
 		this.fileSelector = fileSelector;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
+		edgesDetectorPreferences.addPropertyChangeListener(this);
 		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
+		this.chainedInputAdapter = chainedInputAdapter;
 		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
+		this.messageHandler = messageHandler;
 
-		int width = windowPreferences.getMainWindowWidth();
-		int height = windowPreferences.getMainWindowHeight();
-
-		setSize(width, height);
+		setSize(windowPreferences.getMainWindowWidth(), windowPreferences.getMainWindowHeight());
 		setMinimumSize(getSize());
 
 		setBackground(Color.LIGHT_GRAY);
 		setFocusable(true);
 		setDoubleBuffered(true);
 
-		addMouseListener(new MouseAdapter() {
+		chainedInputAdapter.addAdapter(getInputAdapter());
+		addMouseListener(chainedInputAdapter);
+		addMouseMotionListener(chainedInputAdapter);
+		addKeyListener(chainedInputAdapter);
 
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (dataModel.hasLoadedImages()) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					mouseTracker.mousePressed(e);
-					repaint();
-				}
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				updateCursor();
-				if (dataModel.hasLoadedImages()) {
-					mouseTracker.mouseReleased(e);
-					repaint();
-				}
-			}
-
-		});
-
-		addMouseMotionListener(new MouseMotionAdapter() {
-
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				mouseTracker.mouseMoved(e);
-				repaint();
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				if (dataModel.hasLoadedImages()) {
-					mouseTracker.mouseDragged(e);
-					repaint();
-				}
-			}
-
-		});
-
-		addKeyListener(new KeyAdapter() {
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(true);
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
-					bigPointerPreferences.setBigPointerRotation((float) (3 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD2) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 2));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD3) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD4) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD6) {
-					bigPointerPreferences.setBigPointerRotation(0);
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
-					bigPointerPreferences.setBigPointerRotation((float) (5 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD8) {
-					bigPointerPreferences.setBigPointerRotation((float) (6 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD9) {
-					bigPointerPreferences.setBigPointerRotation((float) (7 * Math.PI / 4));
-				}
-				repaint();
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(false);
-				}
-			}
-
-		});
-
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-		emptyCursor = toolkit.createCustomCursor(image, new Point(0, 0), "invisibleCursor");
+		emptyCursor = createInvisibleCursor();
 		updateCursor();
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
-	}
-
-	private void updateCursor() {
-		if (bigPointerPreferences.isBigPointerVisible()) {
-			setCursor(emptyCursor);
-		} else {
-			setCursor(Cursor.getDefaultCursor());
-		}
-	}
-
-	@Override
-	public void accept(List<File> selectedFiles) {
-		if (!selectedFiles.isEmpty()) {
-			dataModel.loadFiles(selectedFiles);
-			dataModel.reframe(getWidth(), getHeight());
-			repaint();
-		}
 	}
 
 	public void addMenus(JMenuBar menuBar) {
@@ -359,6 +272,23 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		}
 	}
 
+	private void updateCursor() {
+		if (bigPointerPreferences.isBigPointerVisible()) {
+			setCursor(emptyCursor);
+		} else {
+			setCursor(Cursor.getDefaultCursor());
+		}
+	}
+
+	@Override
+	public void accept(List<File> selectedFiles) {
+		if (!selectedFiles.isEmpty()) {
+			dataModel.loadFiles(selectedFiles);
+			dataModel.reframe(getWidth(), getHeight());
+			repaint();
+		}
+	}
+
 	private void updateEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
 		edgesDetectorPreferences.setEdgesDetectorFlavour(flavour);
 		for (Entry<EdgesDetectorFlavour, JMenuItem> entry : edgesDetectorFlavourMenuItemsByFlavour.entrySet()) {
@@ -441,11 +371,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		if (CommunicationMessages.EDGES_VISIBILITY.equals(evt.getPropertyName())) {
 			handleEdgesVisibilityChange();
 		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-			handleEdgeCalculationStarted();
+			repaint();
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-			handleEdgeCalculationCompleted();
+			repaint();
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
-			handleRequestRepaint();
+			repaint();
 		}
 	}
 
@@ -453,16 +383,81 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
 	}
 
-	private void handleEdgeCalculationStarted() {
-		repaint();
+	private Cursor createInvisibleCursor() {
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		return toolkit.createCustomCursor(image, new Point(0, 0), "invisibleCursor");
 	}
 
-	private void handleEdgeCalculationCompleted() {
-		repaint();
-	}
+	private PrioritizedInputAdapter getInputAdapter() {
 
-	private void handleRequestRepaint() {
-		repaint();
+		return new PrioritizedInputAdapter() {
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (dataModel.hasLoadedImages()) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					mouseTracker.mousePressed(e);
+					repaint();
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				updateCursor();
+				if (dataModel.hasLoadedImages()) {
+					mouseTracker.mouseReleased(e);
+					repaint();
+				}
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				mouseTracker.mouseMoved(e);
+				repaint();
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (dataModel.hasLoadedImages()) {
+					mouseTracker.mouseDragged(e);
+					repaint();
+				}
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(true);
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
+					bigPointerPreferences.setBigPointerRotation((float) (3 * Math.PI / 4));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD2) {
+					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 2));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD3) {
+					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 4));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD4) {
+					bigPointerPreferences.setBigPointerRotation((float) (Math.PI));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD6) {
+					bigPointerPreferences.setBigPointerRotation(0);
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
+					bigPointerPreferences.setBigPointerRotation((float) (5 * Math.PI / 4));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD8) {
+					bigPointerPreferences.setBigPointerRotation((float) (6 * Math.PI / 4));
+				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD9) {
+					bigPointerPreferences.setBigPointerRotation((float) (7 * Math.PI / 4));
+				}
+				repaint();
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(false);
+				}
+			}
+
+		};
+
 	}
 
 }
