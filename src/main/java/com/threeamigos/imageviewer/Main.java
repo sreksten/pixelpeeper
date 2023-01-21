@@ -248,9 +248,9 @@ public class Main {
 
 		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences);
 		chainedInputConsumer.addConsumer(bigPointerDecorator.getPrioritizedInputConsumer());
+		decorators.add(bigPointerDecorator);
 
 		decorators.add(new GridDecorator(windowPreferences, gridPreferences));
-		decorators.add(bigPointerDecorator);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
 				bigPointerPreferences, exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector,
