@@ -4,20 +4,23 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 
+import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
-import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
+import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
 
 public class BigPointerDecorator implements ImageDecorator {
 
 	private final BigPointerPreferences pointerPreferences;
-	private final MouseTracker mouseTracker;
+	private int x;
+	private int y;
 
-	public BigPointerDecorator(BigPointerPreferences pointerPreferences, MouseTracker mouseTracker) {
+	public BigPointerDecorator(BigPointerPreferences pointerPreferences) {
 		this.pointerPreferences = pointerPreferences;
-		this.mouseTracker = mouseTracker;
 	}
 
 	@Override
@@ -62,9 +65,6 @@ public class BigPointerDecorator implements ImageDecorator {
 
 	private void drawPolygon(Graphics2D graphics, Point[] vertexes) {
 
-		int x = mouseTracker.getPointerX();
-		int y = mouseTracker.getPointerY();
-
 		Polygon arrow = new Polygon();
 		for (int i = 0; i < vertexes.length; i++) {
 			Point vertex = vertexes[i];
@@ -74,6 +74,49 @@ public class BigPointerDecorator implements ImageDecorator {
 		AffineTransform transform = new AffineTransform();
 		transform.rotate(pointerPreferences.getBigPointerRotation(), x, y);
 		graphics.fill(transform.createTransformedShape(arrow));
+	}
+
+	public PrioritizedInputConsumer getPrioritizedInputConsumer() {
+
+		return new PrioritizedInputAdapter(5) {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (pointerPreferences.isBigPointerVisible()) {
+					if (e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
+						pointerPreferences.setBigPointerRotation((float) (3 * Math.PI / 4));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD2) {
+						pointerPreferences.setBigPointerRotation((float) (Math.PI / 2));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD3) {
+						pointerPreferences.setBigPointerRotation((float) (Math.PI / 4));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD4) {
+						pointerPreferences.setBigPointerRotation((float) (Math.PI));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD6) {
+						pointerPreferences.setBigPointerRotation(0);
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
+						pointerPreferences.setBigPointerRotation((float) (5 * Math.PI / 4));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD8) {
+						pointerPreferences.setBigPointerRotation((float) (6 * Math.PI / 4));
+					} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD9) {
+						pointerPreferences.setBigPointerRotation((float) (7 * Math.PI / 4));
+					}
+				}
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				x = e.getX();
+				y = e.getY();
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				x = e.getX();
+				y = e.getY();
+			}
+
+		};
+
 	}
 
 }

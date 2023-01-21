@@ -9,20 +9,11 @@ public class MouseTrackerImpl implements MouseTracker {
 
 	private final DataModel dataModel;
 
-	private int pointerX;
-	private int pointerY;
-
 	private int pointerStartX;
 	private int pointerStartY;
 
 	public MouseTrackerImpl(DataModel dataModel) {
 		this.dataModel = dataModel;
-	}
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		pointerX = e.getX();
-		pointerY = e.getY();
 	}
 
 	@Override
@@ -46,21 +37,8 @@ public class MouseTrackerImpl implements MouseTracker {
 
 		dataModel.move(deltaX, deltaY);
 
-		pointerX = endX;
-		pointerY = endY;
-
 		pointerStartX = endX;
 		pointerStartY = endY;
-	}
-
-	@Override
-	public int getPointerX() {
-		return pointerX;
-	}
-
-	@Override
-	public int getPointerY() {
-		return pointerY;
 	}
 
 }

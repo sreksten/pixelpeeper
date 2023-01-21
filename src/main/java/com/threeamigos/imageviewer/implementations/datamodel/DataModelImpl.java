@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
+import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -28,6 +30,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetector
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
+import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
 
 public class DataModelImpl implements DataModel {
 
@@ -246,12 +249,6 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public void setMovementAppliedToAllImagesTemporarilyInverted(
-			boolean isMovementAppliedToAllImagesTemporarilyInverted) {
-		this.isMovementAppliedToAllImagesTemporarilyInverted = isMovementAppliedToAllImagesTemporarilyInverted;
-	}
-
-	@Override
 	public boolean isShowEdges() {
 		return edgesDetectorPreferences.isShowEdges();
 	}
@@ -301,6 +298,27 @@ public class DataModelImpl implements DataModel {
 
 	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+	}
+
+	@Override
+	public PrioritizedInputConsumer getPrioritizedInputConsumer() {
+		return new PrioritizedInputAdapter(5) {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					isMovementAppliedToAllImagesTemporarilyInverted = true;
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+					isMovementAppliedToAllImagesTemporarilyInverted = false;
+				}
+			}
+
+		};
 	}
 
 }

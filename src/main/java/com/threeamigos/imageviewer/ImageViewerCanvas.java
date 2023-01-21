@@ -34,7 +34,7 @@ import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
-import com.threeamigos.imageviewer.implementations.ui.ChainedInputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -75,11 +75,9 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient FileSelector fileSelector;
 	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
 	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
-	private final transient ChainedInputAdapter chainedInputAdapter;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
-	private final transient MessageHandler messageHandler;
 
 	private final Cursor emptyCursor;
 
@@ -98,7 +96,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			MouseTracker mouseTracker, FileSelector fileSelector,
 			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
-			ChainedInputAdapter chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
+			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
@@ -113,12 +111,10 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		edgesDetectorPreferences.addPropertyChangeListener(this);
 		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
-		this.chainedInputAdapter = chainedInputAdapter;
 		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
-		this.messageHandler = messageHandler;
 
 		setSize(windowPreferences.getMainWindowWidth(), windowPreferences.getMainWindowHeight());
 		setMinimumSize(getSize());
@@ -127,7 +123,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		setFocusable(true);
 		setDoubleBuffered(true);
 
-		chainedInputAdapter.addAdapter(getInputAdapter());
+		chainedInputAdapter.addConsumer(getInputAdapter());
 		addMouseListener(chainedInputAdapter);
 		addMouseMotionListener(chainedInputAdapter);
 		addKeyListener(chainedInputAdapter);
@@ -413,7 +409,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				mouseTracker.mouseMoved(e);
 				repaint();
 			}
 
@@ -422,37 +417,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 				if (dataModel.hasLoadedImages()) {
 					mouseTracker.mouseDragged(e);
 					repaint();
-				}
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(true);
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
-					bigPointerPreferences.setBigPointerRotation((float) (3 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD2) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 2));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD3) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD4) {
-					bigPointerPreferences.setBigPointerRotation((float) (Math.PI));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD6) {
-					bigPointerPreferences.setBigPointerRotation(0);
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
-					bigPointerPreferences.setBigPointerRotation((float) (5 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD8) {
-					bigPointerPreferences.setBigPointerRotation((float) (6 * Math.PI / 4));
-				} else if (e.getKeyCode() == KeyEvent.VK_NUMPAD9) {
-					bigPointerPreferences.setBigPointerRotation((float) (7 * Math.PI / 4));
-				}
-				repaint();
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-					dataModel.setMovementAppliedToAllImagesTemporarilyInverted(false);
 				}
 			}
 

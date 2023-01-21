@@ -5,6 +5,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
+import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
+
 public interface DataModel extends PropertyChangeListener {
 
 	// Preferences part
@@ -18,9 +20,6 @@ public interface DataModel extends PropertyChangeListener {
 	public void toggleMovementAppliedToAllImages();
 
 	public boolean isMovementAppliedToAllImagesTemporarilyInverted();
-
-	public void setMovementAppliedToAllImagesTemporarilyInverted(
-			boolean isMovementAppliedToAllImagesTemporarilyInverted);
 
 	public boolean isShowEdges();
 
@@ -59,5 +58,7 @@ public interface DataModel extends PropertyChangeListener {
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 
 	public void removePropertyChangeListener(PropertyChangeListener listener);
+
+	public PrioritizedInputConsumer getPrioritizedInputConsumer();
 
 }

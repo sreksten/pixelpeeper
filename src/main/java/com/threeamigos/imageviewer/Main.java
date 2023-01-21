@@ -54,7 +54,7 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJona
 import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
-import com.threeamigos.imageviewer.implementations.ui.ChainedInputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
@@ -211,6 +211,8 @@ public class Main {
 
 		// Data model
 
+		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
 
@@ -228,6 +230,7 @@ public class Main {
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
 				pathPreferences, edgesDetectorPreferences, exifImageReader);
+		chainedInputConsumer.addConsumer(dataModel.getPrioritizedInputConsumer());
 
 		// User Interface
 
@@ -242,14 +245,16 @@ public class Main {
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, fontService, messageHandler);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
-		decorators.add(new GridDecorator(windowPreferences, gridPreferences));
-		decorators.add(new BigPointerDecorator(bigPointerPreferences, mouseTracker));
 
-		ChainedInputAdapter chainedInputAdapter = new ChainedInputAdapter();
+		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences);
+		chainedInputConsumer.addConsumer(bigPointerDecorator.getPrioritizedInputConsumer());
+
+		decorators.add(new GridDecorator(windowPreferences, gridPreferences));
+		decorators.add(bigPointerDecorator);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
 				bigPointerPreferences, exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector,
-				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputAdapter, decorators,
+				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
 				new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
 		JMenuBar menuBar = new JMenuBar();
