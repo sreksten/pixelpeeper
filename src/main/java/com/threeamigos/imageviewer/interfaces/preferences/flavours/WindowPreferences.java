@@ -29,6 +29,10 @@ public interface WindowPreferences extends Preferences {
 
 	public int getMainWindowY();
 
+	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
+
+	public boolean isMovementAppliedToAllImages();
+
 	public void setDragAndDropWindowVisible(boolean visible);
 
 	public boolean isDragAndDropWindowVisible();
@@ -52,9 +56,5 @@ public interface WindowPreferences extends Preferences {
 	public void setAutorotation(boolean autorotation);
 
 	public boolean isAutorotation();
-
-	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
-
-	public boolean isMovementAppliedToAllImages();
 
 }
