@@ -27,8 +27,8 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
@@ -37,7 +37,7 @@ public class DataModelImpl implements DataModel {
 	private final ExifTagsFilter exifTagsFilter;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ImageSlicesManager imageSlicesManager;
-	private final MainWindowPreferences windowPreferences;
+	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
@@ -47,13 +47,14 @@ public class DataModelImpl implements DataModel {
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager imageSlicesManager, MainWindowPreferences windowPreferences, PathPreferences pathPreferences,
-			EdgesDetectorPreferences edgesDetectorPreferences, ExifImageReader imageReader) {
+			ImageSlicesManager imageSlicesManager, ImageHandlingPreferences imageHandlingPreferences,
+			PathPreferences pathPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
+			ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
-		this.windowPreferences = windowPreferences;
+		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.pathPreferences = pathPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.imageReader = imageReader;
@@ -187,13 +188,13 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isAutorotation() {
-		return windowPreferences.isAutorotation();
+		return imageHandlingPreferences.isAutorotation();
 	}
 
 	@Override
 	public void toggleAutorotation() {
-		boolean autorotation = !windowPreferences.isAutorotation();
-		windowPreferences.setAutorotation(autorotation);
+		boolean autorotation = !imageHandlingPreferences.isAutorotation();
+		imageHandlingPreferences.setAutorotation(autorotation);
 		for (ImageSlice slice : imageSlicesManager.getImageSlices()) {
 			slice.adjustRotation(autorotation);
 		}
@@ -206,7 +207,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void move(int deltaX, int deltaY) {
-		boolean isMovementAppliedToAllImages = windowPreferences.isMovementAppliedToAllImages();
+		boolean isMovementAppliedToAllImages = imageHandlingPreferences.isMovementAppliedToAllImages();
 		if (isMovementAppliedToAllImagesTemporarilyInverted) {
 			isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
 		}
@@ -230,17 +231,18 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public boolean isMovementAppliedToAllImages() {
-		return windowPreferences.isMovementAppliedToAllImages();
+		return imageHandlingPreferences.isMovementAppliedToAllImages();
 	}
 
 	@Override
 	public void setMovementAppliedToAllImages(boolean movementAppliedToAllImages) {
-		windowPreferences.setMovementAppliedToAllImages(movementAppliedToAllImages);
+		imageHandlingPreferences.setMovementAppliedToAllImages(movementAppliedToAllImages);
 	}
 
 	@Override
 	public void toggleMovementAppliedToAllImages() {
-		windowPreferences.setMovementAppliedToAllImages(!windowPreferences.isMovementAppliedToAllImages());
+		imageHandlingPreferences
+				.setMovementAppliedToAllImages(!imageHandlingPreferences.isMovementAppliedToAllImages());
 	}
 
 	@Override

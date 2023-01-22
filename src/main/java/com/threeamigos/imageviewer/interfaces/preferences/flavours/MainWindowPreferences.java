@@ -10,9 +10,6 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
  */
 public interface MainWindowPreferences extends Preferences {
 
-	public static final boolean AUTOROTATION_DEFAULT = true;
-	public static final boolean MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT = true;
-
 	default String getDescription() {
 		return "Main window preferences";
 	}
@@ -32,33 +29,5 @@ public interface MainWindowPreferences extends Preferences {
 	public void setMainWindowY(int y);
 
 	public int getMainWindowY();
-
-	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
-
-	public boolean isMovementAppliedToAllImages();
-
-	public void setDragAndDropWindowVisible(boolean visible);
-
-	public boolean isDragAndDropWindowVisible();
-
-	public void setDragAndDropWindowWidth(int width);
-
-	public int getDragAndDropWindowWidth();
-
-	public void setDragAndDropWindowHeight(int height);
-
-	public int getDragAndDropWindowHeight();
-
-	public void setDragAndDropWindowX(int x);
-
-	public int getDragAndDropWindowX();
-
-	public void setDragAndDropWindowY(int y);
-
-	public int getDragAndDropWindowY();
-
-	public void setAutorotation(boolean autorotation);
-
-	public boolean isAutorotation();
 
 }

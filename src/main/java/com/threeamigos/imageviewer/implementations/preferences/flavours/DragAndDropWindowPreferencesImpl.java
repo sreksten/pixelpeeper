@@ -3,67 +3,80 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 
-public class MainWindowPreferencesImpl implements MainWindowPreferences {
+public class DragAndDropWindowPreferencesImpl implements DragAndDropWindowPreferences {
 
-	private int mainWindowWidth;
-	private int mainWindowHeight;
-	private int mainWindowX;
-	private int mainWindowY;
+	private boolean dragAndDropWindowVisible;
+	private int dragAndDropWindowWidth;
+	private int dragAndDropWindowHeight;
+	private int dragAndDropWindowX;
+	private int dragAndDropWindowY;
 
 	@Override
-	public int getMainWindowWidth() {
-		return mainWindowWidth;
+	public void setDragAndDropWindowVisible(boolean visible) {
+		this.dragAndDropWindowVisible = visible;
 	}
 
 	@Override
-	public void setMainWindowWidth(int width) {
-		this.mainWindowWidth = width;
+	public boolean isDragAndDropWindowVisible() {
+		return dragAndDropWindowVisible;
 	}
 
 	@Override
-	public int getMainWindowHeight() {
-		return mainWindowHeight;
+	public void setDragAndDropWindowWidth(int width) {
+		this.dragAndDropWindowWidth = width;
 	}
 
 	@Override
-	public void setMainWindowHeight(int height) {
-		this.mainWindowHeight = height;
+	public int getDragAndDropWindowWidth() {
+		return dragAndDropWindowWidth;
 	}
 
 	@Override
-	public int getMainWindowX() {
-		return mainWindowX;
+	public void setDragAndDropWindowHeight(int height) {
+		this.dragAndDropWindowHeight = height;
 	}
 
 	@Override
-	public void setMainWindowX(int x) {
-		this.mainWindowX = x;
+	public int getDragAndDropWindowHeight() {
+		return dragAndDropWindowHeight;
 	}
 
 	@Override
-	public int getMainWindowY() {
-		return mainWindowY;
+	public void setDragAndDropWindowX(int x) {
+		this.dragAndDropWindowX = x;
 	}
 
 	@Override
-	public void setMainWindowY(int y) {
-		this.mainWindowY = y;
+	public int getDragAndDropWindowX() {
+		return dragAndDropWindowX;
+	}
+
+	@Override
+	public void setDragAndDropWindowY(int y) {
+		this.dragAndDropWindowY = y;
+	}
+
+	@Override
+	public int getDragAndDropWindowY() {
+		return dragAndDropWindowY;
 	}
 
 	@Override
 	public void loadDefaultValues() {
-		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-		mainWindowWidth = screenDimension.width * 2 / 3;
-		mainWindowHeight = screenDimension.height * 2 / 3;
-		mainWindowX = (screenDimension.width - mainWindowWidth) / 2;
-		mainWindowY = (screenDimension.height - mainWindowHeight) / 2;
+		dragAndDropWindowVisible = false;
+		dragAndDropWindowWidth = 300;
+		dragAndDropWindowHeight = 300;
+		dragAndDropWindowX = 0;
+		dragAndDropWindowY = 0;
 	}
 
 	@Override
 	public void validate() {
-		checkBoundaries("main", mainWindowWidth, mainWindowHeight, mainWindowX, mainWindowY);
+
+		checkBoundaries("drag and drop", dragAndDropWindowWidth, dragAndDropWindowHeight, dragAndDropWindowX,
+				dragAndDropWindowY);
 	}
 
 	private void checkBoundaries(String windowName, int width, int height, int x, int y)

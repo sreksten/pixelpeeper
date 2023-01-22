@@ -24,15 +24,18 @@ import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProv
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ImageReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.persister.PreferencesHelper;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.DragAndDropWindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.ImageHandlingPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.MainWindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
@@ -48,14 +51,17 @@ import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecora
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
@@ -85,7 +91,7 @@ public class Main {
 
 	// TODO: bigPointer should be changed to a real cursor
 
-	// TODO: improve the preferences. JSON?
+	// TODO: split main window, drag and drop and images handling preferences
 
 	// TODO: lens manufacturer
 
@@ -126,7 +132,13 @@ public class Main {
 		// Main Preferences
 
 		MainWindowPreferences windowPreferences = new MainWindowPreferencesImpl();
-		preferencesHelper.register(windowPreferences, "window.preferences");
+		preferencesHelper.register(windowPreferences, "main_window.preferences");
+
+		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
+		preferencesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
+
+		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
+		preferencesHelper.register(imageHandlingPreferences, "image_handling.preferences");
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
 		preferencesHelper.register(pathPreferences, "path.preferences");
@@ -155,25 +167,27 @@ public class Main {
 
 		// Data model
 
-		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
 
-		FontService fontService = new FontServiceImpl();
-
-		ExifImageReader exifImageReader = new ExifImageReaderImpl(windowPreferences, edgesDetectorFactory,
-				messageHandler);
+		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
+				edgesDetectorFactory, messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
+
+		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+
+		FontService fontService = new FontServiceImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
 				edgesDetectorPreferences, fontService);
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
-		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
-				pathPreferences, edgesDetectorPreferences, exifImageReader);
+		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager,
+				imageHandlingPreferences, pathPreferences, edgesDetectorPreferences, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 
 		// User Interface
@@ -186,7 +200,8 @@ public class Main {
 
 		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
 
-		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(windowPreferences, fontService, messageHandler);
+		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, fontService,
+				messageHandler);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
@@ -198,10 +213,11 @@ public class Main {
 		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
-				bigPointerPreferences, exifTagPreferences, dataModel, preferencesHelper, mouseTracker, fileSelector,
-				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
-				new AboutWindowImpl(), dragAndDropWindow, messageHandler);
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, dragAndDropWindowPreferences,
+				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
+				preferencesHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
+				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
+				dragAndDropWindow, messageHandler);
 
 		bigPointerDecorator.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);

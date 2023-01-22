@@ -21,7 +21,7 @@ import javax.swing.WindowConstants;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
@@ -29,15 +29,15 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private static final long serialVersionUID = 1L;
 
-	private final MainWindowPreferences windowPreferences;
+	private final DragAndDropWindowPreferences windowPreferences;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
 	private Consumer<List<File>> proxifiedObject;
 
-	public DragAndDropWindowImpl(MainWindowPreferences windowPreferences, FontService fontService,
+	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences, FontService fontService,
 			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
-		this.windowPreferences = windowPreferences;
+		this.windowPreferences = dragAndDropWindowPreferences;
 		this.fontService = fontService;
 		this.messageHandler = messageHandler;
 
@@ -45,7 +45,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				windowPreferences.setDragAndDropWindowVisible(false);
+				dragAndDropWindowPreferences.setDragAndDropWindowVisible(false);
 				setVisible(false);
 			}
 		});
@@ -58,22 +58,24 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				windowPreferences.setDragAndDropWindowWidth(getWidth());
-				windowPreferences.setDragAndDropWindowHeight(getHeight());
+				dragAndDropWindowPreferences.setDragAndDropWindowWidth(getWidth());
+				dragAndDropWindowPreferences.setDragAndDropWindowHeight(getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				windowPreferences.setDragAndDropWindowX(getX());
-				windowPreferences.setDragAndDropWindowY(getY());
+				dragAndDropWindowPreferences.setDragAndDropWindowX(getX());
+				dragAndDropWindowPreferences.setDragAndDropWindowY(getY());
 			}
 		});
 
 		pack();
 		setResizable(true);
-		setLocation(windowPreferences.getDragAndDropWindowX(), windowPreferences.getDragAndDropWindowY());
-		setSize(windowPreferences.getDragAndDropWindowWidth(), windowPreferences.getDragAndDropWindowHeight());
-		setVisible(windowPreferences.isDragAndDropWindowVisible());
+		setLocation(dragAndDropWindowPreferences.getDragAndDropWindowX(),
+				dragAndDropWindowPreferences.getDragAndDropWindowY());
+		setSize(dragAndDropWindowPreferences.getDragAndDropWindowWidth(),
+				dragAndDropWindowPreferences.getDragAndDropWindowHeight());
+		setVisible(dragAndDropWindowPreferences.isDragAndDropWindowVisible());
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
 	}

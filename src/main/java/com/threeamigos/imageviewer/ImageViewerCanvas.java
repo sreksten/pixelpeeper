@@ -41,10 +41,13 @@ import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
+import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
@@ -65,6 +68,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private static final long serialVersionUID = 1L;
 
 	private final transient MainWindowPreferences windowPreferences;
+	private final transient DragAndDropWindowPreferences dragAndDropWindowPreferences;
+	private final transient ImageHandlingPreferences imageHandlingPreferences;
 	private final transient GridPreferences gridPreferences;
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
@@ -84,14 +89,16 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private JMenuItem showEdgesMenuItem;
 
 	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
+	private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
 	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
 			EdgesDetectorFlavour.class);
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
-	private JMenuItem bigPointerVisibleMenuItem;
 	private JMenuItem gridVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 
-	public ImageViewerCanvas(MainWindowPreferences windowPreferences, GridPreferences gridPreferences,
+	public ImageViewerCanvas(MainWindowPreferences windowPreferences,
+			DragAndDropWindowPreferences dragAndDropWindowPreferences,
+			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
 			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, FileSelector fileSelector,
 			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
@@ -100,6 +107,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.windowPreferences = windowPreferences;
+		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
+		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
@@ -149,7 +158,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			}
 		});
 		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
-			windowPreferences.setDragAndDropWindowVisible(true);
+			dragAndDropWindowPreferences.setDragAndDropWindowVisible(true);
 			dragAndDropWindow.setVisible(true);
 		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
@@ -186,6 +195,17 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 		JMenu imageHandlingMenu = new JMenu("Image handling");
 		menuBar.add(imageHandlingMenu);
+		JMenu imageReaderMenu = new JMenu("Image reader library");
+		imageHandlingMenu.add(imageReaderMenu);
+		for (ImageReaderFlavour flavour : ImageReaderFlavour.values()) {
+			JMenuItem imageReaderItem = addCheckboxMenuItem(imageReaderMenu, flavour.getDescription(), -1,
+					flavour == imageHandlingPreferences.getImageReaderFlavour(), event -> {
+						imageHandlingPreferences.setImageReaderFlavour(flavour);
+						updateImageReaderMenu(flavour);
+						repaint();
+					});
+			imageReadersByFlavour.put(flavour, imageReaderItem);
+		}
 		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();
@@ -200,6 +220,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 					repaint();
 				});
+
 		JMenu gridSpacingMenu = new JMenu("Grid spacing");
 		imageHandlingMenu.add(gridSpacingMenu);
 		for (int gridSpacing = GridPreferences.GRID_SPACING_MIN; gridSpacing <= GridPreferences.GRID_SPACING_MAX; gridSpacing += GridPreferences.GRID_SPACING_STEP) {
@@ -212,8 +233,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
 		}
-
-		bigPointerVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
+		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
 					updateCursor();
@@ -293,6 +313,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		}
 		if (edgesDetectorPreferences.isShowEdges()) {
 			dataModel.calculateEdges();
+		}
+	}
+
+	private void updateImageReaderMenu(final ImageReaderFlavour flavour) {
+		for (Map.Entry<ImageReaderFlavour, JMenuItem> entry : imageReadersByFlavour.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == flavour);
 		}
 	}
 

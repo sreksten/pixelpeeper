@@ -1,0 +1,28 @@
+package com.threeamigos.imageviewer.interfaces.preferences.flavours;
+
+import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
+import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
+
+public interface ImageHandlingPreferences extends Preferences {
+
+	public static final boolean AUTOROTATION_DEFAULT = true;
+	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
+	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.JAVA;
+
+	default String getDescription() {
+		return "Image handling preferences";
+	}
+
+	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
+
+	public boolean isMovementAppliedToAllImages();
+
+	public void setAutorotation(boolean autorotation);
+
+	public boolean isAutorotation();
+
+	public void setImageReaderFlavour(ImageReaderFlavour imageReaderFlavour);
+
+	public ImageReaderFlavour getImageReaderFlavour();
+
+}
