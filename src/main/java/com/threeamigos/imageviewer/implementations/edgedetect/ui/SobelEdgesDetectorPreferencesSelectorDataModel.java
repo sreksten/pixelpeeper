@@ -47,4 +47,10 @@ public class SobelEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 		return false;
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

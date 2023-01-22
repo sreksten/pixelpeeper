@@ -36,4 +36,10 @@ public class PathPreferencesImpl implements PathPreferences {
 		lastFilenames = Collections.emptyList();
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

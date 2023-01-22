@@ -1,6 +1,9 @@
 package com.threeamigos.imageviewer.implementations.preferences;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.imageviewer.implementations.persister.JsonFilePersister;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.JsonStatusTracker;
 import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.persister.PersistResult;
 import com.threeamigos.imageviewer.interfaces.persister.Persister;
@@ -14,11 +17,11 @@ public class PreferencesManagerImpl<T extends Preferences> implements Preference
 	private final Persister<T> persister;
 	private final MessageHandler messageHandler;
 
-	public PreferencesManagerImpl(T preferences, StatusTracker<T> statusTracker, Persister<T> persister,
-			MessageHandler messageHandler) {
+	public PreferencesManagerImpl(T preferences, String filename, String entityDescription,
+			RootPathProvider rootPathProvider, MessageHandler messageHandler) {
 		this.preferences = preferences;
-		this.statusTracker = statusTracker;
-		this.persister = persister;
+		this.statusTracker = new JsonStatusTracker<>(preferences);
+		this.persister = new JsonFilePersister<>(filename, entityDescription, rootPathProvider, messageHandler);
 		this.messageHandler = messageHandler;
 
 		PersistResult persistResult = persister.load(preferences);
@@ -27,6 +30,13 @@ public class PreferencesManagerImpl<T extends Preferences> implements Preference
 				messageHandler.handleErrorMessage(persistResult.getError());
 			}
 			preferences.loadDefaultValues();
+		} else {
+			try {
+				preferences.validate();
+			} catch (IllegalArgumentException e) {
+				messageHandler.handleErrorMessage(e.getMessage());
+				preferences.loadDefaultValues();
+			}
 		}
 		statusTracker.loadInitialValues();
 	}

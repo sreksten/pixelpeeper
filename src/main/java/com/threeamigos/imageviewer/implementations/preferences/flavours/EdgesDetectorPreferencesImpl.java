@@ -65,4 +65,10 @@ public class EdgesDetectorPreferencesImpl implements PropertyChangeAwareEdgesDet
 		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

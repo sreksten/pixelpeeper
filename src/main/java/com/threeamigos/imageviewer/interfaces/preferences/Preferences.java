@@ -8,6 +8,10 @@ package com.threeamigos.imageviewer.interfaces.preferences;
  */
 public interface Preferences {
 
+	public String getDescription();
+
+	public void validate();
+
 	public void loadDefaultValues();
 
 }

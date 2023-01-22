@@ -106,4 +106,15 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
 				|| romyJonaEdgesDetectorPreferences.isANastro() != aNastroCheckbox.isSelected();
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getDescription() {
+		return RomyJonaEdgesDetectorPreferences.super.getDescription();
+	}
+
 }

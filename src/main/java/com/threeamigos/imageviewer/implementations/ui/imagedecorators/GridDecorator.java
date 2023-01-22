@@ -9,18 +9,18 @@ import java.beans.PropertyChangeSupport;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class GridDecorator implements ImageDecorator {
 
-	private final WindowPreferences windowPreferences;
+	private final MainWindowPreferences windowPreferences;
 	private final GridPreferences gridPreferences;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
-	public GridDecorator(WindowPreferences windowPreferences, GridPreferences gridPreferences) {
+	public GridDecorator(MainWindowPreferences windowPreferences, GridPreferences gridPreferences) {
 		this.windowPreferences = windowPreferences;
 		this.gridPreferences = gridPreferences;
 

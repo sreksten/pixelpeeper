@@ -12,6 +12,10 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
  */
 public interface PathPreferences extends Preferences {
 
+	default String getDescription() {
+		return "Path and files preferences";
+	}
+
 	public void setLastPath(String path);
 
 	public String getLastPath();

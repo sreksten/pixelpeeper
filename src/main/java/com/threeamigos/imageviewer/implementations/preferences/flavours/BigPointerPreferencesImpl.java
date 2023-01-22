@@ -45,4 +45,8 @@ public class BigPointerPreferencesImpl implements BigPointerPreferences {
 		rotation = BigPointerPreferences.BIG_POINTER_ROTATION_DEFAULT;
 	}
 
+	@Override
+	public void validate() {
+	}
+
 }

@@ -3,9 +3,9 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 
-public class WindowPreferencesImpl implements WindowPreferences {
+public class MainWindowPreferencesImpl implements MainWindowPreferences {
 
 	private int mainWindowWidth;
 	private int mainWindowHeight;
@@ -161,4 +161,41 @@ public class WindowPreferencesImpl implements WindowPreferences {
 		setMovementAppliedToAllImages(MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT);
 	}
 
+	@Override
+	public void validate() {
+
+		checkBoundaries("main", mainWindowWidth, mainWindowHeight, mainWindowX, mainWindowY);
+
+		checkBoundaries("drag and drop", dragAndDropWindowWidth, dragAndDropWindowHeight, dragAndDropWindowX,
+				dragAndDropWindowY);
+	}
+
+	private void checkBoundaries(String windowName, int width, int height, int x, int y)
+			throws IllegalArgumentException {
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		if (width <= 0) {
+			throw new IllegalArgumentException(
+					String.format("Invalid %s window preferences: width must be greater than 0", windowName));
+		}
+		if (height <= 0) {
+			throw new IllegalArgumentException(
+					String.format("Invalid %s window preferences: height must be greater than 0", windowName));
+		}
+		if (x < 0) {
+			throw new IllegalArgumentException(String
+					.format("Invalid %s window preferences: x position must be equal or greater than 0", windowName));
+		}
+		if (x >= dimension.width) {
+			throw new IllegalArgumentException(String.format(
+					"Invalid %s window preferences: x position must be less than the screen width", windowName));
+		}
+		if (y < 0) {
+			throw new IllegalArgumentException(String
+					.format("Invalid %s window preferences: y position must be equal or greater than 0", windowName));
+		}
+		if (y >= dimension.height) {
+			throw new IllegalArgumentException(String.format(
+					"Invalid %s window preferences: y position must be less than the screen height", windowName));
+		}
+	}
 }

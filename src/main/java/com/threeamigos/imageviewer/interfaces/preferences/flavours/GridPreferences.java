@@ -10,6 +10,10 @@ public interface GridPreferences extends Preferences {
 	public static final int GRID_SPACING_MIN = 25;
 	public static final int GRID_SPACING_MAX = 200;
 
+	default String getDescription() {
+		return "Grid preferences";
+	}
+
 	public void setGridVisible(boolean gridVisible);
 
 	public boolean isGridVisible();

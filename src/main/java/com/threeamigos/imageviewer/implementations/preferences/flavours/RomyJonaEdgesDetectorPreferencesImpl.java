@@ -33,4 +33,10 @@ public class RomyJonaEdgesDetectorPreferencesImpl implements RomyJonaEdgesDetect
 		aNastro = RomyJonaEdgesDetectorPreferences.A_NASTRO_PREFERENCES_DEFAULT;
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

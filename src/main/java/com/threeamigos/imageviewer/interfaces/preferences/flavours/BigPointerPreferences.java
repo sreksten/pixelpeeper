@@ -8,6 +8,10 @@ public interface BigPointerPreferences extends Preferences {
 	public static final int BIG_POINTER_SIZE_DEFAULT = 100;
 	public static final float BIG_POINTER_ROTATION_DEFAULT = (float) (5 * Math.PI / 4);
 
+	default String getDescription() {
+		return "Big Pointer preferences";
+	}
+
 	public void setBigPointerVisible(boolean bigPointerVisible);
 
 	public boolean isBigPointerVisible();

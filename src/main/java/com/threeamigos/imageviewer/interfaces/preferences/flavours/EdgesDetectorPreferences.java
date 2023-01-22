@@ -9,6 +9,10 @@ public interface EdgesDetectorPreferences extends Preferences {
 	public static final int EDGES_TRANSPARENCY_DEFAULT = 30;
 	public static final EdgesDetectorFlavour EDGES_DETECTOR_FLAVOUR_DEFAULT = EdgesDetectorFlavour.CANNY_EDGES_DETECTOR;
 
+	default String getDescription() {
+		return "Edges Detector preferences";
+	}
+
 	public void setShowEdges(boolean showEdges);
 
 	public boolean isShowEdges();

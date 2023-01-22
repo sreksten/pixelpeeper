@@ -69,4 +69,10 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 		contrastNormalized = CannyEdgesDetectorPreferences.CONTRAST_NORMALIZED_DEFAULT;
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

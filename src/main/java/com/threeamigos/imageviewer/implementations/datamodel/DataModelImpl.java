@@ -28,7 +28,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
@@ -37,7 +37,7 @@ public class DataModelImpl implements DataModel {
 	private final ExifTagsFilter exifTagsFilter;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ImageSlicesManager imageSlicesManager;
-	private final WindowPreferences windowPreferences;
+	private final MainWindowPreferences windowPreferences;
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
@@ -47,7 +47,7 @@ public class DataModelImpl implements DataModel {
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager imageSlicesManager, WindowPreferences windowPreferences, PathPreferences pathPreferences,
+			ImageSlicesManager imageSlicesManager, MainWindowPreferences windowPreferences, PathPreferences pathPreferences,
 			EdgesDetectorPreferences edgesDetectorPreferences, ExifImageReader imageReader) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;

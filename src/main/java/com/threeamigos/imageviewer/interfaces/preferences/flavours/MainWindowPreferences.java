@@ -8,10 +8,14 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
  * @author Stefano Reksten
  *
  */
-public interface WindowPreferences extends Preferences {
+public interface MainWindowPreferences extends Preferences {
 
 	public static final boolean AUTOROTATION_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIES_TO_ALL_IMAGES_DEFAULT = true;
+
+	default String getDescription() {
+		return "Main window preferences";
+	}
 
 	public void setMainWindowWidth(int width);
 

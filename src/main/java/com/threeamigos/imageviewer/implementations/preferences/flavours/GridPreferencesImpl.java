@@ -33,4 +33,10 @@ public class GridPreferencesImpl implements GridPreferences {
 		gridSpacing = GridPreferences.GRID_SPACING_DEFAULT;
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

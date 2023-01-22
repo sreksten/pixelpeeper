@@ -10,6 +10,10 @@ public interface CannyEdgesDetectorPreferences extends Preferences {
 	public static final int GAUSSIAN_KERNEL_WIDTH_DEFAULT = 16;
 	public static final boolean CONTRAST_NORMALIZED_DEFAULT = false;
 
+	default String getDescription() {
+		return "Canny Edges Detector preferences";
+	}
+
 	public float getLowThreshold();
 
 	public void setLowThreshold(float lowThreshold);

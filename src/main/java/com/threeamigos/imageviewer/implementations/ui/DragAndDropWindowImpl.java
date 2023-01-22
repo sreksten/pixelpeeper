@@ -21,7 +21,7 @@ import javax.swing.WindowConstants;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
@@ -29,12 +29,12 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private static final long serialVersionUID = 1L;
 
-	private final WindowPreferences windowPreferences;
+	private final MainWindowPreferences windowPreferences;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
 	private Consumer<List<File>> proxifiedObject;
 
-	public DragAndDropWindowImpl(WindowPreferences windowPreferences, FontService fontService,
+	public DragAndDropWindowImpl(MainWindowPreferences windowPreferences, FontService fontService,
 			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
 		this.windowPreferences = windowPreferences;

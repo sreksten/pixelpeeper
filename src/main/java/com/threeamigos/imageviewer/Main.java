@@ -19,7 +19,7 @@ import com.threeamigos.common.util.implementations.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.SwingMessageHandler;
 import com.threeamigos.common.util.interfaces.MessageHandler;
-import com.threeamigos.common.util.preferences.filebased.implementations.PreferencesRootPathProviderImpl;
+import com.threeamigos.common.util.preferences.filebased.implementations.RootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
@@ -27,32 +27,15 @@ import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
-import com.threeamigos.imageviewer.implementations.persister.PersistableHelperImpl;
-import com.threeamigos.imageviewer.implementations.persister.TextFileBigPointerPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileCannyEdgesDetectorPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileEdgesDetectorPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileExifTagPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileGridPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFilePathPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileRomyJonaEdgesDetectorPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.persister.TextFileWindowPreferencesPersister;
-import com.threeamigos.imageviewer.implementations.preferences.PreferencesManagerImpl;
+import com.threeamigos.imageviewer.implementations.persister.PreferencesHelper;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesStatusTracker;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.MainWindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesStatusTracker;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.WindowPreferencesStatusTracker;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
@@ -62,26 +45,21 @@ import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.BigPointerDecorator;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
-import com.threeamigos.imageviewer.interfaces.StatusTracker;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
-import com.threeamigos.imageviewer.interfaces.persister.PersistableHelper;
-import com.threeamigos.imageviewer.interfaces.persister.Persister;
-import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
-import com.threeamigos.imageviewer.interfaces.preferences.PreferencesManager;
+import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
@@ -100,24 +78,30 @@ public class Main {
 
 	// 193-197-200
 
+	// TODO: ExifImageReader should be split in two separate classes
+	// TODO: ImageReader should use java default, apache or other image libraries
+
+	// TODO: prepare the image with edges instead of drawing it every time
+
+	// TODO: bigPointer should be changed to a real cursor
+
+	// TODO: improve the preferences. JSON?
+
 	// TODO: lens manufacturer
 
 	// TODO: when the edges preference window is changed to a non-dialog window, the
-	// menu should be
-	// switched off (or the window itself should be shut down and called once again)
-
-	// TODO: ExifImageReader should be split in two separate classes
-	// TODO: ImageReader should use java default, apache or other image libraries
+	// menu should be switched off (or the window itself should be shut down and
+	// called once again)
 
 	// TODO: set up an unique queue for message processing?
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
-	// TODO: prepare the image with edges instead of drawing it every time
-
 	// TODO: scrolling in percentage
 
 	// TODO: miniature showing current position
+
+	// TODO: drag and drop window with an image instead of text (or both)
 
 	// TODO evidenziatore
 
@@ -132,92 +116,42 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		RootPathProvider preferencesRootPathProvider = new PreferencesRootPathProviderImpl(this, messageHandler);
-		if (preferencesRootPathProvider.shouldAbort()) {
+		RootPathProvider rootPathProvider = new RootPathProviderImpl(this, messageHandler);
+		if (rootPathProvider.shouldAbort()) {
 			System.exit(0);
 		}
 
-		PersistableHelper<PreferencesManager<? extends Preferences>> persistableHelper = new PersistableHelperImpl<>();
+		PreferencesHelper preferencesHelper = new PreferencesHelper(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
-		WindowPreferences windowPreferences = new WindowPreferencesImpl();
-		StatusTracker<WindowPreferences> windowPreferencesStatusTracker = new WindowPreferencesStatusTracker(
-				windowPreferences);
-		Persister<WindowPreferences> windowPreferencesPersister = new TextFileWindowPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<WindowPreferences> windowPreferencesManager = new PreferencesManagerImpl<>(windowPreferences,
-				windowPreferencesStatusTracker, windowPreferencesPersister, messageHandler);
-		persistableHelper.add(windowPreferencesManager);
+		MainWindowPreferences windowPreferences = new MainWindowPreferencesImpl();
+		preferencesHelper.register(windowPreferences, "window.preferences");
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
-		StatusTracker<PathPreferences> pathPreferencesStatusTracker = new PathPreferencesStatusTracker(pathPreferences);
-		Persister<PathPreferences> pathPreferencesPersister = new TextFilePathPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<PathPreferences> pathPreferencesManager = new PreferencesManagerImpl<>(pathPreferences,
-				pathPreferencesStatusTracker, pathPreferencesPersister, messageHandler);
-		persistableHelper.add(pathPreferencesManager);
+		preferencesHelper.register(pathPreferences, "path.preferences");
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl();
-		StatusTracker<ExifTagPreferences> exifTagPreferencesStatusTracker = new ExifTagPreferencesStatusTracker(
-				exifTagPreferences);
-		Persister<ExifTagPreferences> exifTagPreferencesPersister = new TextFileExifTagPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<ExifTagPreferences> exifTagPreferencesManager = new PreferencesManagerImpl<>(
-				exifTagPreferences, exifTagPreferencesStatusTracker, exifTagPreferencesPersister, messageHandler);
-		persistableHelper.add(exifTagPreferencesManager);
+		preferencesHelper.register(exifTagPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
 		GridPreferences gridPreferences = new GridPreferencesImpl();
-		StatusTracker<GridPreferences> gridPreferencesStatusTracker = new GridPreferencesStatusTracker(gridPreferences);
-		Persister<GridPreferences> gridPreferencesPersister = new TextFileGridPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<GridPreferences> gridPreferencesManager = new PreferencesManagerImpl<>(gridPreferences,
-				gridPreferencesStatusTracker, gridPreferencesPersister, messageHandler);
-		persistableHelper.add(gridPreferencesManager);
+		preferencesHelper.register(gridPreferences, "grid.preferences");
 
 		BigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
-		StatusTracker<BigPointerPreferences> bigPointerPreferencesStatusTracker = new BigPointerPreferencesStatusTracker(
-				bigPointerPreferences);
-		Persister<BigPointerPreferences> bigPointerPreferencesPersister = new TextFileBigPointerPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<BigPointerPreferences> bigPointerPreferencesManager = new PreferencesManagerImpl<>(
-				bigPointerPreferences, bigPointerPreferencesStatusTracker, bigPointerPreferencesPersister,
-				messageHandler);
-		persistableHelper.add(bigPointerPreferencesManager);
+		preferencesHelper.register(bigPointerPreferences, "pointer.preferences");
 
 		// Edges Detector and implementations preferences
 
 		PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
-		StatusTracker<EdgesDetectorPreferences> edgesDetectorPreferencesStatusTracker = new EdgesDetectorPreferencesStatusTracker(
-				edgesDetectorPreferences);
-		Persister<EdgesDetectorPreferences> edgesDetectorPreferencesPersister = new TextFileEdgesDetectorPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<EdgesDetectorPreferences> edgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
-				edgesDetectorPreferences, edgesDetectorPreferencesStatusTracker, edgesDetectorPreferencesPersister,
-				messageHandler);
-		persistableHelper.add(edgesDetectorPreferencesManager);
+		preferencesHelper.register(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
-		StatusTracker<CannyEdgesDetectorPreferences> cannyEdgesDetectorPreferencesStatusTracker = new CannyEdgesDetectorPreferencesStatusTracker(
-				cannyEdgesDetectorPreferences);
-		Persister<CannyEdgesDetectorPreferences> cannyEdgesDetectorPreferencesPersister = new TextFileCannyEdgesDetectorPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<CannyEdgesDetectorPreferences> cannyEdgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
-				cannyEdgesDetectorPreferences, cannyEdgesDetectorPreferencesStatusTracker,
-				cannyEdgesDetectorPreferencesPersister, messageHandler);
-		persistableHelper.add(cannyEdgesDetectorPreferencesManager);
+		preferencesHelper.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
-		StatusTracker<RomyJonaEdgesDetectorPreferences> romyJonaEdgesDetectorPreferencesStatusTracker = new RomyJonaEdgesDetectorPreferencesStatusTracker(
-				romyJonaEdgesDetectorPreferences);
-		Persister<RomyJonaEdgesDetectorPreferences> romyJonaEdgesDetectorPreferencesPersister = new TextFileRomyJonaEdgesDetectorPreferencesPersister(
-				preferencesRootPathProvider, messageHandler);
-		PreferencesManager<RomyJonaEdgesDetectorPreferences> romyJonaEdgesDetectorPreferencesManager = new PreferencesManagerImpl<>(
-				romyJonaEdgesDetectorPreferences, romyJonaEdgesDetectorPreferencesStatusTracker,
-				romyJonaEdgesDetectorPreferencesPersister, messageHandler);
-		persistableHelper.add(romyJonaEdgesDetectorPreferencesManager);
+		preferencesHelper.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
 		// Data model
 
@@ -240,7 +174,7 @@ public class Main {
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
 				pathPreferences, edgesDetectorPreferences, exifImageReader);
-		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), 1);
+		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 
 		// User Interface
 
@@ -257,15 +191,15 @@ public class Main {
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
 		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences, mouseTracker);
-		chainedInputConsumer.addConsumer(bigPointerDecorator.getInputConsumer(), 2);
+		chainedInputConsumer.addConsumer(bigPointerDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(bigPointerDecorator);
 
 		GridDecorator gridDecorator = new GridDecorator(windowPreferences, gridPreferences);
-		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), 2);
+		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
-				bigPointerPreferences, exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector,
+				bigPointerPreferences, exifTagPreferences, dataModel, preferencesHelper, mouseTracker, fileSelector,
 				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
 				new AboutWindowImpl(), dragAndDropWindow, messageHandler);
 
@@ -275,14 +209,14 @@ public class Main {
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);
 
-		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, persistableHelper);
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, preferencesHelper);
 
 		jframe.setVisible(true);
 
 	}
 
-	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, WindowPreferences windowPreferences,
-			PersistableHelper<PreferencesManager<? extends Preferences>> preferencesPersisterHelper) {
+	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences windowPreferences,
+			Persistable persistable) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
 		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -290,7 +224,7 @@ public class Main {
 		jframe.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				preferencesPersisterHelper.persist();
+				persistable.persist();
 				System.exit(0);
 			}
 		});

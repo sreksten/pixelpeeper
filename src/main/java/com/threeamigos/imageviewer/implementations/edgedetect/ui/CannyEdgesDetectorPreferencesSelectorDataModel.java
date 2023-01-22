@@ -197,4 +197,15 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 				|| cannyEdgesDetectorPreferences.isContrastNormalized() != contrastNormalizedCheckbox.isSelected();
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getDescription() {
+		return CannyEdgesDetectorPreferences.super.getDescription();
+	}
+
 }

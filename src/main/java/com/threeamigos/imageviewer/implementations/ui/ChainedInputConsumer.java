@@ -15,6 +15,10 @@ import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class ChainedInputConsumer implements InputConsumer {
 
+	public static final int PRIORITY_LOW = 0;
+	public static final int PRIORITY_MEDIUM = 5;
+	public static final int PRIORITY_HIGH = 10;
+
 	private Map<Integer, List<InputConsumer>> inputConsumers = new TreeMap<>(Comparator.reverseOrder());
 	List<InputConsumer> sortedConsumers = Collections.emptyList();
 

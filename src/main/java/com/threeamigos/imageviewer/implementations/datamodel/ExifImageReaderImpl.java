@@ -10,15 +10,15 @@ import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 
 public class ExifImageReaderImpl implements ExifImageReader {
 
-	private final WindowPreferences windowPreferences;
+	private final MainWindowPreferences windowPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 	private final ExceptionHandler exceptionHandler;
 
-	public ExifImageReaderImpl(WindowPreferences windowPreferences, EdgesDetectorFactory edgesDetectorFactory,
+	public ExifImageReaderImpl(MainWindowPreferences windowPreferences, EdgesDetectorFactory edgesDetectorFactory,
 			ExceptionHandler exceptionHandler) {
 		this.windowPreferences = windowPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;

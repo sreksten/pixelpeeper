@@ -64,4 +64,10 @@ public class ExifTagPreferencesImpl implements ExifTagPreferences {
 		}
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+
+	}
+
 }
