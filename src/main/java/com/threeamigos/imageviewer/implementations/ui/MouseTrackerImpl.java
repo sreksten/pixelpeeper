@@ -9,6 +9,8 @@ public class MouseTrackerImpl implements MouseTracker {
 
 	private final DataModel dataModel;
 
+	private boolean dragging;
+
 	private int pointerStartX;
 	private int pointerStartY;
 
@@ -21,11 +23,13 @@ public class MouseTrackerImpl implements MouseTracker {
 		dataModel.setActiveSlice(e.getX(), e.getY());
 		pointerStartX = e.getX();
 		pointerStartY = e.getY();
+		dragging = true;
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		dataModel.resetActiveSlice();
+		dragging = false;
 	}
 
 	@Override
@@ -39,6 +43,11 @@ public class MouseTrackerImpl implements MouseTracker {
 
 		pointerStartX = endX;
 		pointerStartY = endY;
+	}
+
+	@Override
+	public boolean isDragging() {
+		return dragging;
 	}
 
 }

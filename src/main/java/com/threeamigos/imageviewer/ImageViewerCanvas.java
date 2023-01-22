@@ -35,7 +35,7 @@ import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
-import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
@@ -53,6 +53,7 @@ import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -88,6 +89,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
 			EdgesDetectorFlavour.class);
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
+	private JMenuItem bigPointerVisibleMenuItem;
+	private JMenuItem gridVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 
 	public ImageViewerCanvas(WindowPreferences windowPreferences, GridPreferences gridPreferences,
@@ -123,7 +126,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		setFocusable(true);
 		setDoubleBuffered(true);
 
-		chainedInputAdapter.addConsumer(getInputAdapter());
+		chainedInputAdapter.addConsumer(getInputConsumer(), 0);
 		addMouseListener(chainedInputAdapter);
 		addMouseMotionListener(chainedInputAdapter);
 		addKeyListener(chainedInputAdapter);
@@ -195,13 +198,14 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M, gridPreferences.isGridVisible(), event -> {
-			gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
-			repaint();
-		});
+		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M,
+				gridPreferences.isGridVisible(), event -> {
+					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
+					repaint();
+				});
 		JMenu gridSpacingMenu = new JMenu("Grid spacing");
 		imageHandlingMenu.add(gridSpacingMenu);
-		for (int gridSpacing = 25; gridSpacing <= 200; gridSpacing += 25) {
+		for (int gridSpacing = GridPreferences.GRID_SPACING_MIN; gridSpacing <= GridPreferences.GRID_SPACING_MAX; gridSpacing += GridPreferences.GRID_SPACING_STEP) {
 			final int currentSpacing = gridSpacing;
 			JMenuItem gridSpacingItem = addCheckboxMenuItem(gridSpacingMenu, String.valueOf(gridSpacing), -1,
 					gridSpacing == gridPreferences.getGridSpacing(), event -> {
@@ -212,7 +216,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
 		}
 
-		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
+		bigPointerVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
 					updateCursor();
@@ -220,7 +224,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 				});
 		JMenu bigPointerSizeMenu = new JMenu("Big pointer size");
 		imageHandlingMenu.add(bigPointerSizeMenu);
-		for (int pointerSize = 25; pointerSize <= 200; pointerSize += 25) {
+		for (int pointerSize = 25; pointerSize <= 400; pointerSize += 25) {
 			final int currentSize = pointerSize;
 			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize), -1,
 					pointerSize == bigPointerPreferences.getBigPointerSize(), event -> {
@@ -370,6 +374,15 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			repaint();
+		} else if (CommunicationMessages.BIG_POINTER_CHANGE.equals(evt.getPropertyName())) {
+			updateCursor();
+			repaint();
+		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
+			gridVisibleMenuItem.setVisible(gridPreferences.isGridVisible());
+			repaint();
+		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
+			updateGridSpacingMenu(gridPreferences.getGridSpacing());
+			repaint();
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
 			repaint();
 		}
@@ -385,14 +398,16 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		return toolkit.createCustomCursor(image, new Point(0, 0), "invisibleCursor");
 	}
 
-	private PrioritizedInputAdapter getInputAdapter() {
+	private InputConsumer getInputConsumer() {
 
-		return new PrioritizedInputAdapter() {
+		return new InputAdapter() {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (dataModel.hasLoadedImages()) {
-					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					if (!bigPointerPreferences.isBigPointerVisible()) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					}
 					mouseTracker.mousePressed(e);
 					repaint();
 				}

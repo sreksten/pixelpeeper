@@ -16,4 +16,6 @@ public interface MouseTracker {
 
 	public void mouseDragged(MouseEvent e);
 
+	public boolean isDragging();
+
 }

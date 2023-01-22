@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.implementations.ui.PrioritizedInputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -30,7 +30,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetector
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
-import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class DataModelImpl implements DataModel {
 
@@ -301,8 +301,8 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public PrioritizedInputConsumer getPrioritizedInputConsumer() {
-		return new PrioritizedInputAdapter(5) {
+	public InputConsumer getInputConsumer() {
+		return new InputAdapter() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {

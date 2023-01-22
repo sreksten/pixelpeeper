@@ -3,40 +3,36 @@ package com.threeamigos.imageviewer.implementations.ui;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
-import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
 
 public class ChainedInputConsumer implements InputConsumer {
 
-	private List<PrioritizedInputConsumer> inputConsumers = new LinkedList<>();
+	private Map<Integer, List<InputConsumer>> inputConsumers = new TreeMap<>(Comparator.reverseOrder());
+	List<InputConsumer> sortedConsumers = Collections.emptyList();
 
-	public void addConsumer(PrioritizedInputConsumer adapter) {
-		inputConsumers.add(adapter);
-		Collections.sort(inputConsumers, (a1, a2) -> {
-			int p1 = a1.getPriority();
-			int p2 = a2.getPriority();
-			if (p1 == p2) {
-				return 0;
-			} else if (p1 < p2) {
-				return -1;
-			} else {
-				return 1;
-			}
-		});
+	public void addConsumer(InputConsumer adapter, int priority) {
+		inputConsumers.computeIfAbsent(priority, key -> new ArrayList<>()).add(adapter);
+		sortedConsumers = new LinkedList<>();
+		inputConsumers.entrySet().stream().map(entry -> entry.getValue()).forEach(sortedConsumers::addAll);
 	}
 
-	public void removeConsumer(PrioritizedInputAdapter adapter) {
-		inputConsumers.remove(adapter);
+	public void removeConsumer(InputConsumer consumer) {
+		inputConsumers.entrySet().stream().map(entry -> entry.getValue()).forEach(list -> list.remove(consumer));
+		sortedConsumers.remove(consumer);
 	}
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseWheelMoved(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseWheelMoved(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -45,8 +41,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseClicked(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseClicked(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -55,8 +51,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mousePressed(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mousePressed(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -65,8 +61,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseReleased(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseReleased(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -75,8 +71,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseEntered(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseEntered(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -85,7 +81,7 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
+		for (InputConsumer adapter : sortedConsumers) {
 			adapter.mouseExited(e);
 			if (e.isConsumed()) {
 				break;
@@ -95,8 +91,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseDragged(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseDragged(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -105,8 +101,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.mouseMoved(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.mouseMoved(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -115,8 +111,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.keyTyped(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.keyTyped(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -125,8 +121,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.keyPressed(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.keyPressed(e);
 			if (e.isConsumed()) {
 				break;
 			}
@@ -135,8 +131,8 @@ public class ChainedInputConsumer implements InputConsumer {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		for (InputConsumer adapter : inputConsumers) {
-			adapter.keyReleased(e);
+		for (InputConsumer consumer : sortedConsumers) {
+			consumer.keyReleased(e);
 			if (e.isConsumed()) {
 				break;
 			}

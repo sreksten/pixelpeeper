@@ -113,6 +113,16 @@ public class Main {
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
+	// TODO: prepare the image with edges instead of drawing it every time
+
+	// TODO: scrolling in percentage
+
+	// TODO: miniature showing current position
+
+	// TODO evidenziatore
+
+	// TODO: zoom ?
+
 	public Main() {
 
 		// A way to show error/warning messages to the user
@@ -230,7 +240,7 @@ public class Main {
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager, windowPreferences,
 				pathPreferences, edgesDetectorPreferences, exifImageReader);
-		chainedInputConsumer.addConsumer(dataModel.getPrioritizedInputConsumer());
+		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), 1);
 
 		// User Interface
 
@@ -246,16 +256,21 @@ public class Main {
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
-		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences);
-		chainedInputConsumer.addConsumer(bigPointerDecorator.getPrioritizedInputConsumer());
+		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences, mouseTracker);
+		chainedInputConsumer.addConsumer(bigPointerDecorator.getInputConsumer(), 2);
 		decorators.add(bigPointerDecorator);
 
-		decorators.add(new GridDecorator(windowPreferences, gridPreferences));
+		GridDecorator gridDecorator = new GridDecorator(windowPreferences, gridPreferences);
+		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), 2);
+		decorators.add(gridDecorator);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, gridPreferences,
 				bigPointerPreferences, exifTagPreferences, dataModel, persistableHelper, mouseTracker, fileSelector,
 				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
 				new AboutWindowImpl(), dragAndDropWindow, messageHandler);
+
+		bigPointerDecorator.addPropertyChangeListener(imageViewerCanvas);
+		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
 
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);

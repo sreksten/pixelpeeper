@@ -2,21 +2,29 @@ package com.threeamigos.imageviewer.implementations.ui.imagedecorators;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
+import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class GridDecorator implements ImageDecorator {
-
-	private static final int SPACING = 25;
 
 	private final WindowPreferences windowPreferences;
 	private final GridPreferences gridPreferences;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
 	public GridDecorator(WindowPreferences windowPreferences, GridPreferences gridPreferences) {
 		this.windowPreferences = windowPreferences;
 		this.gridPreferences = gridPreferences;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
 
 	@Override
@@ -44,6 +52,40 @@ public class GridDecorator implements ImageDecorator {
 			graphics.setColor(previousColor);
 
 		}
+	}
+
+	public InputConsumer getInputConsumer() {
+		return new InputAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+
+				if (e.getKeyCode() == KeyEvent.VK_G) {
+					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
+					propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGE, null, this);
+				} else if (e.getKeyCode() == KeyEvent.VK_ADD) {
+					int spacing = gridPreferences.getGridSpacing();
+					if (spacing < GridPreferences.GRID_SPACING_MAX) {
+						gridPreferences.setGridSpacing(spacing + GridPreferences.GRID_SPACING_STEP);
+						propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, this);
+					}
+				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
+					int spacing = gridPreferences.getGridSpacing();
+					if (spacing > GridPreferences.GRID_SPACING_MIN) {
+						gridPreferences.setGridSpacing(spacing - GridPreferences.GRID_SPACING_STEP);
+						propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, this);
+					}
+				}
+			}
+		};
+	}
+
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

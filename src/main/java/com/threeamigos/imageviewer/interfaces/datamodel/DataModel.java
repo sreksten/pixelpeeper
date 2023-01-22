@@ -5,7 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
-import com.threeamigos.imageviewer.interfaces.ui.PrioritizedInputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public interface DataModel extends PropertyChangeListener {
 
@@ -59,6 +59,6 @@ public interface DataModel extends PropertyChangeListener {
 
 	public void removePropertyChangeListener(PropertyChangeListener listener);
 
-	public PrioritizedInputConsumer getPrioritizedInputConsumer();
+	public InputConsumer getInputConsumer();
 
 }
