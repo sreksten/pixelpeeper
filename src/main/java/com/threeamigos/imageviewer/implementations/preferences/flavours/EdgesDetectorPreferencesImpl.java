@@ -14,7 +14,8 @@ public class EdgesDetectorPreferencesImpl implements PropertyChangeAwareEdgesDet
 	private int edgesTransparency;
 	private EdgesDetectorFlavour edgesDetectorFlavour;
 
-	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	// transient to make Gson serializer ignore this
+	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
 	@Override
 	public void setShowEdges(boolean showEdges) {
