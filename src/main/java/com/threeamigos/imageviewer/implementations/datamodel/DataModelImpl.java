@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.ExifMap;
@@ -97,10 +98,10 @@ public class DataModelImpl implements DataModel {
 
 			for (File file : directory.listFiles()) {
 				if (file.isFile()) {
-					ExifMap exifMap = imageReader.readMetadata(file);
+					Optional<ExifMap> exifMapOpt = imageReader.readExifMap(file);
 
-					if (exifMap != null) {
-						fileToTags.put(file, exifMap);
+					if (exifMapOpt.isPresent()) {
+						fileToTags.put(file, exifMapOpt.get());
 					}
 				}
 			}

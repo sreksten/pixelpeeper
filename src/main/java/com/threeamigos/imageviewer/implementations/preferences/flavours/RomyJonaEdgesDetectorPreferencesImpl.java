@@ -35,8 +35,6 @@ public class RomyJonaEdgesDetectorPreferencesImpl implements RomyJonaEdgesDetect
 
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

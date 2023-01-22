@@ -41,6 +41,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
+import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
@@ -90,6 +91,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
 	private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
+	private Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
 	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
 			EdgesDetectorFlavour.class);
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
@@ -206,6 +208,17 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			imageReadersByFlavour.put(flavour, imageReaderItem);
 		}
+		JMenu exifReaderMenu = new JMenu("Exif reader library");
+		imageHandlingMenu.add(exifReaderMenu);
+		for (ExifReaderFlavour flavour : ExifReaderFlavour.values()) {
+			JMenuItem exifReaderItem = addCheckboxMenuItem(exifReaderMenu, flavour.getDescription(), -1,
+					flavour == imageHandlingPreferences.getExifReaderFlavour(), event -> {
+						imageHandlingPreferences.setExifReaderFlavour(flavour);
+						updateExifReaderMenu(flavour);
+						repaint();
+					});
+			exifReadersByFlavour.put(flavour, exifReaderItem);
+		}
 		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();
@@ -318,6 +331,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private void updateImageReaderMenu(final ImageReaderFlavour flavour) {
 		for (Map.Entry<ImageReaderFlavour, JMenuItem> entry : imageReadersByFlavour.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == flavour);
+		}
+	}
+
+	private void updateExifReaderMenu(final ExifReaderFlavour flavour) {
+		for (Map.Entry<ExifReaderFlavour, JMenuItem> entry : exifReadersByFlavour.entrySet()) {
 			entry.getValue().setSelected(entry.getKey() == flavour);
 		}
 	}

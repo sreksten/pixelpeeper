@@ -24,6 +24,7 @@ import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProv
 import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ExifReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
@@ -51,6 +52,7 @@ import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecora
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
@@ -84,8 +86,7 @@ public class Main {
 
 	// 193-197-200
 
-	// TODO: ExifImageReader should be split in two separate classes
-	// TODO: ImageReader should use java default, apache or other image libraries
+	// TODO: ImageReader should use also other image libraries
 
 	// TODO: prepare the image with edges instead of drawing it every time
 
@@ -112,6 +113,8 @@ public class Main {
 	// TODO evidenziatore
 
 	// TODO: zoom ?
+
+	// TODO: preferences should be initialized at a default value when validated
 
 	public Main() {
 
@@ -169,11 +172,13 @@ public class Main {
 
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
+		ExifReaderFactory exifReaderFactory = new ExifReaderFactoryImpl(imageHandlingPreferences);
+
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
 
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
-				edgesDetectorFactory, messageHandler);
+				exifReaderFactory, edgesDetectorFactory, messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 
