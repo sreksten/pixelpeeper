@@ -8,7 +8,9 @@ public interface CommunicationMessages {
 
 	public static final String EDGES_CALCULATION_COMPLETED = "EdgesCalculationCompleted";
 
-	public static final String BIG_POINTER_CHANGE = "BigPointerChange";
+	public static final String BIG_POINTER_PREFERENCES_CHANGED = "BigPointerPreferencesUpdated";
+
+	public static final String BIG_POINTER_IMAGE_CHANGED = "BigPointerChanged";
 
 	public static final String GRID_VISIBILITY_CHANGE = "GridVisibilityChange";
 

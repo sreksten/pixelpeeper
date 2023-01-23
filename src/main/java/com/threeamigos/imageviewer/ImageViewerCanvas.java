@@ -245,8 +245,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
-					updateCursor();
-					repaint();
 				});
 		JMenu bigPointerSizeMenu = new JMenu("Big pointer size");
 		imageHandlingMenu.add(bigPointerSizeMenu);
@@ -256,8 +254,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					pointerSize == bigPointerPreferences.getBigPointerSize(), event -> {
 						bigPointerPreferences.setBigPointerSize(currentSize);
 						updateBigPointerSizeMenu(currentSize);
-						updateCursor();
-						repaint();
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
 		}
@@ -409,7 +405,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			repaint();
-		} else if (CommunicationMessages.BIG_POINTER_CHANGE.equals(evt.getPropertyName())) {
+		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
 		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
 			gridVisibleMenuItem.setVisible(gridPreferences.isGridVisible());

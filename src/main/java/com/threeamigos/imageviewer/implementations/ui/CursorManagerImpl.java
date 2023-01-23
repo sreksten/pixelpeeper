@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -19,7 +20,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPre
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
-public class CursorManagerImpl implements CursorManager {
+public class CursorManagerImpl implements CursorManager, PropertyChangeListener {
 
 	private final BigPointerPreferences pointerPreferences;
 
@@ -32,6 +33,8 @@ public class CursorManagerImpl implements CursorManager {
 		this.pointerPreferences = bigPointerPreferences;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
+
+		updateCursor();
 	}
 
 	@Override
@@ -103,7 +106,7 @@ public class CursorManagerImpl implements CursorManager {
 				cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 			}
 		}
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_CHANGE, null, this);
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_CHANGED, null, this);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -237,4 +240,11 @@ public class CursorManagerImpl implements CursorManager {
 		return Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(size / 2, size / 2), "bigHand");
 	}
 
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED.equals(evt.getPropertyName())) {
+			updateCursor();
+			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_CHANGED, null, this);
+		}
+	}
 }

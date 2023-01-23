@@ -58,7 +58,6 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
@@ -66,6 +65,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferenc
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareBigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
@@ -91,9 +91,7 @@ public class Main {
 
 	// TODO: prepare the image with edges instead of drawing it every time
 
-	// BUGFIX: bigPointer appears only when you click on the panel a first time
-
-	// TODO: split main window, drag and drop and images handling preferences
+	// BUGFIX: bigPointer hotspot is not precise
 
 	// TODO: lens manufacturer
 
@@ -111,9 +109,9 @@ public class Main {
 
 	// TODO: drag and drop window with an image instead of text (or both)
 
-	// TODO evidenziatore
+	// TODO highlight function
 
-	// TODO: zoom ?
+	// TODO: zoom function ?
 
 	// TODO: preferences should be initialized at a default value when validated
 
@@ -155,7 +153,7 @@ public class Main {
 		GridPreferences gridPreferences = new GridPreferencesImpl();
 		preferencesHelper.register(gridPreferences, "grid.preferences");
 
-		BigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
+		PropertyChangeAwareBigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
 		preferencesHelper.register(bigPointerPreferences, "pointer.preferences");
 
 		// Edges Detector and implementations preferences
@@ -217,6 +215,7 @@ public class Main {
 
 		CursorManager cursorManager = new CursorManagerImpl(bigPointerPreferences);
 		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
+		bigPointerPreferences.addPropertyChangeListener(cursorManager);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, dragAndDropWindowPreferences,
 				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
