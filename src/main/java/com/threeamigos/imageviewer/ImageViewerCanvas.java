@@ -5,14 +5,10 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -52,6 +48,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
+import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
@@ -77,14 +74,13 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient DataModel dataModel;
 	private final transient Persistable preferencesPersisterHelper;
 	private final transient MouseTracker mouseTracker;
+	private final transient CursorManager cursorManager;
 	private final transient FileSelector fileSelector;
 	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
 	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
-
-	private final Cursor emptyCursor;
 
 	private boolean showHelp = false;
 	private JMenuItem showEdgesMenuItem;
@@ -102,8 +98,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
-			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, FileSelector fileSelector,
-			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
+			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, CursorManager cursorManager,
+			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
@@ -118,6 +114,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.mouseTracker = mouseTracker;
+		this.cursorManager = cursorManager;
 		this.fileSelector = fileSelector;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		edgesDetectorPreferences.addPropertyChangeListener(this);
@@ -139,7 +136,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		addMouseMotionListener(chainedInputAdapter);
 		addKeyListener(chainedInputAdapter);
 
-		emptyCursor = createInvisibleCursor();
 		updateCursor();
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
@@ -260,6 +256,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					pointerSize == bigPointerPreferences.getBigPointerSize(), event -> {
 						bigPointerPreferences.setBigPointerSize(currentSize);
 						updateBigPointerSizeMenu(currentSize);
+						updateCursor();
 						repaint();
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
@@ -303,11 +300,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	}
 
 	private void updateCursor() {
-		if (bigPointerPreferences.isBigPointerVisible()) {
-			setCursor(emptyCursor);
-		} else {
-			setCursor(Cursor.getDefaultCursor());
-		}
+		setCursor(cursorManager.getCursor());
 	}
 
 	@Override
@@ -418,7 +411,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 		} else if (CommunicationMessages.BIG_POINTER_CHANGE.equals(evt.getPropertyName())) {
 			updateCursor();
-			repaint();
 		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
 			gridVisibleMenuItem.setVisible(gridPreferences.isGridVisible());
 			repaint();
@@ -432,12 +424,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private void handleEdgesVisibilityChange() {
 		showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
-	}
-
-	private Cursor createInvisibleCursor() {
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-		return toolkit.createCustomCursor(image, new Point(0, 0), "invisibleCursor");
 	}
 
 	private InputConsumer getInputConsumer() {

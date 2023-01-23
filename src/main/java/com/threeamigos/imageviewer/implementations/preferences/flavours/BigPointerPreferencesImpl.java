@@ -6,7 +6,7 @@ public class BigPointerPreferencesImpl implements BigPointerPreferences {
 
 	private boolean bigPointerVisible;
 	private int bigPointerSize;
-	private float rotation;
+	private Rotation bigPointerRotation;
 
 	@Override
 	public void setBigPointerVisible(boolean bigPointerVisible) {
@@ -29,20 +29,20 @@ public class BigPointerPreferencesImpl implements BigPointerPreferences {
 	}
 
 	@Override
-	public void setBigPointerRotation(float radians) {
-		this.rotation = radians;
+	public void setBigPointerRotation(Rotation rotation) {
+		this.bigPointerRotation = rotation;
 	}
 
 	@Override
-	public float getBigPointerRotation() {
-		return rotation;
+	public Rotation getBigPointerRotation() {
+		return bigPointerRotation;
 	}
 
 	@Override
 	public void loadDefaultValues() {
 		bigPointerVisible = BigPointerPreferences.BIG_POINTER_VISIBLE_DEFAULT;
 		bigPointerSize = BigPointerPreferences.BIG_POINTER_SIZE_DEFAULT;
-		rotation = BigPointerPreferences.BIG_POINTER_ROTATION_DEFAULT;
+		bigPointerRotation = BigPointerPreferences.POINTER_ROTATION_DEFAULT;
 	}
 
 	@Override

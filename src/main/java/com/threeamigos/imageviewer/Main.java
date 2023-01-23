@@ -42,12 +42,12 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPref
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
+import com.threeamigos.imageviewer.implementations.ui.CursorManagerImpl;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
-import com.threeamigos.imageviewer.implementations.ui.imagedecorators.BigPointerDecorator;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -68,6 +68,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPre
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
@@ -90,7 +91,7 @@ public class Main {
 
 	// TODO: prepare the image with edges instead of drawing it every time
 
-	// TODO: bigPointer should be changed to a real cursor
+	// BUGFIX: bigPointer appears only when you click on the panel a first time
 
 	// TODO: split main window, drag and drop and images handling preferences
 
@@ -210,21 +211,20 @@ public class Main {
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
-		BigPointerDecorator bigPointerDecorator = new BigPointerDecorator(bigPointerPreferences, mouseTracker);
-		chainedInputConsumer.addConsumer(bigPointerDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
-		decorators.add(bigPointerDecorator);
-
 		GridDecorator gridDecorator = new GridDecorator(windowPreferences, gridPreferences);
 		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
 
+		CursorManager cursorManager = new CursorManagerImpl(bigPointerPreferences);
+		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
+
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, dragAndDropWindowPreferences,
 				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
-				preferencesHelper, mouseTracker, fileSelector, edgesDetectorPreferences,
+				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
 				dragAndDropWindow, messageHandler);
 
-		bigPointerDecorator.addPropertyChangeListener(imageViewerCanvas);
+		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -233,7 +233,6 @@ public class Main {
 		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, preferencesHelper);
 
 		jframe.setVisible(true);
-
 	}
 
 	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences windowPreferences,
