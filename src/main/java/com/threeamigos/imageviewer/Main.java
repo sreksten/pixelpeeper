@@ -85,8 +85,6 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// 193-197-200
-
 	// TODO: ImageReader should use also other image libraries
 
 	// TODO: prepare the image with edges instead of drawing it every time

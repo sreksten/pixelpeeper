@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -121,10 +122,12 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
 		int size = pointerPreferences.getBigPointerSize();
 
-		BufferedImage cursorImage = new BufferedImage(size * 2, size * 2, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage cursorImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics = cursorImage.createGraphics();
 
 		Point[] vertexes = new Point[7];
+
+		// Draws a right-pointing arrow starting from the hotspot (arrow point)
 
 		vertexes[0] = new Point(0, 0);
 		vertexes[1] = new Point(size * -79 / 100, size * 30 / 100);
@@ -152,7 +155,10 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
 		graphics.dispose();
 
-		return Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(size, size), "bigPointer");
+		int hotspotX = size / 2 + (int) (size / 2 * Math.cos(pointerPreferences.getBigPointerRotation().getRadians()));
+		int hotspotY = size / 2 + (int) (size / 2 * Math.sin(pointerPreferences.getBigPointerRotation().getRadians()));
+
+		return Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(hotspotX, hotspotY), "bigPointer");
 	}
 
 	private void drawPolygon(Graphics2D graphics, Point[] vertexes, int size) {
@@ -160,11 +166,11 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 		Polygon arrow = new Polygon();
 		for (int i = 0; i < vertexes.length; i++) {
 			Point vertex = vertexes[i];
-			arrow.addPoint(size + (int) vertex.getX(), size + (int) vertex.getY());
+			arrow.addPoint(size + (int) vertex.getX(), size / 2 + (int) vertex.getY());
 		}
 
 		AffineTransform transform = new AffineTransform();
-		transform.rotate(pointerPreferences.getBigPointerRotation().getRadians(), size, size);
+		transform.rotate(pointerPreferences.getBigPointerRotation().getRadians(), size / 2, size / 2);
 		graphics.fill(transform.createTransformedShape(arrow));
 	}
 
@@ -246,5 +252,15 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 			updateCursor();
 			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_CHANGED, null, this);
 		}
+	}
+
+	@Override
+	public int getMaxCursorSize() {
+		Dimension maxDimension = Toolkit.getDefaultToolkit().getBestCursorSize(1024, 1024);
+		int minDimension = maxDimension.width;
+		if (maxDimension.height < minDimension) {
+			minDimension = maxDimension.height;
+		}
+		return minDimension;
 	}
 }

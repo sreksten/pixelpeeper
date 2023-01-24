@@ -7,6 +7,8 @@ public interface CursorManager extends PropertyChangeListener {
 
 	public InputConsumer getInputConsumer();
 
+	public int getMaxCursorSize();
+
 	public Cursor getCursor();
 
 	public void addPropertyChangeListener(PropertyChangeListener pcl);
