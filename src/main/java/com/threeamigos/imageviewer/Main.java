@@ -131,8 +131,8 @@ public class Main {
 
 		// Main Preferences
 
-		MainWindowPreferences windowPreferences = new MainWindowPreferencesImpl();
-		preferencesHelper.register(windowPreferences, "main_window.preferences");
+		MainWindowPreferences mainWindowPreferences = new MainWindowPreferencesImpl();
+		preferencesHelper.register(mainWindowPreferences, "main_window.preferences");
 
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
 		preferencesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
@@ -207,7 +207,7 @@ public class Main {
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
-		GridDecorator gridDecorator = new GridDecorator(windowPreferences, gridPreferences);
+		GridDecorator gridDecorator = new GridDecorator(mainWindowPreferences, gridPreferences);
 		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
 
@@ -215,7 +215,7 @@ public class Main {
 		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
 		bigPointerPreferences.addPropertyChangeListener(cursorManager);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(windowPreferences, dragAndDropWindowPreferences,
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
 				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
 				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
@@ -227,12 +227,12 @@ public class Main {
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);
 
-		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, windowPreferences, preferencesHelper);
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, mainWindowPreferences, preferencesHelper);
 
 		jframe.setVisible(true);
 	}
 
-	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences windowPreferences,
+	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences mainWindowPreferences,
 			Persistable persistable) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
@@ -254,20 +254,20 @@ public class Main {
 
 		jframe.pack();
 		jframe.setResizable(true);
-		jframe.setLocation(windowPreferences.getMainWindowX(), windowPreferences.getMainWindowY());
+		jframe.setLocation(mainWindowPreferences.getX(), mainWindowPreferences.getY());
 
 		jframe.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				canvas.reframe();
-				windowPreferences.setMainWindowWidth(canvas.getWidth());
-				windowPreferences.setMainWindowHeight(canvas.getHeight());
+				mainWindowPreferences.setWidth(canvas.getWidth());
+				mainWindowPreferences.setHeight(canvas.getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				windowPreferences.setMainWindowX(jframe.getX());
-				windowPreferences.setMainWindowY(jframe.getY());
+				mainWindowPreferences.setX(jframe.getX());
+				mainWindowPreferences.setY(jframe.getY());
 			}
 		});
 

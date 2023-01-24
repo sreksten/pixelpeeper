@@ -15,13 +15,13 @@ import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class GridDecorator implements ImageDecorator {
 
-	private final MainWindowPreferences windowPreferences;
+	private final MainWindowPreferences mainWindowPreferences;
 	private final GridPreferences gridPreferences;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
-	public GridDecorator(MainWindowPreferences windowPreferences, GridPreferences gridPreferences) {
-		this.windowPreferences = windowPreferences;
+	public GridDecorator(MainWindowPreferences mainWindowPreferences, GridPreferences gridPreferences) {
+		this.mainWindowPreferences = mainWindowPreferences;
 		this.gridPreferences = gridPreferences;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -36,8 +36,8 @@ public class GridDecorator implements ImageDecorator {
 
 			graphics.setColor(Color.YELLOW);
 
-			int width = windowPreferences.getMainWindowWidth();
-			int height = windowPreferences.getMainWindowHeight();
+			int width = mainWindowPreferences.getWidth();
+			int height = mainWindowPreferences.getHeight();
 
 			int spacing = gridPreferences.getGridSpacing();
 

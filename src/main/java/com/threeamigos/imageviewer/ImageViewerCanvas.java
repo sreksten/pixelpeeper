@@ -65,7 +65,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private static final long serialVersionUID = 1L;
 
-	private final transient MainWindowPreferences windowPreferences;
+	private final transient MainWindowPreferences mainWindowPreferences;
 	private final transient DragAndDropWindowPreferences dragAndDropWindowPreferences;
 	private final transient ImageHandlingPreferences imageHandlingPreferences;
 	private final transient GridPreferences gridPreferences;
@@ -94,7 +94,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private JMenuItem gridVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 
-	public ImageViewerCanvas(MainWindowPreferences windowPreferences,
+	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
@@ -104,7 +104,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
-		this.windowPreferences = windowPreferences;
+		this.mainWindowPreferences = mainWindowPreferences;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.gridPreferences = gridPreferences;
@@ -124,7 +124,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
 
-		setSize(windowPreferences.getMainWindowWidth(), windowPreferences.getMainWindowHeight());
+		setSize(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight());
 		setMinimumSize(getSize());
 
 		setBackground(Color.LIGHT_GRAY);
@@ -156,7 +156,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			}
 		});
 		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
-			dragAndDropWindowPreferences.setDragAndDropWindowVisible(true);
+			dragAndDropWindowPreferences.setVisible(true);
 			dragAndDropWindow.setVisible(true);
 		});
 		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {

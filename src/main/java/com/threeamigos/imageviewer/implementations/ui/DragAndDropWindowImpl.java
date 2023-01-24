@@ -29,7 +29,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private static final long serialVersionUID = 1L;
 
-	private final DragAndDropWindowPreferences windowPreferences;
+	private final DragAndDropWindowPreferences dragAndDropWindowPreferences;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
 	private Consumer<List<File>> proxifiedObject;
@@ -37,7 +37,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences, FontService fontService,
 			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
-		this.windowPreferences = dragAndDropWindowPreferences;
+		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
 		this.fontService = fontService;
 		this.messageHandler = messageHandler;
 
@@ -45,7 +45,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				dragAndDropWindowPreferences.setDragAndDropWindowVisible(false);
+				dragAndDropWindowPreferences.setVisible(false);
 				setVisible(false);
 			}
 		});
@@ -58,24 +58,24 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				dragAndDropWindowPreferences.setDragAndDropWindowWidth(getWidth());
-				dragAndDropWindowPreferences.setDragAndDropWindowHeight(getHeight());
+				dragAndDropWindowPreferences.setWidth(getWidth());
+				dragAndDropWindowPreferences.setHeight(getHeight());
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				dragAndDropWindowPreferences.setDragAndDropWindowX(getX());
-				dragAndDropWindowPreferences.setDragAndDropWindowY(getY());
+				dragAndDropWindowPreferences.setX(getX());
+				dragAndDropWindowPreferences.setY(getY());
 			}
 		});
 
 		pack();
 		setResizable(true);
-		setLocation(dragAndDropWindowPreferences.getDragAndDropWindowX(),
-				dragAndDropWindowPreferences.getDragAndDropWindowY());
-		setSize(dragAndDropWindowPreferences.getDragAndDropWindowWidth(),
-				dragAndDropWindowPreferences.getDragAndDropWindowHeight());
-		setVisible(dragAndDropWindowPreferences.isDragAndDropWindowVisible());
+		setLocation(dragAndDropWindowPreferences.getX(),
+				dragAndDropWindowPreferences.getY());
+		setSize(dragAndDropWindowPreferences.getWidth(),
+				dragAndDropWindowPreferences.getHeight());
+		setVisible(dragAndDropWindowPreferences.isVisible());
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
 	}
@@ -103,8 +103,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			Graphics2D g2d = (Graphics2D) gfx;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-			int windowWidth = windowPreferences.getDragAndDropWindowWidth();
-			int windowHeight = windowPreferences.getDragAndDropWindowHeight();
+			int windowWidth = dragAndDropWindowPreferences.getWidth();
+			int windowHeight = dragAndDropWindowPreferences.getHeight();
 
 			int fontHeight = windowHeight / 20;
 			if (fontHeight < 12) {
