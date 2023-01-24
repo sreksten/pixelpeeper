@@ -16,12 +16,14 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChangeListener {
 
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
+	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
@@ -33,9 +35,11 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private ImageSlice activeSlice;
 
 	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
+			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
+			FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
+		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
 
@@ -74,7 +78,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
 		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
-				edgesDetectorPreferences, fontService);
+				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
 		return imageSlice;
@@ -96,6 +100,11 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void resetMovement() {
 		imageSlices.forEach(ImageSlice::resetMovement);
+	}
+
+	@Override
+	public void changeZoomLevel() {
+		imageSlices.forEach(ImageSlice::changeZoomLevel);
 	}
 
 	@Override

@@ -66,6 +66,11 @@ public interface ImageSlice {
 	 */
 	public void resetMovement();
 
+	/**
+	 * To adjust for zoom level
+	 */
+	public void changeZoomLevel();
+
 	public void paint(Graphics2D g2d);
 
 	/**

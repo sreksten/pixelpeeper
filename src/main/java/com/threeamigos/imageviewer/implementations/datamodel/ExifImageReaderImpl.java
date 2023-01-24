@@ -56,7 +56,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
 			BufferedImage bufferedImage = imageReaderFactory.getImageReader().readImage(file);
 
 			PictureData pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(),
-					pictureOrientation, exifMap, bufferedImage, file, edgesDetectorFactory);
+					pictureOrientation, exifMap, bufferedImage, file, imageHandlingPreferences, edgesDetectorFactory);
 
 			if (imageHandlingPreferences.isAutorotation()) {
 				pictureData.correctOrientation();

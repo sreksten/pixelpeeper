@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.data;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -10,6 +11,7 @@ import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 public class PictureData {
 
@@ -17,30 +19,44 @@ public class PictureData {
 	private final ExifMap exifMap;
 	private final File file;
 	private final String filename;
+	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private boolean orientationAdjusted = false;
 
-	private int width;
-	private int height;
-	private BufferedImage image;
+	private int sourceWidth;
+	private int sourceHeight;
+	private BufferedImage sourceImage;
+
 	private boolean edgeCalculationInProgress;
 	private boolean edgeCalculationAborted;
 	private EdgesDetector detector;
 	private BufferedImage edgesImage;
 
+	private int width;
+	private int height;
+	private BufferedImage image;
+
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
-			EdgesDetectorFactory edgesDetectorFactory) {
-		this.width = width;
-		this.height = height;
+			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorFactory edgesDetectorFactory) {
 		this.orientation = orientation;
 		this.exifMap = exifMap;
-		this.image = image;
 		this.file = file;
 		this.filename = file.getName();
+		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
+
+		this.sourceWidth = width;
+		this.sourceHeight = height;
+		this.sourceImage = image;
+
+		this.width = width;
+		this.height = height;
+		this.image = image;
+
+		correctForZoom();
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
@@ -89,8 +105,9 @@ public class PictureData {
 		if (orientation != ExifOrientationHelper.AS_IS) {
 			releaseEdges();
 			if (!orientationAdjusted) {
-				image = ExifOrientationHelper.correctOrientation(image, orientation);
+				sourceImage = ExifOrientationHelper.correctOrientation(sourceImage, orientation);
 				swapDimensionsIfNeeded();
+				correctForZoom();
 				orientationAdjusted = true;
 			}
 		}
@@ -100,8 +117,9 @@ public class PictureData {
 		if (orientation != ExifOrientationHelper.AS_IS) {
 			releaseEdges();
 			if (orientationAdjusted) {
-				image = ExifOrientationHelper.undoOrientationCorrection(image, orientation);
+				sourceImage = ExifOrientationHelper.undoOrientationCorrection(sourceImage, orientation);
 				swapDimensionsIfNeeded();
+				correctForZoom();
 				orientationAdjusted = false;
 			}
 		}
@@ -109,9 +127,9 @@ public class PictureData {
 
 	private void swapDimensionsIfNeeded() {
 		if (orientation > 4 && orientation <= 8) {
-			int tmp = width;
-			width = height;
-			height = tmp;
+			int tmp = sourceWidth;
+			sourceWidth = sourceHeight;
+			sourceHeight = tmp;
 		}
 	}
 
@@ -174,4 +192,24 @@ public class PictureData {
 		}
 	}
 
+	public void correctForZoom() {
+		boolean hadEdges = edgesImage != null;
+		releaseEdges();
+		int zoomLevel = imageHandlingPreferences.getZoomLevel();
+		if (zoomLevel == 100) {
+			width = sourceWidth;
+			height = sourceHeight;
+			image = sourceImage;
+		} else {
+			width = sourceWidth * zoomLevel / 100;
+			height = sourceHeight * zoomLevel / 100;
+			image = new BufferedImage(width, height, sourceImage.getType());
+			Graphics2D graphics = image.createGraphics();
+			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
+			graphics.dispose();
+		}
+		if (hadEdges) {
+			startEdgesCalculation();
+		}
+	}
 }

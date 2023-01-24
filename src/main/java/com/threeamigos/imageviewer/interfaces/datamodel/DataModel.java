@@ -41,6 +41,8 @@ public interface DataModel extends PropertyChangeListener {
 
 	public void resetMovement();
 
+	public void changeZoomLevel();
+
 	public void setActiveSlice(int x, int y);
 
 	public void resetActiveSlice();

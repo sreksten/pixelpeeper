@@ -221,6 +221,11 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
+	public void changeZoomLevel() {
+		imageSlicesManager.changeZoomLevel();
+	}
+
+	@Override
 	public void setActiveSlice(int x, int y) {
 		imageSlicesManager.setActiveSlice(x, y);
 	}

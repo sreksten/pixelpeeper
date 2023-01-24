@@ -93,6 +93,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
 	private JMenuItem gridVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
+	private Map<Integer, JMenuItem> zoomByLevel = new HashMap<>();
 
 	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
@@ -258,6 +259,19 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
 		}
+		JMenu zoomMenu = new JMenu("Zoom level");
+		imageHandlingMenu.add(zoomMenu);
+		for (int zoomLevel = ImageHandlingPreferences.MIN_ZOOM_LEVEL; zoomLevel <= ImageHandlingPreferences.MAX_ZOOM_LEVEL; zoomLevel += 10) {
+			final int currentZoom = zoomLevel;
+			JMenuItem zoomLevelItem = addCheckboxMenuItem(zoomMenu, String.valueOf(zoomLevel), -1,
+					zoomLevel == imageHandlingPreferences.getZoomLevel(), event -> {
+						imageHandlingPreferences.setZoomLevel(currentZoom);
+						dataModel.changeZoomLevel();
+						updateZoomLevelMenu(currentZoom);
+						repaint();
+					});
+			zoomByLevel.put(zoomLevel, zoomLevelItem);
+		}
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
@@ -340,6 +354,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private void updateBigPointerSizeMenu(final int pointerSize) {
 		for (Map.Entry<Integer, JMenuItem> entry : bigPointerBySize.entrySet()) {
 			entry.getValue().setSelected(entry.getKey() == pointerSize);
+		}
+	}
+
+	private void updateZoomLevelMenu(final int zoomLevel) {
+		for (Map.Entry<Integer, JMenuItem> entry : zoomByLevel.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == zoomLevel);
 		}
 	}
 

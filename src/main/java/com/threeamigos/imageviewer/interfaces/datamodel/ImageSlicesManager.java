@@ -32,6 +32,8 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 	 */
 	public void reframeImageSlices(int panelWidth, int panelHeight);
 
+	public void changeZoomLevel();
+
 	public void move(int deltaX, int deltaY, boolean allImages);
 
 	public void resetMovement();

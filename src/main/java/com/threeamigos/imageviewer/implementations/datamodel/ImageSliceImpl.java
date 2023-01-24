@@ -17,6 +17,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
@@ -24,6 +25,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private final PictureData pictureData;
 	private final CommonTagsHelper commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
+	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
@@ -38,11 +40,13 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private boolean edgeCalculationInProgress;
 
 	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
-			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
+			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
+			FontService fontService) {
 		this.pictureData = pictureData;
 		pictureData.addPropertyChangeListener(this);
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
+		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
 
@@ -98,6 +102,11 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			screenXOffset = 0;
 			screenYOffset = 0;
 		}
+	}
+
+	@Override
+	public void changeZoomLevel() {
+		pictureData.correctForZoom();
 	}
 
 	@Override
@@ -168,8 +177,17 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 		g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
+		int pictureX = locationX;
+		if (locationWidth > pictureWidth) {
+			pictureX += (locationWidth - pictureWidth) / 2;
+		}
+		int pictureY = locationY;
+		if (locationHeight > pictureHeight) {
+			pictureY += (locationHeight - pictureHeight) / 2;
+		}
+
 		ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-				edgesDetectorPreferences.isShowEdges() ? edgesImage : null, locationX, locationY,
+				edgesDetectorPreferences.isShowEdges() ? edgesImage : null, pictureX, pictureY,
 				edgesDetectorPreferences.getEdgesTransparency());
 
 		if (selected) {

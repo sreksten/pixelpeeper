@@ -91,8 +91,6 @@ public class Main {
 
 	// TODO: scrolling in percentage
 
-	// TODO: zoom function ?
-
 	// TODO: miniature showing current position
 
 	// TODO highlight function
@@ -180,7 +178,7 @@ public class Main {
 		FontService fontService = new FontServiceImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
-				edgesDetectorPreferences, fontService);
+				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
