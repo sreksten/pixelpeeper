@@ -85,33 +85,29 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// TODO: ImageReader should use also other image libraries
-
 	// TODO: prepare the image with edges instead of drawing it every time
-
-	// BUGFIX: bigPointer hotspot is not precise
-
-	// TODO: lens manufacturer
-
-	// TODO: when the edges preference window is changed to a non-dialog window, the
-	// menu should be switched off (or the window itself should be shut down and
-	// called once again)
-
-	// TODO: set up an unique queue for message processing?
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
 	// TODO: scrolling in percentage
 
-	// TODO: miniature showing current position
+	// TODO: zoom function ?
 
-	// TODO: drag and drop window with an image instead of text (or both)
+	// TODO: miniature showing current position
 
 	// TODO highlight function
 
-	// TODO: zoom function ?
+	// TODO: ImageReader should use also other image libraries
 
-	// TODO: preferences should be initialized at a default value when validated
+	// TODO: set up an unique queue for message processing?
+
+	// TODO: when the edges preference window is changed to a non-dialog window, the
+	// menu should be switched off (or the window itself should be shut down and
+	// called once again)
+
+	// TODO: drag and drop window with an image instead of text (or both)
+
+	// TODO: lens manufacturer
 
 	public Main() {
 

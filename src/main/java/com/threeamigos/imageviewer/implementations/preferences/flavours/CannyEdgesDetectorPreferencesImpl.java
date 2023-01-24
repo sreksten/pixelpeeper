@@ -71,8 +71,18 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
-
+		if (lowThreshold < 0) {
+			throw new IllegalArgumentException("Invalid low threshold");
+		}
+		if (highThreshold < 0) {
+			throw new IllegalArgumentException("Invalid high threshold");
+		}
+		if (gaussianKernelRadius < 0.1f) {
+			throw new IllegalArgumentException("Invalid Gaussian kernel radius");
+		}
+		if (gaussianKernelWidth < 2) {
+			throw new IllegalArgumentException("Invalid Gaussian kernel width");
+		}
 	}
 
 }

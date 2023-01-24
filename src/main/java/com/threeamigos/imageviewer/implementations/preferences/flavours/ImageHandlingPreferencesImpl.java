@@ -8,6 +8,7 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 
 	private boolean autorotation;
 	private boolean movementAppliedToAllImages;
+	private int zoomLevel;
 	private ImageReaderFlavour imageReaderFlavour;
 	private ExifReaderFlavour metadataReaderFlavour;
 
@@ -29,6 +30,16 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	@Override
 	public boolean isMovementAppliedToAllImages() {
 		return movementAppliedToAllImages;
+	}
+
+	@Override
+	public void setZoomLevel(int zoomLevel) {
+		this.zoomLevel = zoomLevel;
+	}
+
+	@Override
+	public int getZoomLevel() {
+		return zoomLevel;
 	}
 
 	@Override
@@ -55,11 +66,21 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	public void loadDefaultValues() {
 		autorotation = AUTOROTATION_DEFAULT;
 		movementAppliedToAllImages = MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT;
+		zoomLevel = ZOOM_LEVEL_DEFAULT;
 		imageReaderFlavour = IMAGE_READER_FLAVOUR_DEFAULT;
 		metadataReaderFlavour = METADATA_READER_FLAVOUR_DEFAULT;
 	}
 
 	@Override
 	public void validate() {
+		if (imageReaderFlavour == null) {
+			throw new IllegalArgumentException("Invalid image reader flavour");
+		}
+		if (metadataReaderFlavour == null) {
+			throw new IllegalArgumentException("Invalid metadata reader flavour");
+		}
+		if (zoomLevel < 10 || zoomLevel > 100) {
+			throw new IllegalArgumentException("Invalid zoom level");
+		}
 	}
 }

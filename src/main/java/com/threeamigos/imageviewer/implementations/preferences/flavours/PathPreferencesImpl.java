@@ -38,8 +38,9 @@ public class PathPreferencesImpl implements PathPreferences {
 
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
-
+		if (lastPath == null) {
+			throw new IllegalArgumentException("Invalid last path");
+		}
 	}
 
 }

@@ -6,7 +6,9 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 public interface EdgesDetectorPreferences extends Preferences {
 
 	public static final boolean SHOW_EDGES_DEFAULT = false;
+	public static final int MIN_EDGES_TRANSPARENCY = 5;
 	public static final int EDGES_TRANSPARENCY_DEFAULT = 30;
+	public static final int MAX_EDGES_TRANSPARENCY = 95;
 	public static final EdgesDetectorFlavour EDGES_DETECTOR_FLAVOUR_DEFAULT = EdgesDetectorFlavour.CANNY_EDGES_DETECTOR;
 
 	default String getDescription() {

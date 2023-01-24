@@ -8,6 +8,7 @@ public interface ImageHandlingPreferences extends Preferences {
 
 	public static final boolean AUTOROTATION_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
+	public static final int ZOOM_LEVEL_DEFAULT = 100;
 	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.JAVA;
 	public static final ExifReaderFlavour METADATA_READER_FLAVOUR_DEFAULT = ExifReaderFlavour.DREW_NOAKES;
 
@@ -30,5 +31,9 @@ public interface ImageHandlingPreferences extends Preferences {
 	public void setExifReaderFlavour(ExifReaderFlavour exifReaderFlavour);
 
 	public ExifReaderFlavour getExifReaderFlavour();
+
+	public void setZoomLevel(int zoomLevel);
+
+	public int getZoomLevel();
 
 }

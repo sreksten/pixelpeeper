@@ -29,14 +29,15 @@ public class GridPreferencesImpl implements GridPreferences {
 
 	@Override
 	public void loadDefaultValues() {
-		gridVisible = GridPreferences.GRID_VISIBLE_DEFAULT;
-		gridSpacing = GridPreferences.GRID_SPACING_DEFAULT;
+		gridVisible = GRID_VISIBLE_DEFAULT;
+		gridSpacing = GRID_SPACING_DEFAULT;
 	}
 
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
-
+		if (gridSpacing < GRID_SPACING_MIN || gridSpacing > GRID_SPACING_MAX) {
+			throw new IllegalArgumentException("Invalid grid spacing");
+		}
 	}
 
 }

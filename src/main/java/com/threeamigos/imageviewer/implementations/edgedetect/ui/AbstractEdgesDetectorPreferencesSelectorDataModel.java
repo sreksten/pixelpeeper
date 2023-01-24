@@ -16,9 +16,6 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetector
 
 abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements EdgesDetectorPreferences, ChangeListener {
 
-	static final int MIN_TRANSPARENCY = 0;
-	static final int MAX_TRANSPARENCY = 100;
-
 	protected final DataModel dataModel;
 	protected final EdgesDetectorPreferences edgesDetectorPreferences;
 	protected final Component component;
@@ -40,7 +37,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 		transparencyBackup = edgesDetectorPreferences.getEdgesTransparency();
 		transparencyText = new JLabel(String.valueOf(transparencyBackup));
-		transparencySlider = createSlider(MIN_TRANSPARENCY, MAX_TRANSPARENCY, transparencyBackup);
+		transparencySlider = createSlider(EdgesDetectorPreferences.MIN_EDGES_TRANSPARENCY,
+				EdgesDetectorPreferences.MAX_EDGES_TRANSPARENCY, transparencyBackup);
 	}
 
 	final void abstractCancelSelection() {
