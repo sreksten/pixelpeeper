@@ -52,10 +52,6 @@ public class PictureData {
 		this.sourceHeight = height;
 		this.sourceImage = image;
 
-		this.width = width;
-		this.height = height;
-		this.image = image;
-
 		correctForZoom();
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
