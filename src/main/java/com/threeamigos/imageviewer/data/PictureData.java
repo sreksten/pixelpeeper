@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.data;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
@@ -11,6 +12,7 @@ import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 public class PictureData {
@@ -20,6 +22,7 @@ public class PictureData {
 	private final File file;
 	private final String filename;
 	private final ImageHandlingPreferences imageHandlingPreferences;
+	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -40,21 +43,23 @@ public class PictureData {
 	private BufferedImage image;
 
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
-			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorFactory edgesDetectorFactory) {
+			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
+			EdgesDetectorFactory edgesDetectorFactory) {
 		this.orientation = orientation;
 		this.exifMap = exifMap;
 		this.file = file;
 		this.filename = file.getName();
 		this.imageHandlingPreferences = imageHandlingPreferences;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
 
 		this.sourceWidth = width;
 		this.sourceHeight = height;
 		this.sourceImage = image;
 
-		correctForZoom();
-
 		propertyChangeSupport = new PropertyChangeSupport(this);
+
+		correctForZoom();
 	}
 
 	public int getWidth() {
@@ -99,7 +104,6 @@ public class PictureData {
 
 	public void correctOrientation() {
 		if (orientation != ExifOrientationHelper.AS_IS) {
-			releaseEdges();
 			if (!orientationAdjusted) {
 				sourceImage = ExifOrientationHelper.correctOrientation(sourceImage, orientation);
 				swapDimensionsIfNeeded();
@@ -111,7 +115,6 @@ public class PictureData {
 
 	public void undoOrientationCorrection() {
 		if (orientation != ExifOrientationHelper.AS_IS) {
-			releaseEdges();
 			if (orientationAdjusted) {
 				sourceImage = ExifOrientationHelper.undoOrientationCorrection(sourceImage, orientation);
 				swapDimensionsIfNeeded();
@@ -189,7 +192,6 @@ public class PictureData {
 	}
 
 	public void correctForZoom() {
-		boolean hadEdges = edgesImage != null;
 		releaseEdges();
 		int zoomLevel = imageHandlingPreferences.getZoomLevel();
 		if (zoomLevel == 100) {
@@ -204,7 +206,7 @@ public class PictureData {
 			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
 			graphics.dispose();
 		}
-		if (hadEdges) {
+		if (edgesDetectorPreferences.isShowEdges()) {
 			startEdgesCalculation();
 		}
 	}

@@ -169,7 +169,7 @@ public class Main {
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
 
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
-				exifReaderFactory, edgesDetectorFactory, messageHandler);
+				exifReaderFactory, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
 
 		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
 

@@ -12,6 +12,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 public class ExifImageReaderImpl implements ExifImageReader {
@@ -19,15 +20,17 @@ public class ExifImageReaderImpl implements ExifImageReader {
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final ImageReaderFactory imageReaderFactory;
 	private final ExifReaderFactory exifReaderFactory;
+	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 	private final ExceptionHandler exceptionHandler;
 
 	public ExifImageReaderImpl(ImageHandlingPreferences imageHandlingPreferences, ImageReaderFactory imageReaderFactory,
-			ExifReaderFactory exifReaderFactory, EdgesDetectorFactory edgesDetectorFactory,
-			ExceptionHandler exceptionHandler) {
+			ExifReaderFactory exifReaderFactory, EdgesDetectorPreferences edgesDetectorPreferences,
+			EdgesDetectorFactory edgesDetectorFactory, ExceptionHandler exceptionHandler) {
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.imageReaderFactory = imageReaderFactory;
 		this.exifReaderFactory = exifReaderFactory;
+		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
 		this.exceptionHandler = exceptionHandler;
 	}
@@ -56,7 +59,8 @@ public class ExifImageReaderImpl implements ExifImageReader {
 			BufferedImage bufferedImage = imageReaderFactory.getImageReader().readImage(file);
 
 			PictureData pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(),
-					pictureOrientation, exifMap, bufferedImage, file, imageHandlingPreferences, edgesDetectorFactory);
+					pictureOrientation, exifMap, bufferedImage, file, imageHandlingPreferences,
+					edgesDetectorPreferences, edgesDetectorFactory);
 
 			if (imageHandlingPreferences.isAutorotation()) {
 				pictureData.correctOrientation();
