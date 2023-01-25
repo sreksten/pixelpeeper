@@ -85,15 +85,17 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// TODO: prepare the image with edges instead of drawing it every time
-
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
-	// TODO: scrolling in percentage
+	// TODO highlight function
+
+	// TODO: the browse directory should show how many files match the selection
+
+	// TODO: image grouping
 
 	// TODO: miniature showing current position
 
-	// TODO highlight function
+	// TODO: prepare the image with edges instead of drawing it every time ?
 
 	// TODO: ImageReader should use also other image libraries
 

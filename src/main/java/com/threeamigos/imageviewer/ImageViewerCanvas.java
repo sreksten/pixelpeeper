@@ -220,6 +220,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			dataModel.toggleAutorotation();
 			repaint();
 		});
+		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", KeyEvent.VK_I,
+				imageHandlingPreferences.isMovementInPercentage(), event -> {
+					imageHandlingPreferences
+							.setMovementInPercentage(!imageHandlingPreferences.isMovementInPercentage());
+				});
 		addCheckboxMenuItem(imageHandlingMenu, "Move all images", KeyEvent.VK_M,
 				dataModel.isMovementAppliedToAllImages(), event -> {
 					dataModel.toggleMovementAppliedToAllImages();

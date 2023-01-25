@@ -58,7 +58,7 @@ public interface ImageSlice {
 	 * @param deltaY pixels to shift the upper X coordinate of the viewable part of
 	 *               the picture
 	 */
-	public void move(int deltaX, int deltaY);
+	public void move(double deltaX, double deltaY);
 
 	/**
 	 * To clear the image shifting when loading a new image. Image is centered on

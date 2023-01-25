@@ -32,8 +32,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private Rectangle location;
-	private int screenXOffset;
-	private int screenYOffset;
+	private double screenXOffset;
+	private double screenYOffset;
 
 	private boolean selected;
 
@@ -65,7 +65,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	}
 
 	@Override
-	public void move(int deltaX, int deltaY) {
+	public void move(double deltaX, double deltaY) {
 		screenXOffset += deltaX;
 		screenYOffset += deltaY;
 		checkBoundaries();
@@ -75,15 +75,15 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 		int pictureWidth = pictureData.getWidth();
 		if (screenXOffset > pictureWidth - location.width) {
 			screenXOffset = pictureWidth - location.width;
-		} else if (screenXOffset < 0) {
-			screenXOffset = 0;
+		} else if (screenXOffset < 0.0d) {
+			screenXOffset = 0.0d;
 		}
 
 		int pictureHeight = pictureData.getHeight();
 		if (screenYOffset > pictureHeight - location.height) {
 			screenYOffset = pictureHeight - location.height;
-		} else if (screenYOffset < 0) {
-			screenYOffset = 0;
+		} else if (screenYOffset < 0.0d) {
+			screenYOffset = 0.0d;
 		}
 	}
 
@@ -91,16 +91,16 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	public void resetMovement() {
 		if (location != null) {
 			screenXOffset = (pictureData.getWidth() - location.width) / 2;
-			if (screenXOffset < 0) {
-				screenXOffset = 0;
+			if (screenXOffset < 0.0d) {
+				screenXOffset = 0.0d;
 			}
 			screenYOffset = (pictureData.getHeight() - location.height) / 2;
-			if (screenYOffset < 0) {
-				screenYOffset = 0;
+			if (screenYOffset < 0.0d) {
+				screenYOffset = 0.0d;
 			}
 		} else {
-			screenXOffset = 0;
-			screenYOffset = 0;
+			screenXOffset = 0.0d;
+			screenYOffset = 0.0d;
 		}
 	}
 
@@ -146,14 +146,14 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 		int imageSliceWidth = locationWidth <= pictureWidth ? locationWidth : pictureWidth;
 		int imageSliceHeight = locationHeight <= pictureHeight ? locationHeight : pictureHeight;
-		int imageSliceStartX = screenXOffset;
+		int imageSliceStartX = (int) screenXOffset;
 		if (imageSliceStartX < 0) {
 			imageSliceStartX = 0;
 		}
 		if (imageSliceStartX + imageSliceWidth > pictureWidth) {
 			imageSliceStartX = pictureWidth - imageSliceWidth;
 		}
-		int imageSliceStartY = screenYOffset;
+		int imageSliceStartY = (int) screenYOffset;
 		if (imageSliceStartY < 0) {
 			imageSliceStartY = 0;
 		}

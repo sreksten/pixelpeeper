@@ -7,6 +7,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 
 	private boolean autorotation;
+	private boolean movementInPercentage;
 	private boolean movementAppliedToAllImages;
 	private int zoomLevel;
 	private ImageReaderFlavour imageReaderFlavour;
@@ -20,6 +21,16 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	@Override
 	public boolean isAutorotation() {
 		return autorotation;
+	}
+
+	@Override
+	public void setMovementInPercentage(boolean movementInPercentage) {
+		this.movementInPercentage = movementInPercentage;
+	}
+
+	@Override
+	public boolean isMovementInPercentage() {
+		return movementInPercentage;
 	}
 
 	@Override

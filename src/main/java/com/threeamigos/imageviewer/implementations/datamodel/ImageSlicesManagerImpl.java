@@ -87,8 +87,27 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void move(int deltaX, int deltaY, boolean movementAppliesToAllImages) {
 		if (movementAppliesToAllImages) {
-			for (ImageSlice imageSlice : imageSlices) {
-				imageSlice.move(deltaX, deltaY);
+			if (imageHandlingPreferences.isMovementInPercentage()) {
+				if (activeSlice != null) {
+					int activeSliceWidth = activeSlice.getPictureData().getWidth();
+					int activeSliceHeight = activeSlice.getPictureData().getHeight();
+					double percentageX = (double) deltaX / (double) activeSliceWidth;
+					double percentageY = (double) deltaY / (double) activeSliceHeight;
+					for (ImageSlice imageSlice : imageSlices) {
+						if (imageSlice != activeSlice) {
+							double imageSliceWidth = imageSlice.getPictureData().getWidth();
+							double imageSliceHeight = imageSlice.getPictureData().getHeight();
+							imageSlice.move(percentageX * imageSliceWidth * imageSliceWidth / (double) activeSliceWidth,
+									percentageY * imageSliceHeight * imageSliceHeight / (double) activeSliceHeight);
+						} else {
+							imageSlice.move(deltaX, deltaY);
+						}
+					}
+				}
+			} else {
+				for (ImageSlice imageSlice : imageSlices) {
+					imageSlice.move(deltaX, deltaY);
+				}
 			}
 		} else {
 			if (activeSlice != null) {
