@@ -12,6 +12,8 @@ public interface CommunicationMessages {
 
 	public static final String BIG_POINTER_IMAGE_CHANGED = "BigPointerChanged";
 
+	public static final String MINIATURE_VISIBILITY_CHANGE = "MiniatureVisibilityChange";
+
 	public static final String GRID_VISIBILITY_CHANGE = "GridVisibilityChange";
 
 	public static final String GRID_SIZE_CHANGED = "GridSizeChanged";

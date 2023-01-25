@@ -316,6 +316,11 @@ public class DataModelImpl implements DataModel {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
+				} else if (e.getKeyCode() == KeyEvent.VK_P) {
+					imageHandlingPreferences
+							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
+					propertyChangeSupport.firePropertyChange(CommunicationMessages.MINIATURE_VISIBILITY_CHANGE, null,
+							null);
 				}
 			}
 

@@ -186,14 +186,23 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			pictureY += (locationHeight - pictureHeight) / 2;
 		}
 
-		ImageDrawHelper.drawTransparentImageAtop(g2d, subImage,
-				edgesDetectorPreferences.isShowEdges() ? edgesImage : null, pictureX, pictureY,
-				edgesDetectorPreferences.getEdgesTransparency());
+		if (!edgesDetectorPreferences.isShowEdges()
+				|| edgesDetectorPreferences.getEdgesTransparency() == EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY
+				|| edgesImage == null) {
+			g2d.drawImage(subImage, pictureX, pictureY, null);
+		} else if (edgesDetectorPreferences.getEdgesTransparency() == EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY) {
+			g2d.drawImage(edgesImage, pictureX, pictureY, null);
+		} else {
+			ImageDrawHelper.drawTransparentImageAtop(g2d, subImage, edgesImage, pictureX, pictureY,
+					edgesDetectorPreferences.getEdgesTransparency());
+		}
 
 		if (selected) {
 			g2d.setColor(Color.RED);
 			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
 		}
+
+		drawMiniatureWithPosition(g2d);
 
 		new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
 				commonTagsHelper).render();
@@ -204,7 +213,46 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 		}
 
 		g2d.setClip(previousClip);
+	}
 
+	private void drawMiniatureWithPosition(Graphics2D g2d) {
+		int locationX = location.x;
+		int locationWidth = location.width;
+		int locationHeight = location.height;
+		int pictureWidth = pictureData.getWidth();
+		int pictureHeight = pictureData.getHeight();
+
+		if (imageHandlingPreferences.isPositionMiniatureVisible()
+				&& (pictureWidth > locationWidth || pictureHeight > locationHeight)) {
+
+			int miniatureWidth = locationWidth / 5;
+			int miniatureHeight = miniatureWidth * pictureHeight / pictureWidth;
+
+			g2d.setColor(Color.RED);
+			int miniatureX = locationX + locationWidth - 1 - miniatureWidth - locationWidth / 20;
+			int miniatureY = locationHeight - 1 - miniatureHeight - locationWidth / 20;
+			g2d.drawRect(miniatureX, miniatureY, miniatureWidth, miniatureHeight);
+
+			g2d.setColor(Color.YELLOW);
+			int visibleWidth = locationWidth * miniatureWidth / pictureWidth;
+			if (visibleWidth > miniatureWidth) {
+				visibleWidth = miniatureWidth;
+			}
+			int visibleHeight = locationHeight * miniatureHeight / pictureHeight;
+			if (visibleHeight > miniatureHeight) {
+				visibleHeight = miniatureHeight;
+			}
+
+			int screenXOffsetScaled = pictureWidth > locationWidth
+					? (int) (screenXOffset * miniatureWidth / pictureWidth)
+					: 0;
+			int screenYOffsetScaled = pictureHeight > locationHeight
+					? (int) (screenYOffset * miniatureHeight / pictureHeight)
+					: 0;
+
+			g2d.drawRect(miniatureX + screenXOffsetScaled, miniatureY + screenYOffsetScaled, visibleWidth,
+					visibleHeight);
+		}
 	}
 
 	@Override

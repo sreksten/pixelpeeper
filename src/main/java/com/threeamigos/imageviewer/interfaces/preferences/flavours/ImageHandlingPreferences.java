@@ -7,8 +7,9 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 public interface ImageHandlingPreferences extends Preferences {
 
 	public static final boolean AUTOROTATION_DEFAULT = true;
-	public static final boolean MOVEMENT_IN_PERCENTAGE = true;
+	public static final boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
+	public static final boolean POSITION_MINIATURE_VISIBLE_DEFAULT = false;
 	public static final int MIN_ZOOM_LEVEL = 10;
 	public static final int ZOOM_LEVEL_DEFAULT = 100;
 	public static final int MAX_ZOOM_LEVEL = 100;
@@ -30,6 +31,10 @@ public interface ImageHandlingPreferences extends Preferences {
 	public void setMovementInPercentage(boolean movementInPercentage);
 
 	public boolean isMovementInPercentage();
+
+	public void setPositionMiniatureVisible(boolean positionMiniatureVisible);
+
+	public boolean isPositionMiniatureVisible();
 
 	public void setImageReaderFlavour(ImageReaderFlavour imageReaderFlavour);
 

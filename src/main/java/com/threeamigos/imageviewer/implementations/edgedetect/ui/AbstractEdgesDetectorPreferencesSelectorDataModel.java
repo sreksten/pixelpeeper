@@ -37,8 +37,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements Edge
 
 		transparencyBackup = edgesDetectorPreferences.getEdgesTransparency();
 		transparencyText = new JLabel(String.valueOf(transparencyBackup));
-		transparencySlider = createSlider(EdgesDetectorPreferences.MIN_EDGES_TRANSPARENCY,
-				EdgesDetectorPreferences.MAX_EDGES_TRANSPARENCY, transparencyBackup);
+		transparencySlider = createSlider(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY,
+				EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY, transparencyBackup);
 	}
 
 	final void abstractCancelSelection() {

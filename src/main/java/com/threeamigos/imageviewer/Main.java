@@ -93,8 +93,6 @@ public class Main {
 
 	// TODO: image grouping
 
-	// TODO: miniature showing current position
-
 	// TODO: prepare the image with edges instead of drawing it every time ?
 
 	// TODO: ImageReader should use also other image libraries

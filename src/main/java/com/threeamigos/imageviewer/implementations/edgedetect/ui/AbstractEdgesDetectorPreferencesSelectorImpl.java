@@ -153,11 +153,11 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 	private JPanel createSlidersPanel(Component component) {
 
 		Hashtable<Integer, JLabel> transparencySliderLabelTable = new Hashtable<>();
-		transparencySliderLabelTable.put(Integer.valueOf(EdgesDetectorPreferences.MIN_EDGES_TRANSPARENCY),
-				new JLabel(String.valueOf(EdgesDetectorPreferences.MIN_EDGES_TRANSPARENCY)));
+		transparencySliderLabelTable.put(Integer.valueOf(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY),
+				new JLabel(String.valueOf(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY)));
 		transparencySliderLabelTable.put(Integer.valueOf(50), new JLabel("50"));
-		transparencySliderLabelTable.put(Integer.valueOf(EdgesDetectorPreferences.MAX_EDGES_TRANSPARENCY),
-				new JLabel(String.valueOf(EdgesDetectorPreferences.MAX_EDGES_TRANSPARENCY)));
+		transparencySliderLabelTable.put(Integer.valueOf(EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY),
+				new JLabel(String.valueOf(EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY)));
 
 		JPanel slidersPanel = new JPanel();
 		slidersPanel.setLayout(new BoxLayout(slidersPanel, BoxLayout.PAGE_AXIS));

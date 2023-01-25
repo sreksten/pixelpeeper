@@ -92,6 +92,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			EdgesDetectorFlavour.class);
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
 	private JMenuItem gridVisibleMenuItem;
+	private JMenuItem miniatureVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 	private Map<Integer, JMenuItem> zoomByLevel = new HashMap<>();
 
@@ -216,7 +217,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			exifReadersByFlavour.put(flavour, exifReaderItem);
 		}
-		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_I, dataModel.isAutorotation(), event -> {
+		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_A, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();
 		});
@@ -228,6 +229,12 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		addCheckboxMenuItem(imageHandlingMenu, "Move all images", KeyEvent.VK_M,
 				dataModel.isMovementAppliedToAllImages(), event -> {
 					dataModel.toggleMovementAppliedToAllImages();
+					repaint();
+				});
+		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", KeyEvent.VK_P,
+				imageHandlingPreferences.isPositionMiniatureVisible(), event -> {
+					imageHandlingPreferences
+							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
 					repaint();
 				});
 		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M,
@@ -433,8 +440,11 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
+		} else if (CommunicationMessages.MINIATURE_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
+			miniatureVisibleMenuItem.setSelected(imageHandlingPreferences.isPositionMiniatureVisible());
+			repaint();
 		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
-			gridVisibleMenuItem.setVisible(gridPreferences.isGridVisible());
+			gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
 			repaint();
 		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
 			updateGridSpacingMenu(gridPreferences.getGridSpacing());

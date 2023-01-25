@@ -9,6 +9,7 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	private boolean autorotation;
 	private boolean movementInPercentage;
 	private boolean movementAppliedToAllImages;
+	private boolean positionMiniatureVisible;
 	private int zoomLevel;
 	private ImageReaderFlavour imageReaderFlavour;
 	private ExifReaderFlavour metadataReaderFlavour;
@@ -44,6 +45,15 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	}
 
 	@Override
+	public void setPositionMiniatureVisible(boolean positionMiniatureVisible) {
+		this.positionMiniatureVisible = positionMiniatureVisible;
+	}
+
+	public boolean isPositionMiniatureVisible() {
+		return positionMiniatureVisible;
+	}
+
+	@Override
 	public void setZoomLevel(int zoomLevel) {
 		this.zoomLevel = zoomLevel;
 	}
@@ -76,7 +86,9 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	@Override
 	public void loadDefaultValues() {
 		autorotation = AUTOROTATION_DEFAULT;
+		movementInPercentage = MOVEMENT_IN_PERCENTAGE_DEFAULT;
 		movementAppliedToAllImages = MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT;
+		positionMiniatureVisible = POSITION_MINIATURE_VISIBLE_DEFAULT;
 		zoomLevel = ZOOM_LEVEL_DEFAULT;
 		imageReaderFlavour = IMAGE_READER_FLAVOUR_DEFAULT;
 		metadataReaderFlavour = METADATA_READER_FLAVOUR_DEFAULT;

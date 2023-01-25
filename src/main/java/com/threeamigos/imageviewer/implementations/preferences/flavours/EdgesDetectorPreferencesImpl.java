@@ -67,7 +67,7 @@ public class EdgesDetectorPreferencesImpl implements PropertyChangeAwareEdgesDet
 
 	@Override
 	public void validate() {
-		if (edgesTransparency < MIN_EDGES_TRANSPARENCY || edgesTransparency > MAX_EDGES_TRANSPARENCY) {
+		if (edgesTransparency < NO_EDGES_TRANSPARENCY || edgesTransparency > TOTAL_EDGES_TRANSPARENCY) {
 			throw new IllegalArgumentException(String.format("Invalid edges transparency: %d", edgesTransparency));
 		}
 	}
