@@ -3,7 +3,7 @@ package com.threeamigos.imageviewer.interfaces.ui;
 import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
 
-public interface CursorManager extends PropertyChangeListener {
+public interface CursorManager extends PropertyChangeListener, HintsProducer {
 
 	public InputConsumer getInputConsumer();
 

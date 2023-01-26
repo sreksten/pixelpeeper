@@ -5,9 +5,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
+import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
-public interface DataModel extends PropertyChangeListener {
+public interface DataModel extends PropertyChangeListener, HintsProducer {
 
 	// Preferences part
 

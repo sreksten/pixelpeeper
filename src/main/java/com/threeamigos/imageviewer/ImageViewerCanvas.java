@@ -51,6 +51,7 @@ import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
+import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
@@ -80,9 +81,9 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
+	private final transient HintsWindow hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
 
-	private boolean showHelp = false;
 	private JMenuItem showEdgesMenuItem;
 
 	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
@@ -104,7 +105,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
-			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
+			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
 		this.mainWindowPreferences = mainWindowPreferences;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
@@ -123,6 +124,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
 		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
+		this.hintsWindow = hintsWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
 
@@ -161,9 +163,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			dragAndDropWindowPreferences.setVisible(true);
 			dragAndDropWindow.setVisible(true);
 		});
-		addCheckboxMenuItem(fileMenu, "Show help", KeyEvent.VK_H, showHelp, event -> {
-			showHelp = !showHelp;
-			repaint();
+		addMenuItem(fileMenu, "Show hints", KeyEvent.VK_H, event -> {
+			hintsWindow.showHints(this);
 		});
 
 		addMenuItem(fileMenu, "About", KeyEvent.VK_S, event -> aboutWindow.about(this));

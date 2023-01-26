@@ -334,4 +334,12 @@ public class DataModelImpl implements DataModel {
 		};
 	}
 
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add("You can press P to show the position of the visible part of the image.");
+		hints.add("You can hold the CTRL button to momentarily invert the current behaviour when dragging an image.");
+		return hints;
+	}
+
 }

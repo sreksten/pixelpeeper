@@ -5,15 +5,18 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
-public class GridDecorator implements ImageDecorator {
+public class GridDecorator implements ImageDecorator, HintsProducer {
 
 	private final MainWindowPreferences mainWindowPreferences;
 	private final GridPreferences gridPreferences;
@@ -63,17 +66,26 @@ public class GridDecorator implements ImageDecorator {
 				if (e.getKeyCode() == KeyEvent.VK_G) {
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 					propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGE, null, this);
+					e.consume();
 				} else if (e.getKeyCode() == KeyEvent.VK_ADD) {
-					int spacing = gridPreferences.getGridSpacing();
-					if (spacing < GridPreferences.GRID_SPACING_MAX) {
-						gridPreferences.setGridSpacing(spacing + GridPreferences.GRID_SPACING_STEP);
-						propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, this);
+					if (gridPreferences.isGridVisible()) {
+						int spacing = gridPreferences.getGridSpacing();
+						if (spacing < GridPreferences.GRID_SPACING_MAX) {
+							gridPreferences.setGridSpacing(spacing + GridPreferences.GRID_SPACING_STEP);
+							propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null,
+									this);
+						}
+						e.consume();
 					}
 				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
-					int spacing = gridPreferences.getGridSpacing();
-					if (spacing > GridPreferences.GRID_SPACING_MIN) {
-						gridPreferences.setGridSpacing(spacing - GridPreferences.GRID_SPACING_STEP);
-						propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, this);
+					if (gridPreferences.isGridVisible()) {
+						int spacing = gridPreferences.getGridSpacing();
+						if (spacing > GridPreferences.GRID_SPACING_MIN) {
+							gridPreferences.setGridSpacing(spacing - GridPreferences.GRID_SPACING_STEP);
+							propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null,
+									this);
+						}
+						e.consume();
 					}
 				}
 			}
@@ -86,6 +98,14 @@ public class GridDecorator implements ImageDecorator {
 
 	public void removePropertyChangeListener(PropertyChangeListener pcl) {
 		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add("Press G to hide or show the grid.");
+		hints.add("If the grid is visible you can change its size using the Plus or Minus key on the numeric keypad.");
+		return hints;
 	}
 
 }

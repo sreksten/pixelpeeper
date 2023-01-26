@@ -14,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
@@ -262,5 +264,14 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 			minDimension = maxDimension.height;
 		}
 		return minDimension;
+	}
+
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add("Press 5 on the numeric keypad to hide or show a bigger pointer.");
+		hints.add(
+				"If the bigger pointer is visible, you can change its orientation by pressing the numbers on the numeric keypad. The arrow points from the number you press to the 5 at the center.");
+		return hints;
 	}
 }

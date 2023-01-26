@@ -11,6 +11,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -71,10 +73,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 		pack();
 		setResizable(true);
-		setLocation(dragAndDropWindowPreferences.getX(),
-				dragAndDropWindowPreferences.getY());
-		setSize(dragAndDropWindowPreferences.getWidth(),
-				dragAndDropWindowPreferences.getHeight());
+		setLocation(dragAndDropWindowPreferences.getX(), dragAndDropWindowPreferences.getY());
+		setSize(dragAndDropWindowPreferences.getWidth(), dragAndDropWindowPreferences.getHeight());
 		setVisible(dragAndDropWindowPreferences.isVisible());
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
@@ -94,6 +94,13 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 						.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 			}
 		}
+	}
+
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add("You can open the Drag and Drop window and keep it in a secondary screen to open images with ease.");
+		return hints;
 	}
 
 	private class DecorativePanel extends JPanel {

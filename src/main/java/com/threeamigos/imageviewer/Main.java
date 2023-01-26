@@ -36,6 +36,7 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.DragAndD
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.HintsPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ImageHandlingPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.MainWindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesImpl;
@@ -47,6 +48,8 @@ import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.imageviewer.implementations.ui.FileSelectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.FontServiceImpl;
+import com.threeamigos.imageviewer.implementations.ui.HintsCollectorImpl;
+import com.threeamigos.imageviewer.implementations.ui.HintsWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
@@ -62,6 +65,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDet
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
@@ -73,6 +77,8 @@ import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
+import com.threeamigos.imageviewer.interfaces.ui.HintsCollector;
+import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -86,6 +92,8 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 public class Main {
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
+
+	// TODO check the InputAdapter of the main canvas
 
 	// TODO highlight function
 
@@ -159,6 +167,13 @@ public class Main {
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
 		preferencesHelper.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
+		// Misc preferences
+
+		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
+		preferencesHelper.register(hintsPreferences, "hints.preferences");
+
+		HintsCollector hintsCollector = new HintsCollectorImpl();
+
 		// Data model
 
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
@@ -185,6 +200,7 @@ public class Main {
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager,
 				imageHandlingPreferences, pathPreferences, edgesDetectorPreferences, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
+		hintsCollector.addHints(dataModel);
 
 		// User Interface
 
@@ -198,22 +214,27 @@ public class Main {
 
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, fontService,
 				messageHandler);
+		hintsCollector.addHints(dragAndDropWindow);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
 		GridDecorator gridDecorator = new GridDecorator(mainWindowPreferences, gridPreferences);
 		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
+		hintsCollector.addHints(gridDecorator);
 
 		CursorManager cursorManager = new CursorManagerImpl(bigPointerPreferences);
 		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
 		bigPointerPreferences.addPropertyChangeListener(cursorManager);
+		hintsCollector.addHints(cursorManager);
+
+		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
 				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
 				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
-				dragAndDropWindow, messageHandler);
+				hintsWindow, dragAndDropWindow, messageHandler);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
