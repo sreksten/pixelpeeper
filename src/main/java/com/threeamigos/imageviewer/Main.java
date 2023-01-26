@@ -198,7 +198,7 @@ public class Main {
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
 
 		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager,
-				imageHandlingPreferences, pathPreferences, edgesDetectorPreferences, exifImageReader);
+				imageHandlingPreferences, pathPreferences, edgesDetectorPreferences, exifImageReader, messageHandler);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 

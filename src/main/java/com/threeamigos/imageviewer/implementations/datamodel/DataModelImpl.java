@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
@@ -42,6 +43,7 @@ public class DataModelImpl implements DataModel {
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
+	private final MessageHandler messageHandler;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -50,7 +52,7 @@ public class DataModelImpl implements DataModel {
 	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
 			ImageSlicesManager imageSlicesManager, ImageHandlingPreferences imageHandlingPreferences,
 			PathPreferences pathPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
-			ExifImageReader imageReader) {
+			ExifImageReader imageReader, MessageHandler messageHandler) {
 		this.exifTagsFilter = exifTagsFilter;
 		this.commonTagsHelper = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
@@ -59,6 +61,7 @@ public class DataModelImpl implements DataModel {
 		this.pathPreferences = pathPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.imageReader = imageReader;
+		this.messageHandler = messageHandler;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -162,6 +165,8 @@ public class DataModelImpl implements DataModel {
 				pathPreferences.setLastPath(directory.getPath());
 				loadFiles(filesToLoad);
 			}
+		} else {
+			messageHandler.handleErrorMessage("Selected file is not a directory.");
 		}
 	}
 
