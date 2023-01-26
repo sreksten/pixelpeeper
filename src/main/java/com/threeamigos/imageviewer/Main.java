@@ -245,6 +245,10 @@ public class Main {
 		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, mainWindowPreferences, preferencesHelper);
 
 		jframe.setVisible(true);
+
+		if (hintsPreferences.isHintsVisibleAtStartup()) {
+			hintsWindow.showHints(jframe);
+		}
 	}
 
 	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences mainWindowPreferences,

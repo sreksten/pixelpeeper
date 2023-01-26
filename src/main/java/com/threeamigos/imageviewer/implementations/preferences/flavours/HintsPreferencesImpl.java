@@ -24,7 +24,7 @@ public class HintsPreferencesImpl implements HintsPreferences {
 
 	@Override
 	public void setHintsVisibleAtStartup(boolean hintsVisibleAtStartup) {
-		hintsVisibleAtStartup = hintsVisibleAtStartup;
+		this.hintsVisibleAtStartup = hintsVisibleAtStartup;
 	}
 
 	@Override
