@@ -12,7 +12,7 @@ import java.beans.PropertyChangeSupport;
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
@@ -23,7 +23,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FontService;
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	private final PictureData pictureData;
-	private final CommonTagsHelper commonTagsHelper;
+	private final TagsClassifier commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
@@ -39,7 +39,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	private boolean edgeCalculationInProgress;
 
-	public ImageSliceImpl(PictureData pictureData, CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
+	public ImageSliceImpl(PictureData pictureData, TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			FontService fontService) {
 		this.pictureData = pictureData;

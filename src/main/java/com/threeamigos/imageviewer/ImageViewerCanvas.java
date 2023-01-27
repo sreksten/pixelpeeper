@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -46,10 +47,12 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPrefer
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
+import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
@@ -72,6 +75,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient GridPreferences gridPreferences;
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
+	private final transient PathPreferences pathPreferences;
+	private final transient ExifTagsFilter exifTagsFilter;
 	private final transient DataModel dataModel;
 	private final transient Persistable preferencesPersisterHelper;
 	private final transient MouseTracker mouseTracker;
@@ -83,6 +88,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private final transient AboutWindow aboutWindow;
 	private final transient HintsWindow hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
+	private final transient MessageHandler messageHandler;
 
 	private JMenuItem showEdgesMenuItem;
 
@@ -100,7 +106,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
-			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
+			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences,
+			PathPreferences pathPreferences, ExifTagsFilter exifTagsFilter, DataModel dataModel,
 			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, CursorManager cursorManager,
 			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
@@ -113,6 +120,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
+		this.pathPreferences = pathPreferences;
+		this.exifTagsFilter = exifTagsFilter;
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
@@ -126,6 +135,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.aboutWindow = aboutWindow;
 		this.hintsWindow = hintsWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
+		this.messageHandler = messageHandler;
 		dragAndDropWindow.setProxyFor(this);
 
 		setSize(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight());
@@ -152,12 +162,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			accept(fileSelector.getSelectedFiles(this));
 		});
 		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_D, event -> {
-			File directory = fileSelector.getSelectedDirectory(this);
-			if (directory != null) {
-				dataModel.browseDirectory(directory);
-				dataModel.reframe(getWidth(), getHeight());
-				repaint();
-			}
+			browseDirectory();
 		});
 		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
 			dragAndDropWindowPreferences.setVisible(true);
@@ -321,6 +326,37 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 						repaint();
 					});
 		}
+	}
+
+	private void browseDirectory() {
+		File directory = fileSelector.getSelectedDirectory(this);
+		if (directory != null) {
+			if (directory.isDirectory()) {
+
+				Collection<File> files = findImageFiles(directory);
+
+				Collection<File> filesToLoad = exifTagsFilter.filterByTags(this, files);
+
+				if (!filesToLoad.isEmpty()) {
+					pathPreferences.setLastPath(directory.getPath());
+					dataModel.loadFiles(filesToLoad);
+					dataModel.reframe(getWidth(), getHeight());
+					repaint();
+				}
+			} else {
+				messageHandler.handleErrorMessage("Selected file is not a directory.");
+			}
+		}
+	}
+
+	private Collection<File> findImageFiles(File directory) {
+		Collection<File> files = new ArrayList<>();
+		for (File file : directory.listFiles()) {
+			if (file.isFile()) {
+				files.add(file);
+			}
+		}
+		return files;
 	}
 
 	private void updateCursor() {

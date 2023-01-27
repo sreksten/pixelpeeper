@@ -8,60 +8,45 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
-import com.threeamigos.imageviewer.data.ExifMap;
-import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class DataModelImpl implements DataModel {
 
-	private final ExifTagsFilter exifTagsFilter;
-	private final CommonTagsHelper commonTagsHelper;
+	private final TagsClassifier tagsClassifier;
 	private final ImageSlicesManager imageSlicesManager;
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
-	private final MessageHandler messageHandler;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
-	public DataModelImpl(ExifTagsFilter exifTagsFilter, CommonTagsHelper commonTagsHelper,
-			ImageSlicesManager imageSlicesManager, ImageHandlingPreferences imageHandlingPreferences,
-			PathPreferences pathPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
-			ExifImageReader imageReader, MessageHandler messageHandler) {
-		this.exifTagsFilter = exifTagsFilter;
-		this.commonTagsHelper = commonTagsHelper;
+	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlicesManager imageSlicesManager,
+			ImageHandlingPreferences imageHandlingPreferences, PathPreferences pathPreferences,
+			EdgesDetectorPreferences edgesDetectorPreferences, ExifImageReader imageReader) {
+		this.tagsClassifier = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.pathPreferences = pathPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.imageReader = imageReader;
-		this.messageHandler = messageHandler;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -77,7 +62,7 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public void loadFiles(List<File> files) {
+	public void loadFiles(Collection<File> files) {
 		if (!files.isEmpty()) {
 			imageSlicesManager.clear();
 			files.parallelStream().forEach(file -> {
@@ -87,99 +72,10 @@ public class DataModelImpl implements DataModel {
 				}
 			});
 			imageSlicesManager.resetMovement();
-			commonTagsHelper.updateCommonTags(imageSlicesManager.getImageSlices().stream()
+			tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
 			pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
 		}
-	}
-
-	@Override
-	public void browseDirectory(File directory) {
-		if (directory.isDirectory()) {
-
-			Map<File, ExifMap> fileToTags = new HashMap<>();
-
-			for (File file : directory.listFiles()) {
-				if (file.isFile()) {
-					Optional<ExifMap> exifMapOpt = imageReader.readExifMap(file);
-
-					if (exifMapOpt.isPresent()) {
-						fileToTags.put(file, exifMapOpt.get());
-					}
-				}
-			}
-
-			for (Map.Entry<File, ExifMap> entry : fileToTags.entrySet()) {
-				File file = entry.getKey();
-				System.out.println("File: " + file.getName());
-			}
-
-			CommonTagsHelper localCommonTagsHelper = new CommonTagsHelperImpl();
-			localCommonTagsHelper.updateCommonTags(fileToTags.values());
-
-			for (ExifTag commonTag : localCommonTagsHelper.getCommonTags()) {
-				System.out.println("Common tag: " + commonTag);
-			}
-			for (Map.Entry<ExifTag, Collection<String>> entry : localCommonTagsHelper.getUncommonTagsToValues()
-					.entrySet()) {
-				ExifTag uncommonTag = entry.getKey();
-				System.out.println("Uncommon tag: " + uncommonTag + " = "
-						+ entry.getValue().stream().collect(Collectors.joining(", ")));
-			}
-
-			List<ExifTag> tagsToCheck = new ArrayList<>();
-			tagsToCheck.add(ExifTag.CAMERA_MODEL);
-			tagsToCheck.add(ExifTag.LENS_MODEL);
-			tagsToCheck.add(ExifTag.APERTURE);
-			tagsToCheck.add(ExifTag.ISO);
-			tagsToCheck.add(ExifTag.EXPOSURE_TIME);
-
-			Map<ExifTag, Collection<String>> tagsToFilter = new EnumMap<>(ExifTag.class);
-
-			for (ExifTag exifTag : tagsToCheck) {
-				if (!localCommonTagsHelper.isCommonTag(exifTag)) {
-					tagsToFilter.put(exifTag, localCommonTagsHelper.getUncommonTagsToValues().get(exifTag));
-				}
-			}
-
-			Map<ExifTag, Collection<String>> selectionMap = Collections.emptyMap();
-
-			if (!tagsToFilter.isEmpty()) {
-				selectionMap = exifTagsFilter.filterTags(tagsToFilter);
-				if (selectionMap == null) {
-					return;
-				}
-			}
-
-			List<File> filesToLoad = new ArrayList<>();
-
-			for (Entry<File, ExifMap> entry : fileToTags.entrySet()) {
-				File file = entry.getKey();
-				ExifMap exifMap = entry.getValue();
-				if (exifMapMatchesSelection(exifMap, selectionMap)) {
-					filesToLoad.add(file);
-				}
-			}
-
-			if (!filesToLoad.isEmpty()) {
-				pathPreferences.setLastPath(directory.getPath());
-				loadFiles(filesToLoad);
-			}
-		} else {
-			messageHandler.handleErrorMessage("Selected file is not a directory.");
-		}
-	}
-
-	private boolean exifMapMatchesSelection(ExifMap exifMap, Map<ExifTag, Collection<String>> selectionMap) {
-		for (Map.Entry<ExifTag, Collection<String>> selectionEntry : selectionMap.entrySet()) {
-			ExifTag selectedTag = selectionEntry.getKey();
-			Collection<String> selectedValues = selectionEntry.getValue();
-			String value = exifMap.getTagDescriptive(selectedTag);
-			if (!selectedValues.contains(value)) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	@Override

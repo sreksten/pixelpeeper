@@ -11,16 +11,16 @@ import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 
-public class CommonTagsHelperImpl implements CommonTagsHelper {
+public class TagsClassifierImpl implements TagsClassifier {
 
 	private Collection<ExifTag> commonTags;
 	private Map<ExifTag, Collection<String>> uncommonTagsToValues;
 	private int mappedPictures;
 
 	@Override
-	public void updateCommonTags(Collection<ExifMap> exifMaps) {
+	public void classifyTags(Collection<ExifMap> exifMaps) {
 		commonTags = new ArrayList<>();
 		uncommonTagsToValues = new EnumMap<>(ExifTag.class);
 		mappedPictures = exifMaps.size();
@@ -40,7 +40,7 @@ public class CommonTagsHelperImpl implements CommonTagsHelper {
 	}
 
 	@Override
-	public int getMappedPictures() {
+	public int getTotalMappedPictures() {
 		return mappedPictures;
 	}
 

@@ -8,7 +8,7 @@ import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
@@ -24,12 +24,12 @@ public class TagsRenderHelper {
 	private final FontService fontService;
 	private final PictureData pictureData;
 	private final ExifTagPreferences tagPreferences;
-	private final CommonTagsHelper commonTagsHelper;
+	private final TagsClassifier commonTagsHelper;
 
 	private int y;
 
 	TagsRenderHelper(Graphics2D g2d, int x, int y, FontService fontService, PictureData pictureData,
-			ExifTagPreferences tagPreferences, CommonTagsHelper commonTagsHelper) {
+			ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
 		this.g2d = g2d;
 		this.x = x + HSPACING;
 		this.y = y - VSPACING - FONT_HEIGHT;
@@ -91,7 +91,7 @@ public class TagsRenderHelper {
 			if (!tagPreferences.isOverridingTagsVisibility()) {
 				ExifTagVisibility visibility = tagPreferences.getTagVisibility(exifTag);
 				tagVisible = visibility == ExifTagVisibility.YES || visibility == ExifTagVisibility.ONLY_IF_DIFFERENT
-						&& (commonTagsHelper.getMappedPictures() == 1 || !commonTagsHelper.isCommonTag(exifTag));
+						&& (commonTagsHelper.getTotalMappedPictures() == 1 || !commonTagsHelper.isCommonTag(exifTag));
 			}
 
 			if (tagVisible) {
@@ -99,7 +99,7 @@ public class TagsRenderHelper {
 				String tagValue = pictureData.getTagDescriptive(exifTag);
 				BorderedStringRenderer.drawString(g2d, String.format("%s: %s", tagDescription, tagValue), x, y,
 						Color.BLACK,
-						(commonTagsHelper.getMappedPictures() == 1 || commonTagsHelper.isCommonTag(exifTag))
+						(commonTagsHelper.getTotalMappedPictures() == 1 || commonTagsHelper.isCommonTag(exifTag))
 								? Color.GREEN
 								: Color.YELLOW);
 				y -= FONT_HEIGHT + VSPACING;

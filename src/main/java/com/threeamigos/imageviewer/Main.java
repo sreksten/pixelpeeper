@@ -21,12 +21,12 @@ import com.threeamigos.common.util.implementations.SwingMessageHandler;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.preferences.filebased.implementations.RootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
-import com.threeamigos.imageviewer.implementations.datamodel.CommonTagsHelperImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.persister.PreferencesHelper;
@@ -52,12 +52,12 @@ import com.threeamigos.imageviewer.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.HintsWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
@@ -93,13 +93,17 @@ public class Main {
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
+	// BUGFIX: check the tags filter size
+
+	// TODO: the browse directory should impede to load too many files
+
+	// TODO: image grouping
+
+	// TODO: zoom the images using numeric keypad +/- (add hint)
+
 	// TODO check the InputAdapter of the main canvas
 
 	// TODO highlight function
-
-	// TODO: the browse directory should show how many files match the selection
-
-	// TODO: image grouping
 
 	// TODO: prepare the image with edges instead of drawing it every time ?
 
@@ -186,7 +190,7 @@ public class Main {
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
 				exifReaderFactory, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
 
-		CommonTagsHelper commonTagsHelper = new CommonTagsHelperImpl();
+		TagsClassifier commonTagsHelper = new TagsClassifierImpl();
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
@@ -195,10 +199,10 @@ public class Main {
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 
-		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl();
+		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifImageReader, messageHandler);
 
-		DataModel dataModel = new DataModelImpl(exifTagsFilter, commonTagsHelper, imageSlicesManager,
-				imageHandlingPreferences, pathPreferences, edgesDetectorPreferences, exifImageReader, messageHandler);
+		DataModel dataModel = new DataModelImpl(commonTagsHelper, imageSlicesManager, imageHandlingPreferences,
+				pathPreferences, edgesDetectorPreferences, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 
@@ -231,10 +235,10 @@ public class Main {
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
-				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
-				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
-				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
-				hintsWindow, dragAndDropWindow, messageHandler);
+				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, pathPreferences,
+				exifTagsFilter, dataModel, preferencesHelper, mouseTracker, cursorManager, fileSelector,
+				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
+				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);

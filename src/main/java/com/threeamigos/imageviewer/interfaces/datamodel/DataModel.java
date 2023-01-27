@@ -3,7 +3,7 @@ package com.threeamigos.imageviewer.interfaces.datamodel;
 import java.awt.Graphics2D;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
@@ -50,9 +50,7 @@ public interface DataModel extends PropertyChangeListener, HintsProducer {
 
 	// Data part
 
-	public void loadFiles(List<File> files);
-
-	public void browseDirectory(File directory);
+	public void loadFiles(Collection<File> files);
 
 	public boolean hasLoadedImages();
 

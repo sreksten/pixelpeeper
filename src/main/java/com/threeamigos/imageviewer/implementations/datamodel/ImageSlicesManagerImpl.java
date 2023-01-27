@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommonTagsHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
@@ -21,7 +21,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
 public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChangeListener {
 
-	private final CommonTagsHelper commonTagsHelper;
+	private final TagsClassifier commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
@@ -34,7 +34,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	private ImageSlice activeSlice;
 
-	public ImageSlicesManagerImpl(CommonTagsHelper commonTagsHelper, ExifTagPreferences tagPreferences,
+	public ImageSlicesManagerImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
