@@ -179,9 +179,9 @@ public class Main {
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
 		preferencesHelper.register(hintsPreferences, "hints.preferences");
 
-		HintsCollector hintsCollector = new HintsCollectorImpl();
-
 		// Data model
+
+		HintsCollector hintsCollector = new HintsCollectorImpl();
 
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
@@ -193,18 +193,18 @@ public class Main {
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
 				exifReaderFactory, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
 
-		TagsClassifier commonTagsHelper = new TagsClassifierImpl();
-
-		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+		TagsClassifier tagsClassifier = new TagsClassifierImpl();
 
 		FontService fontService = new FontServiceImpl();
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(commonTagsHelper, exifTagPreferences,
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifImageReader, messageHandler);
 
-		DataModel dataModel = new DataModelImpl(commonTagsHelper, imageSlicesManager, imageHandlingPreferences,
+		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+
+		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
 				pathPreferences, edgesDetectorPreferences, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
