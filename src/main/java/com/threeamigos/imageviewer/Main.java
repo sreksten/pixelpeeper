@@ -95,6 +95,11 @@ public class Main {
 
 	// BUGFIX: check the tags filter size
 
+	// BUGFIX: tags are not sorted (sorted alphabetically but not semantically)
+
+	// BUGFIX: images may have a different ordering when reloaded (due to the fact
+	// they're loaded in parallel?)
+
 	// TODO: the browse directory should impede to load too many files
 
 	// TODO: image grouping
