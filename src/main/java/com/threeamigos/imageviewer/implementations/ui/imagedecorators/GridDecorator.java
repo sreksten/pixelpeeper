@@ -104,7 +104,7 @@ public class GridDecorator implements ImageDecorator, HintsProducer {
 	public Collection<String> getHints() {
 		Collection<String> hints = new ArrayList<>();
 		hints.add("Press G to hide or show a grid.");
-		hints.add("If the grid is visible you can change its size using the Plus or Minus key on the numeric keypad.");
+		hints.add("If the grid is visible you can change its size using the plus or minus key on the numeric keypad.");
 		return hints;
 	}
 

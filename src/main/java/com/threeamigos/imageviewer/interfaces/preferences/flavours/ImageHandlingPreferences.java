@@ -13,6 +13,7 @@ public interface ImageHandlingPreferences extends Preferences {
 	public static final int MIN_ZOOM_LEVEL = 10;
 	public static final int ZOOM_LEVEL_DEFAULT = 100;
 	public static final int MAX_ZOOM_LEVEL = 100;
+	public static final int ZOOM_LEVEL_STEP = 10;
 	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.JAVA;
 	public static final ExifReaderFlavour METADATA_READER_FLAVOUR_DEFAULT = ExifReaderFlavour.DREW_NOAKES;
 

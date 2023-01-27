@@ -54,6 +54,7 @@ import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
+import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
@@ -65,7 +66,7 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
  * @author Stefano Reksten
  *
  */
-public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, PropertyChangeListener {
+public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, PropertyChangeListener, HintsProducer {
 
 	private static final long serialVersionUID = 1L;
 
@@ -279,7 +280,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		}
 		JMenu zoomMenu = new JMenu("Zoom level");
 		imageHandlingMenu.add(zoomMenu);
-		for (int zoomLevel = ImageHandlingPreferences.MIN_ZOOM_LEVEL; zoomLevel <= ImageHandlingPreferences.MAX_ZOOM_LEVEL; zoomLevel += 10) {
+		for (int zoomLevel = ImageHandlingPreferences.MIN_ZOOM_LEVEL; zoomLevel <= ImageHandlingPreferences.MAX_ZOOM_LEVEL; zoomLevel += ImageHandlingPreferences.ZOOM_LEVEL_STEP) {
 			final int currentZoom = zoomLevel;
 			JMenuItem zoomLevelItem = addCheckboxMenuItem(zoomMenu, String.valueOf(zoomLevel), -1,
 					zoomLevel == imageHandlingPreferences.getZoomLevel(), event -> {
@@ -532,8 +533,39 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 				}
 			}
 
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ADD) {
+					int zoomLevel = imageHandlingPreferences.getZoomLevel();
+					if (zoomLevel < ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
+						imageHandlingPreferences.setZoomLevel(zoomLevel + ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+						dataModel.changeZoomLevel();
+						updateZoomLevelMenu(zoomLevel);
+						repaint();
+					}
+					e.consume();
+				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
+					int zoomLevel = imageHandlingPreferences.getZoomLevel();
+					if (zoomLevel > ImageHandlingPreferences.MIN_ZOOM_LEVEL) {
+						imageHandlingPreferences.setZoomLevel(zoomLevel - ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+						dataModel.changeZoomLevel();
+						updateZoomLevelMenu(zoomLevel);
+						repaint();
+					}
+					e.consume();
+				}
+			}
+
 		};
 
+	}
+
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add(
+				"If no grid is visible you can change the images' zoom level using the plus or minus key on the numeric keypad.");
+		return hints;
 	}
 
 }

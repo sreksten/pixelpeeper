@@ -99,8 +99,6 @@ public class Main {
 
 	// TODO: image grouping
 
-	// TODO: zoom the images using numeric keypad +/- (add hint)
-
 	// TODO check the InputAdapter of the main canvas
 
 	// TODO highlight function
@@ -239,6 +237,7 @@ public class Main {
 				exifTagsFilter, dataModel, preferencesHelper, mouseTracker, cursorManager, fileSelector,
 				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
 				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
+		hintsCollector.addHints(imageViewerCanvas);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
