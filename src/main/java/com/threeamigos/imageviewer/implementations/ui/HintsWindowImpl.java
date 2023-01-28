@@ -23,21 +23,14 @@ import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 public class HintsWindowImpl implements HintsWindow {
 
 	private final HintsPreferences hintsPreferences;
-	private final HintsCollector hintsCollector;
 
 	private List<String> hints;
 	private int hintIndex;
 
 	public HintsWindowImpl(HintsPreferences hintsPreferences, HintsCollector hintsCollector) {
 		this.hintsPreferences = hintsPreferences;
-		this.hintsCollector = hintsCollector;
-	}
-
-	private void buildHints() {
-		if (hints == null) {
-			hints = new ArrayList<>();
-			hints.addAll(hintsCollector.getHints());
-		}
+		hints = new ArrayList<>();
+		hints.addAll(hintsCollector.getHints());
 	}
 
 	private String getNextHint() {
@@ -49,8 +42,12 @@ public class HintsWindowImpl implements HintsWindow {
 	}
 
 	private String getHintImpl(int offset) {
-		buildHints();
-		hintIndex = (hintsPreferences.getLastHintIndex() + offset) % hints.size();
+		hintIndex = (hintsPreferences.getLastHintIndex() + offset);
+		if (hintIndex >= hints.size()) {
+			hintIndex = 0;
+		} else if (hintIndex < 0) {
+			hintIndex = hints.size() - 1;
+		}
 		hintsPreferences.setLastHintIndex(hintIndex);
 		return hints.get(hintIndex);
 	}
