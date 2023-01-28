@@ -1,8 +1,6 @@
 package com.threeamigos.imageviewer;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -259,8 +257,8 @@ public class Main {
 		}
 	}
 
-	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas canvas, MainWindowPreferences mainWindowPreferences,
-			Persistable persistable) {
+	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas imageViewerCanvas,
+			MainWindowPreferences mainWindowPreferences, Persistable persistable) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
 		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -275,9 +273,14 @@ public class Main {
 
 		jframe.setJMenuBar(menuBar);
 
-		Container container = jframe.getContentPane();
-		container.setPreferredSize(new Dimension(canvas.getWidth(), canvas.getHeight()));
-		jframe.add(canvas, BorderLayout.CENTER);
+		jframe.add(imageViewerCanvas, BorderLayout.CENTER);
+
+//		JPanel controlsPanel = new JPanel();
+//		controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.LINE_AXIS));
+//		controlsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+//		controlsPanel.add(Box.createHorizontalGlue());
+//		controlsPanel.add(new JButton("coucou"));
+//		jframe.add(controlsPanel, BorderLayout.SOUTH);
 
 		jframe.pack();
 		jframe.setResizable(true);
@@ -286,9 +289,9 @@ public class Main {
 		jframe.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				canvas.reframe();
-				mainWindowPreferences.setWidth(canvas.getWidth());
-				mainWindowPreferences.setHeight(canvas.getHeight());
+				imageViewerCanvas.reframeDataModel();
+				mainWindowPreferences.setWidth(imageViewerCanvas.getWidth());
+				mainWindowPreferences.setHeight(imageViewerCanvas.getHeight());
 			}
 
 			@Override

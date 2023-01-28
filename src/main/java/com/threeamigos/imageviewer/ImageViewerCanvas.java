@@ -3,6 +3,7 @@ package com.threeamigos.imageviewer;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -139,6 +140,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		this.messageHandler = messageHandler;
 		dragAndDropWindow.setProxyFor(this);
 
+		setPreferredSize(new Dimension(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight()));
 		setSize(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight());
 		setMinimumSize(getSize());
 
@@ -146,7 +148,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		setFocusable(true);
 		setDoubleBuffered(true);
 
-		chainedInputAdapter.addConsumer(getInputConsumer(), 0);
+		chainedInputAdapter.addConsumer(getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		addMouseListener(chainedInputAdapter);
 		addMouseMotionListener(chainedInputAdapter);
 		addKeyListener(chainedInputAdapter);
@@ -449,11 +451,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		return menuItem;
 	}
 
-	public void reframe() {
-		int width = getParent().getWidth();
-		int height = getParent().getHeight();
-		setSize(width, height);
-		dataModel.reframe(width, height);
+	public void reframeDataModel() {
+		dataModel.reframe(getWidth(), getHeight());
 		repaint();
 	}
 
