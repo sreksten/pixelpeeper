@@ -74,4 +74,16 @@ public class ExifMap {
 		return pictureOrientation;
 	}
 
+	public boolean matches(Map<ExifTag, Collection<ExifValue>> selectionMap) {
+		for (Map.Entry<ExifTag, Collection<ExifValue>> selectionEntry : selectionMap.entrySet()) {
+			ExifTag selectedTag = selectionEntry.getKey();
+			Collection<ExifValue> selectedValues = selectionEntry.getValue();
+			ExifValue value = getExifValue(selectedTag);
+			if (!selectedValues.contains(value)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

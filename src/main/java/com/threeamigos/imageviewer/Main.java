@@ -97,9 +97,9 @@ public class Main {
 
 	// BUGFIX: the controls panel's glue seems not to work
 
-	// TODO: the browse directory should impede to load too many files
-
 	// TODO: image grouping
+
+	// TODO: offer more options to subdivide the images panel (e.g. 3x2 grid)
 
 	// TODO highlight function
 

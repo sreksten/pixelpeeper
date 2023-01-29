@@ -243,11 +243,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
 					repaint();
 				});
-		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M,
-				gridPreferences.isGridVisible(), event -> {
-					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
-					repaint();
-				});
 		addCheckboxMenuItem(imageHandlingMenu, "Normalize for crop factor", -1,
 				imageHandlingPreferences.isNormalizedForCrop(), event -> {
 					imageHandlingPreferences.setNormalizedForCrop(!imageHandlingPreferences.isNormalizedForCrop());
@@ -255,10 +250,15 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 				});
 		addCheckboxMenuItem(imageHandlingMenu, "Normalize for focal length", -1,
 				imageHandlingPreferences.isNormalizedForFocalLength(), event -> {
-					imageHandlingPreferences.setNormalizedForFocalLength(!imageHandlingPreferences.isNormalizedForFocalLength());
+					imageHandlingPreferences
+							.setNormalizedForFocalLength(!imageHandlingPreferences.isNormalizedForFocalLength());
 					repaint();
 				});
-
+		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M,
+				gridPreferences.isGridVisible(), event -> {
+					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
+					repaint();
+				});
 		JMenu gridSpacingMenu = new JMenu("Grid spacing");
 		imageHandlingMenu.add(gridSpacingMenu);
 		for (int gridSpacing = GridPreferences.GRID_SPACING_MIN; gridSpacing <= GridPreferences.GRID_SPACING_MAX; gridSpacing += GridPreferences.GRID_SPACING_STEP) {

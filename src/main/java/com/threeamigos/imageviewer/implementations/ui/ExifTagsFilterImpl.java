@@ -2,6 +2,8 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -48,9 +51,14 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	private final ExifImageReader imageReader;
 	private final MessageHandler messageHandler;
 
-	private boolean selectionSuccesful = false;
 	private Map<File, ExifMap> filesToTagsMap;
 	private Map<ExifTag, JList<ExifValue>> tagsToSelectedValues;
+
+	JDialog dialog;
+	JButton okButton;
+	JButton cancelButton;
+	boolean selectionSuccessful;
+	int matchingFiles;
 
 	public ExifTagsFilterImpl(ExifImageReader imageReader, MessageHandler messageHandler) {
 		this.imageReader = imageReader;
@@ -68,7 +76,6 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		}
 
 		TagsClassifier tagsClassifier = new TagsClassifierImpl();
-
 		tagsClassifier.classifyTags(filesToTagsMap.values());
 
 		Map<ExifTag, Collection<ExifValue>> tagsToFilterBy = findTagsBy(tagsClassifier, ExifTag.CAMERA_MODEL,
@@ -83,15 +90,39 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		if (filteredTags == null) {
 			return Collections.emptyList();
+		} else {
+			return getFilesBySelection(filteredTags);
+		}
+	}
+
+	private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
+		Map<ExifTag, Collection<ExifValue>> selectionMap = new EnumMap<>(ExifTag.class);
+
+		for (ExifTag exifTag : map.keySet()) {
+			JList<ExifValue> list = tagsToSelectedValues.get(exifTag);
+			List<ExifValue> selectedValues = list.getSelectedValuesList();
+			if (!selectedValues.isEmpty()) {
+				selectionMap.put(exifTag, selectedValues);
+			}
 		}
 
-		return getFilesBySelection(filteredTags);
+		return selectionMap;
+	}
+
+	private Collection<File> getFilesBySelection(Map<ExifTag, Collection<ExifValue>> selectionMap) {
+		List<File> filesToLoad = new ArrayList<>();
+		for (Entry<File, ExifMap> entry : filesToTagsMap.entrySet()) {
+			File file = entry.getKey();
+			ExifMap exifMap = entry.getValue();
+			if (exifMap.matches(selectionMap)) {
+				filesToLoad.add(file);
+			}
+		}
+		return filesToLoad;
 	}
 
 	private void mapFilesToTags(Collection<File> files) {
-
 		filesToTagsMap = new HashMap<>();
-
 		for (File file : files) {
 			if (file.isFile()) {
 				Optional<ExifMap> exifMapOpt = imageReader.readExifMap(file);
@@ -117,7 +148,9 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
-		JLabel matchingFilesLabel = new JLabel("All " + filesToTagsMap.size() + " files match");
+		matchingFiles = filesToTagsMap.size();
+		JLabel matchingFilesLabel = new JLabel();
+		buildMatchingFilesLabel(matchingFilesLabel);
 
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
@@ -135,37 +168,69 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		mainPanel.add(createMatchingFilesPanel(matchingFilesLabel));
 
+		mainPanel.add(Box.createVerticalStrut(5));
+
+		mainPanel.add(createOkCancelPanel());
+
 		mainPanel.setPreferredSize(new Dimension(480, 400));
 
-		String[] options = { OK_OPTION, CANCEL_OPTION };
+		JOptionPane optionPane = new JOptionPane();
+		optionPane.setMessage(mainPanel);
+		JButton[] options = new JButton[2];
+		options[0] = okButton;
+		options[1] = cancelButton;
+		optionPane.setOptions(options);
 
-		JOptionPane optionPane = new JOptionPane(mainPanel, -1, JOptionPane.OK_CANCEL_OPTION, null, options,
-				options[1]);
-
-		JDialog dialog = optionPane.createDialog(component, "Select tags to filter by");
+		dialog = optionPane.createDialog(component, "Select tags to filter by");
 
 		dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				dialog.setVisible(false);
+				selectionSuccessful = false;
 			}
 		});
 
 		dialog.pack();
 		dialog.setVisible(true);
-
-		if (OK_OPTION.equals(optionPane.getValue())) {
-			selectionSuccesful = true;
-		}
-
+		// At this point flow is suspended until the user selects ok or cancel
 		dialog.dispose();
 
-		if (!selectionSuccesful) {
+		if (!selectionSuccessful) {
 			return null;
 		}
 
 		return createSelectionMap(map);
+	}
+
+	private Component createOkCancelPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+		okButton = new JButton("Ok");
+		okButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				selectionSuccessful = true;
+				dialog.setVisible(false);
+			}
+		});
+		panel.add(okButton);
+		updateOkButtonStatus();
+
+		panel.add(Box.createHorizontalStrut(10));
+
+		cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				selectionSuccessful = false;
+				dialog.setVisible(false);
+			}
+		});
+		panel.add(cancelButton);
+		return panel;
 	}
 
 	private JPanel createSelectionTagsPanel(Map<ExifTag, Collection<ExifValue>> map, JLabel matchingFilesLabel) {
@@ -209,21 +274,14 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				String newLabel;
 				Map<ExifTag, Collection<ExifValue>> selectionMap = createSelectionMap(map);
 				if (selectionMap.isEmpty()) {
-					newLabel = "All " + filesToTagsMap.size() + " files match";
+					matchingFiles = filesToTagsMap.size();
 				} else {
-					int matchingFiles = getFilesBySelection(selectionMap).size();
-					if (matchingFiles == 0) {
-						newLabel = "No files match";
-					} else if (matchingFiles == 1) {
-						newLabel = "One file matches";
-					} else {
-						newLabel = String.format("%d files match", matchingFiles);
-					}
+					matchingFiles = getFilesBySelection(selectionMap).size();
 				}
-				matchingFilesLabel.setText(newLabel);
+				buildMatchingFilesLabel(matchingFilesLabel);
+				updateOkButtonStatus();
 			}
 		});
 
@@ -236,50 +294,32 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return listPanel;
 	}
 
+	private void buildMatchingFilesLabel(JLabel matchingFilesLabel) {
+		String newLabel;
+		if (matchingFiles == 0) {
+			newLabel = "No file matches.";
+		} else if (matchingFiles == 1) {
+			newLabel = "One file matches.";
+		} else {
+			newLabel = String.format("%d files match.", matchingFiles);
+		}
+
+		if (matchingFiles > MAX_SELECTABLE_FILES_PER_GROUP) {
+			newLabel += String.format("  Please add some filters.");
+		}
+		matchingFilesLabel.setText(newLabel);
+	}
+
+	private void updateOkButtonStatus() {
+		okButton.setEnabled(matchingFiles <= MAX_SELECTABLE_FILES_PER_GROUP);
+	}
+
 	private JPanel createMatchingFilesPanel(JLabel matchingFilesLabel) {
 		JPanel matchingFilesPanel = new JPanel();
 		matchingFilesPanel.setLayout(new BoxLayout(matchingFilesPanel, BoxLayout.LINE_AXIS));
 		matchingFilesPanel.add(matchingFilesLabel);
 		matchingFilesPanel.add(Box.createHorizontalGlue());
 		return matchingFilesPanel;
-	}
-
-	private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
-		Map<ExifTag, Collection<ExifValue>> selectionMap = new EnumMap<>(ExifTag.class);
-
-		for (ExifTag exifTag : map.keySet()) {
-			JList<ExifValue> list = tagsToSelectedValues.get(exifTag);
-			List<ExifValue> selectedValues = list.getSelectedValuesList();
-			if (!selectedValues.isEmpty()) {
-				selectionMap.put(exifTag, selectedValues);
-			}
-		}
-
-		return selectionMap;
-	}
-
-	private Collection<File> getFilesBySelection(Map<ExifTag, Collection<ExifValue>> selectionMap) {
-		List<File> filesToLoad = new ArrayList<>();
-		for (Entry<File, ExifMap> entry : filesToTagsMap.entrySet()) {
-			File file = entry.getKey();
-			ExifMap exifMap = entry.getValue();
-			if (exifMapMatchesSelection(exifMap, selectionMap)) {
-				filesToLoad.add(file);
-			}
-		}
-		return filesToLoad;
-	}
-
-	private boolean exifMapMatchesSelection(ExifMap exifMap, Map<ExifTag, Collection<ExifValue>> selectionMap) {
-		for (Map.Entry<ExifTag, Collection<ExifValue>> selectionEntry : selectionMap.entrySet()) {
-			ExifTag selectedTag = selectionEntry.getKey();
-			Collection<ExifValue> selectedValues = selectionEntry.getValue();
-			ExifValue value = exifMap.getExifValue(selectedTag);
-			if (!selectedValues.contains(value)) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 }
