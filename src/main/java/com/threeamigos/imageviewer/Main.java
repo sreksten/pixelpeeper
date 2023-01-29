@@ -90,8 +90,6 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// BUGFIX: empty messages if preferences files are empty/not valid
-
 	// BUGFIX: check the tags filter size - the window may be too big
 
 	// BUGFIX: tags are not semantically sorted
@@ -99,7 +97,9 @@ public class Main {
 	// BUGFIX: images may have a different ordering when reloaded (due to the fact
 	// they're loaded in parallel?)
 
-	// BUGFIX: the big pointer flickers when changed
+	// BUGFIX: the big pointer may flicker when changed
+
+	// BUGFIX: the controls panel's glue seems not to work
 
 	// TODO: zoom based on focal length
 
@@ -107,9 +107,9 @@ public class Main {
 
 	// TODO: image grouping
 
-	// TODO check the InputAdapter of the main canvas
-
 	// TODO highlight function
+
+	// TODO check the InputAdapter of the main canvas
 
 	// TODO: prepare the image with edges instead of drawing it every time ?
 

@@ -16,6 +16,7 @@ public class PreferencesManagerImpl<T extends Preferences> implements Preference
 	private final StatusTracker<T> statusTracker;
 	private final Persister<T> persister;
 	private final MessageHandler messageHandler;
+	private boolean invalidAtLoad;
 
 	public PreferencesManagerImpl(T preferences, String filename, String entityDescription,
 			RootPathProvider rootPathProvider, MessageHandler messageHandler) {
@@ -27,23 +28,30 @@ public class PreferencesManagerImpl<T extends Preferences> implements Preference
 		PersistResult persistResult = persister.load(preferences);
 		if (!persistResult.isSuccessful()) {
 			if (!persistResult.isNotFound()) {
-				messageHandler.handleErrorMessage(persistResult.getError());
+				handleError(persistResult.getError());
+				invalidAtLoad = true;
 			}
 			preferences.loadDefaultValues();
 		} else {
 			try {
 				preferences.validate();
 			} catch (IllegalArgumentException e) {
-				messageHandler.handleErrorMessage(e.getMessage());
+				handleError(e.getMessage());
 				preferences.loadDefaultValues();
+				invalidAtLoad = true;
 			}
 		}
 		statusTracker.loadInitialValues();
 	}
 
+	private void handleError(String error) {
+		messageHandler.handleErrorMessage(preferences.getDescription()
+				+ " were invalid and have been replaced with default values. Error was: " + error);
+	}
+
 	@Override
 	public void persist() {
-		if (statusTracker.hasChanged()) {
+		if (invalidAtLoad || statusTracker.hasChanged()) {
 			PersistResult persistResult = persister.save(preferences);
 			if (!persistResult.isSuccessful()) {
 				messageHandler.handleErrorMessage(persistResult.getError());
