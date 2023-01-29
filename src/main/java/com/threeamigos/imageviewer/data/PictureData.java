@@ -222,7 +222,7 @@ public class PictureData {
 	}
 
 	public void changeZoomLevel(int newZoomLevel) {
-		if (zoomLevel != newZoomLevel) {
+		if (zoomLevel != newZoomLevel || image == null) {
 			zoomLevel = newZoomLevel;
 			releaseEdges();
 			if (zoomLevel == 100) {
