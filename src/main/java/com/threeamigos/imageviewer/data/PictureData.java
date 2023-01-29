@@ -105,19 +105,15 @@ public class PictureData {
 	}
 
 	public Collection<ExifTag> getTags() {
-		return exifMap.getTags();
+		return exifMap.getKeys();
 	}
 
 	public boolean isTagPresent(ExifTag exifTag) {
-		return exifMap.getTags().contains(exifTag);
+		return exifMap.getKeys().contains(exifTag);
 	}
 
 	public String getTagDescriptive(ExifTag exifTag) {
 		return exifMap.getTagDescriptive(exifTag);
-	}
-
-	public Object getTagObject(ExifTag exifTag) {
-		return exifMap.getTagObject(exifTag);
 	}
 
 	public Float getTagValueAsFloat(ExifTag exifTag) {

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifValue;
 
 public interface TagsClassifier {
 
@@ -23,6 +24,6 @@ public interface TagsClassifier {
 
 	public Collection<ExifTag> getCommonTags();
 
-	public Map<ExifTag, Collection<String>> getUncommonTagsToValues();
+	public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues();
 
 }

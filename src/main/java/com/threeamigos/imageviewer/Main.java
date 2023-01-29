@@ -90,16 +90,14 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// BUGFIX: check the tags filter size - the window may be too big
+	// BUGFIX: Canon does not provide the 35mm equivalence tag - fix
+	// DrewNoakesExifReader somehow
 
-	// BUGFIX: tags are not semantically sorted
+	// BUGFIX: check the tags filter size - the window may be too big
 
 	// BUGFIX: the big pointer may flicker when changed
 
 	// BUGFIX: the controls panel's glue seems not to work
-
-	// BUGFIX: Canon does not provide the 35mm equivalence tag - fix
-	// DrewNoakesExifReader somehow
 
 	// TODO: the browse directory should impede to load too many files
 

@@ -4,18 +4,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.drew.lang.Rational;
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
 
 public class ExifMap {
 
-	private Set<ExifTag> tags = new HashSet<>();
-	private Map<ExifTag, String> tagToDescriptions = new EnumMap<>(ExifTag.class);
-	private Map<ExifTag, Object> tagToObjects = new EnumMap<>(ExifTag.class);
+	private Map<ExifTag, ExifValue> map = new EnumMap<>(ExifTag.class);
 
 	// This tag is used more often than others, so we will just avoid getting it
 	// from the map
@@ -25,28 +21,33 @@ public class ExifMap {
 		if (value == null || value.trim().isEmpty()) {
 			return;
 		}
-		tags.add(exifTag);
-		tagToDescriptions.putIfAbsent(exifTag, value);
-		tagToObjects.putIfAbsent(exifTag, object);
+		map.put(exifTag, new ExifValue(value, object));
 	}
 
-	public Collection<ExifTag> getTags() {
-		return tags;
+	public Collection<ExifTag> getKeys() {
+		return map.keySet();
+	}
+
+	public ExifValue getExifValue(ExifTag exifTag) {
+		return map.get(exifTag);
 	}
 
 	public String getTagDescriptive(ExifTag exifTag) {
-		return tagToDescriptions.computeIfAbsent(exifTag, t -> "N/A");
-	}
-
-	public Object getTagObject(ExifTag exifTag) {
-		return tagToObjects.computeIfAbsent(exifTag, t -> "N/A");
+		ExifValue exifValue = map.get(exifTag);
+		if (exifValue == null) {
+			return "N/A";
+		} else {
+			return exifValue.getDescription();
+		}
 	}
 
 	public Float getAsFloat(ExifTag exifTag) {
-		Object object = tagToObjects.get(exifTag);
-		if (object == null) {
+		ExifValue exifValue = map.get(exifTag);
+		if (exifValue == null) {
 			return null;
-		} else if (object instanceof Integer) {
+		}
+		Object object = exifValue.getValue();
+		if (object instanceof Integer) {
 			return Float.valueOf((Integer) object);
 		} else if (object instanceof Float) {
 			return (Float) object;
@@ -60,7 +61,8 @@ public class ExifMap {
 			Rational rational = (Rational) object;
 			return Float.valueOf((float) rational.getNumerator() / (float) rational.getDenominator());
 		} else {
-			throw new IllegalArgumentException("Don't know how to convert an instance of " + object.getClass());
+			throw new IllegalArgumentException(
+					"Don't know how to convert to a float an instance of " + object.getClass());
 		}
 	}
 

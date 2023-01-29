@@ -33,6 +33,7 @@ import javax.swing.event.ListSelectionListener;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
@@ -48,7 +49,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 	private boolean selectionSuccesful = false;
 	private Map<File, ExifMap> filesToTagsMap;
-	private Map<ExifTag, JList<String>> tagsToSelectedValues;
+	private Map<ExifTag, JList<ExifValue>> tagsToSelectedValues;
 
 	public ExifTagsFilterImpl(ExifImageReader imageReader, MessageHandler messageHandler) {
 		this.imageReader = imageReader;
@@ -69,7 +70,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		tagsClassifier.classifyTags(filesToTagsMap.values());
 
-		Map<ExifTag, Collection<String>> tagsToFilterBy = findTagsBy(tagsClassifier, ExifTag.CAMERA_MODEL,
+		Map<ExifTag, Collection<ExifValue>> tagsToFilterBy = findTagsBy(tagsClassifier, ExifTag.CAMERA_MODEL,
 				ExifTag.LENS_MODEL, ExifTag.APERTURE, ExifTag.ISO, ExifTag.EXPOSURE_TIME);
 
 		if (tagsToFilterBy.isEmpty()) {
@@ -77,7 +78,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 			return Collections.emptyList();
 		}
 
-		Map<ExifTag, Collection<String>> filteredTags = filterTags(component, tagsToFilterBy);
+		Map<ExifTag, Collection<ExifValue>> filteredTags = filterTags(component, tagsToFilterBy);
 
 		if (filteredTags == null) {
 			return Collections.emptyList();
@@ -100,17 +101,18 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		}
 	}
 
-	private Map<ExifTag, Collection<String>> findTagsBy(TagsClassifier localCommonTagsHelper, ExifTag... tagsToCheck) {
-		Map<ExifTag, Collection<String>> tagsToFilter = new EnumMap<>(ExifTag.class);
+	private Map<ExifTag, Collection<ExifValue>> findTagsBy(TagsClassifier localTagsClassifier, ExifTag... tagsToCheck) {
+		Map<ExifTag, Collection<ExifValue>> tagsToFilter = new EnumMap<>(ExifTag.class);
 		for (ExifTag exifTag : tagsToCheck) {
-			if (!localCommonTagsHelper.isCommonTag(exifTag)) {
-				tagsToFilter.put(exifTag, localCommonTagsHelper.getUncommonTagsToValues().get(exifTag));
+			if (!localTagsClassifier.isCommonTag(exifTag)) {
+				tagsToFilter.put(exifTag, localTagsClassifier.getUncommonTagsToValues().get(exifTag));
 			}
 		}
 		return tagsToFilter;
 	}
 
-	private Map<ExifTag, Collection<String>> filterTags(Component component, Map<ExifTag, Collection<String>> map) {
+	private Map<ExifTag, Collection<ExifValue>> filterTags(Component component,
+			Map<ExifTag, Collection<ExifValue>> map) {
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
@@ -119,7 +121,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
-		for (Entry<ExifTag, Collection<String>> entry : map.entrySet()) {
+		for (Entry<ExifTag, Collection<ExifValue>> entry : map.entrySet()) {
 
 			panel.add(createListPanel(map, entry, matchingFilesLabel));
 
@@ -166,23 +168,31 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return createSelectionMap(map);
 	}
 
-	private JPanel createListPanel(Map<ExifTag, Collection<String>> map, Entry<ExifTag, Collection<String>> entry,
+	private JPanel createListPanel(Map<ExifTag, Collection<ExifValue>> map, Entry<ExifTag, Collection<ExifValue>> entry,
 			JLabel matchingFilesLabel) {
 
 		ExifTag tag = entry.getKey();
 
-		List<String> values = new ArrayList<>();
+		List<ExifValue> values = new ArrayList<>();
 		values.addAll(entry.getValue());
-		Collections.sort(values);
+		Collections.sort(values, (ev1, ev2) -> {
+			if (ev1 == null) {
+				return -1;
+			} else if (ev2 == null) {
+				return 1;
+			} else {
+				return ev1.asComparable().compareTo(ev2.asComparable());
+			}
+		});
 
-		JList<String> list = new JList(values.toArray());
+		JList<ExifValue> list = new JList(values.toArray());
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		list.setFixedCellWidth(400);
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				String newLabel;
-				Map<ExifTag, Collection<String>> selectionMap = createSelectionMap(map);
+				Map<ExifTag, Collection<ExifValue>> selectionMap = createSelectionMap(map);
 				if (selectionMap.isEmpty()) {
 					newLabel = "All files match";
 				} else {
@@ -216,12 +226,12 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return matchingFilesPanel;
 	}
 
-	private Map<ExifTag, Collection<String>> createSelectionMap(Map<ExifTag, Collection<String>> map) {
-		Map<ExifTag, Collection<String>> selectionMap = new EnumMap<>(ExifTag.class);
+	private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
+		Map<ExifTag, Collection<ExifValue>> selectionMap = new EnumMap<>(ExifTag.class);
 
 		for (ExifTag exifTag : map.keySet()) {
-			JList<String> list = tagsToSelectedValues.get(exifTag);
-			List<String> selectedValues = list.getSelectedValuesList();
+			JList<ExifValue> list = tagsToSelectedValues.get(exifTag);
+			List<ExifValue> selectedValues = list.getSelectedValuesList();
 			if (!selectedValues.isEmpty()) {
 				selectionMap.put(exifTag, selectedValues);
 			}
@@ -230,7 +240,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return selectionMap;
 	}
 
-	private Collection<File> getFilesBySelection(Map<ExifTag, Collection<String>> selectionMap) {
+	private Collection<File> getFilesBySelection(Map<ExifTag, Collection<ExifValue>> selectionMap) {
 		List<File> filesToLoad = new ArrayList<>();
 		for (Entry<File, ExifMap> entry : filesToTagsMap.entrySet()) {
 			File file = entry.getKey();
@@ -242,11 +252,11 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return filesToLoad;
 	}
 
-	private boolean exifMapMatchesSelection(ExifMap exifMap, Map<ExifTag, Collection<String>> selectionMap) {
-		for (Map.Entry<ExifTag, Collection<String>> selectionEntry : selectionMap.entrySet()) {
+	private boolean exifMapMatchesSelection(ExifMap exifMap, Map<ExifTag, Collection<ExifValue>> selectionMap) {
+		for (Map.Entry<ExifTag, Collection<ExifValue>> selectionEntry : selectionMap.entrySet()) {
 			ExifTag selectedTag = selectionEntry.getKey();
-			Collection<String> selectedValues = selectionEntry.getValue();
-			String value = exifMap.getTagDescriptive(selectedTag);
+			Collection<ExifValue> selectedValues = selectionEntry.getValue();
+			ExifValue value = exifMap.getExifValue(selectedTag);
 			if (!selectedValues.contains(value)) {
 				return false;
 			}

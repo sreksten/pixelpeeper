@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Optional;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.lang.Rational;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
@@ -153,11 +152,10 @@ public class DrewNoakesExifReader implements ExifReader {
 		String cameraModel = exifMap.getTagDescriptive(ExifTag.CAMERA_MODEL);
 		if ("Canon EOS RP".equals(cameraModel)) {
 			String focalLengthDescriptive = exifMap.getTagDescriptive(ExifTag.FOCAL_LENGTH);
-			Object object = exifMap.getTagObject(ExifTag.FOCAL_LENGTH);
+			Float object = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH);
 			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLengthDescriptive, object);
 		} else if ("Canon EOS 200D".equals(cameraModel)) {
-			Rational rational = (Rational) exifMap.getTagObject(ExifTag.FOCAL_LENGTH);
-			int focalLength = (int) (rational.getNumerator() / rational.getDenominator() * 1.6f);
+			Float focalLength = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH) * 1.6f;
 			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLength + "mm", focalLength);
 		}
 

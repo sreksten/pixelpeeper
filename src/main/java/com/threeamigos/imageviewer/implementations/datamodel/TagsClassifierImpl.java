@@ -11,12 +11,13 @@ import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 
 public class TagsClassifierImpl implements TagsClassifier {
 
 	private Collection<ExifTag> commonTags;
-	private Map<ExifTag, Collection<String>> uncommonTagsToValues;
+	private Map<ExifTag, Collection<ExifValue>> uncommonTagsToValues;
 	private int mappedPictures;
 
 	@Override
@@ -26,10 +27,10 @@ public class TagsClassifierImpl implements TagsClassifier {
 		mappedPictures = exifMaps.size();
 
 		Set<ExifTag> allTags = new HashSet<>();
-		exifMaps.forEach(map -> allTags.addAll(map.getTags()));
+		exifMaps.forEach(map -> allTags.addAll(map.getKeys()));
 
 		for (ExifTag tag : allTags) {
-			Collection<String> values = exifMaps.stream().map(exifMap -> exifMap.getTagDescriptive(tag))
+			Collection<ExifValue> values = exifMaps.stream().map(exifMap -> exifMap.getExifValue(tag))
 					.collect(Collectors.toSet());
 			if (values.size() == 1) {
 				commonTags.add(tag);
@@ -55,7 +56,7 @@ public class TagsClassifierImpl implements TagsClassifier {
 	}
 
 	@Override
-	public Map<ExifTag, Collection<String>> getUncommonTagsToValues() {
+	public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues() {
 		return Collections.unmodifiableMap(uncommonTagsToValues);
 	}
 
