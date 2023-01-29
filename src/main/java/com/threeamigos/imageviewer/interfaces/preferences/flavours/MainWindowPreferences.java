@@ -8,6 +8,9 @@ package com.threeamigos.imageviewer.interfaces.preferences.flavours;
  */
 public interface MainWindowPreferences extends WindowPreferences {
 
+	public static final int MIN_WIDTH = 800;
+	public static final int MIN_HEIGHT = 600;
+
 	default String getDescription() {
 		return "Main window preferences";
 	}

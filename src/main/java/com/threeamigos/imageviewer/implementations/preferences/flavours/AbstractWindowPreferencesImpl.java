@@ -7,8 +7,8 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPrefere
 
 public abstract class AbstractWindowPreferencesImpl implements WindowPreferences {
 
-	private int width;
-	private int height;
+	protected int width;
+	protected int height;
 	private int x;
 	private int y;
 
@@ -53,13 +53,21 @@ public abstract class AbstractWindowPreferencesImpl implements WindowPreferences
 	}
 
 	protected void checkBoundaries(String windowName) throws IllegalArgumentException {
-		if (width <= 0) {
-			throw new IllegalArgumentException(
-					String.format("Invalid %s window preferences: width must be greater than 0", windowName));
+		checkMinWidth(windowName, 0);
+		checkMinHeight(windowName, 0);
+	}
+
+	protected void checkMinWidth(String windowName, int minDimension) {
+		if (width <= minDimension) {
+			throw new IllegalArgumentException(String
+					.format("Invalid %s window preferences: width must be greater than %d", windowName, minDimension));
 		}
-		if (height <= 0) {
-			throw new IllegalArgumentException(
-					String.format("Invalid %s window preferences: height must be greater than 0", windowName));
+	}
+
+	protected void checkMinHeight(String windowName, int minDimension) {
+		if (height <= minDimension) {
+			throw new IllegalArgumentException(String
+					.format("Invalid %s window preferences: height must be greater than %d", windowName, minDimension));
 		}
 	}
 

@@ -6,7 +6,8 @@ public class MainWindowPreferencesImpl extends AbstractWindowPreferencesImpl imp
 
 	@Override
 	public void validate() {
-		checkBoundaries("main");
+		checkMinWidth("main", MIN_WIDTH);
+		checkMinHeight("main", MIN_HEIGHT);
 	}
 
 }
