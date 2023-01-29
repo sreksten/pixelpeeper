@@ -347,26 +347,28 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 		private BufferedImage loadCropAndResizeImage(File file) {
 			try {
 				PictureData pictureData = exifImageReader.readImage(file);
-				BufferedImage image = pictureData.getImage();
-				int width = image.getWidth();
-				int height = image.getHeight();
-				if (width > 256 || height > 256) {
-					int minDimension = width >= height ? height : width;
-					image = image.getSubimage((width - minDimension) / 2, (height - minDimension) / 2, minDimension,
-							minDimension);
-					BufferedImage scaledImage = new BufferedImage(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
-							SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, image.getType());
-					Graphics2D g2d = scaledImage.createGraphics();
-					g2d.drawImage(image, 0, 0, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
-							null);
-					g2d.dispose();
-					image = scaledImage;
+				if (pictureData != null) {
+					BufferedImage image = pictureData.getImage();
+					int width = image.getWidth();
+					int height = image.getHeight();
+					if (width > 256 || height > 256) {
+						int minDimension = width >= height ? height : width;
+						image = image.getSubimage((width - minDimension) / 2, (height - minDimension) / 2, minDimension,
+								minDimension);
+						BufferedImage scaledImage = new BufferedImage(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+								SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, image.getType());
+						Graphics2D g2d = scaledImage.createGraphics();
+						g2d.drawImage(image, 0, 0, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+								null);
+						g2d.dispose();
+						image = scaledImage;
+					}
+					return image;
 				}
-				return image;
 			} catch (Exception e) {
 				exceptionHandler.handleException(e);
-				return null;
 			}
+			return null;
 		}
 
 	}

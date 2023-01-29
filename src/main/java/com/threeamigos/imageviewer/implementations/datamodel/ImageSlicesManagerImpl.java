@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
-import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -34,6 +34,10 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	private ImageSlice activeSlice;
 
+	private Float firstFocalLength;
+	private Float firstFocalLength35mmEquivalent;
+	private Float firstCropFactor;
+
 	public ImageSlicesManagerImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			FontService fontService) {
@@ -49,6 +53,8 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void clear() {
 		imageSlices.clear();
+		firstFocalLength35mmEquivalent = null;
+		firstCropFactor = null;
 	}
 
 	@Override
@@ -81,6 +87,15 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
+		Float focalLength = imageSlice.getPictureData().getFocalLength();
+		Float focalLength35mmEquivalent = imageSlice.getPictureData().getFocalLength35mmEquivalent();
+		Float cropFactor = imageSlice.getPictureData().getCropFactor();
+		if (focalLength != null && focalLength35mmEquivalent != null && cropFactor != null
+				&& firstFocalLength35mmEquivalent == null) {
+			firstFocalLength = focalLength;
+			firstFocalLength35mmEquivalent = focalLength35mmEquivalent;
+			firstCropFactor = cropFactor;
+		}
 		return imageSlice;
 	}
 
@@ -123,7 +138,23 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	@Override
 	public void changeZoomLevel() {
-		imageSlices.forEach(ImageSlice::changeZoomLevel);
+		float baseZoomLevel = imageHandlingPreferences.getZoomLevel();
+		for (ImageSlice imageSlice : imageSlices) {
+			float zoomLevel = baseZoomLevel;
+			if (imageHandlingPreferences.isNormalizedForCrop()) {
+				Float cropFactor = imageSlice.getPictureData().getCropFactor();
+				if (firstCropFactor != null && cropFactor != null) {
+					zoomLevel = zoomLevel * firstCropFactor / cropFactor;
+				}
+			}
+			if (imageHandlingPreferences.isNormalizedForFocalLength()) {
+				Float focalLength = imageSlice.getPictureData().getFocalLength();
+				if (firstFocalLength != null && focalLength != null) {
+					zoomLevel = zoomLevel * firstFocalLength / focalLength;
+				}
+			}
+			imageSlice.changeZoomLevel((int) zoomLevel);
+		}
 	}
 
 	@Override

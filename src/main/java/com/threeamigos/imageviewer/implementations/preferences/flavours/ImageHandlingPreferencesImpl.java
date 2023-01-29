@@ -11,10 +11,12 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChang
 public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHandlingPreferences {
 
 	private boolean autorotation;
+	private int zoomLevel;
+	private boolean normalizedForCrop;
+	private boolean normalizedForFocalLength;
 	private boolean movementInPercentage;
 	private boolean movementAppliedToAllImages;
 	private boolean positionMiniatureVisible;
-	private int zoomLevel;
 	private ImageReaderFlavour imageReaderFlavour;
 	private ExifReaderFlavour metadataReaderFlavour;
 
@@ -29,6 +31,45 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	@Override
 	public boolean isAutorotation() {
 		return autorotation;
+	}
+
+	@Override
+	public void setZoomLevel(int zoomLevel) {
+		int previousLevel = this.zoomLevel;
+		if (zoomLevel < MIN_ZOOM_LEVEL) {
+			zoomLevel = MIN_ZOOM_LEVEL;
+		} else if (zoomLevel > MAX_ZOOM_LEVEL) {
+			zoomLevel = MAX_ZOOM_LEVEL;
+		}
+		this.zoomLevel = zoomLevel;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, previousLevel, zoomLevel);
+	}
+
+	@Override
+	public int getZoomLevel() {
+		return zoomLevel;
+	}
+
+	@Override
+	public void setNormalizedForCrop(boolean normalizedForCrop) {
+		this.normalizedForCrop = normalizedForCrop;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, null, null);
+	}
+
+	@Override
+	public boolean isNormalizedForCrop() {
+		return normalizedForCrop;
+	}
+
+	@Override
+	public void setNormalizedForFocalLength(boolean normalizedForFocalLength) {
+		this.normalizedForFocalLength = normalizedForFocalLength;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, null, null);
+	}
+
+	@Override
+	public boolean isNormalizedForFocalLength() {
+		return normalizedForFocalLength;
 	}
 
 	@Override
@@ -58,23 +99,6 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	public boolean isPositionMiniatureVisible() {
 		return positionMiniatureVisible;
-	}
-
-	@Override
-	public void setZoomLevel(int zoomLevel) {
-		int previousLevel = this.zoomLevel;
-		if (zoomLevel < MIN_ZOOM_LEVEL) {
-			zoomLevel = MIN_ZOOM_LEVEL;
-		} else if (zoomLevel > MAX_ZOOM_LEVEL) {
-			zoomLevel = MAX_ZOOM_LEVEL;
-		}
-		this.zoomLevel = zoomLevel;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, previousLevel, zoomLevel);
-	}
-
-	@Override
-	public int getZoomLevel() {
-		return zoomLevel;
 	}
 
 	@Override

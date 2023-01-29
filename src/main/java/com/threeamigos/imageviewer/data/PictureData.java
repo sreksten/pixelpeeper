@@ -41,6 +41,12 @@ public class PictureData {
 	private int height;
 	private BufferedImage image;
 
+	private Float focalLength;
+	private Float focalLength35mmEquivalent;
+	private Float cropFactor;
+
+	private int zoomLevel;
+
 	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorFactory edgesDetectorFactory) {
@@ -58,7 +64,20 @@ public class PictureData {
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
-		correctForZoom();
+		calculateCropFactor();
+
+		this.zoomLevel = 100;
+		changeZoomLevel(imageHandlingPreferences.getZoomLevel());
+	}
+
+	private void calculateCropFactor() {
+		focalLength = getTagValueAsFloat(ExifTag.FOCAL_LENGTH);
+		focalLength35mmEquivalent = getTagValueAsFloat(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
+		if (focalLength != null && focalLength35mmEquivalent != null) {
+			cropFactor = focalLength35mmEquivalent / focalLength;
+		} else {
+			cropFactor = null;
+		}
 	}
 
 	public int getWidth() {
@@ -67,6 +86,18 @@ public class PictureData {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public Float getFocalLength() {
+		return focalLength;
+	}
+
+	public Float getFocalLength35mmEquivalent() {
+		return focalLength35mmEquivalent;
+	}
+
+	public Float getCropFactor() {
+		return cropFactor;
 	}
 
 	public ExifMap getExifMap() {
@@ -89,6 +120,10 @@ public class PictureData {
 		return exifMap.getTagObject(exifTag);
 	}
 
+	public Float getTagValueAsFloat(ExifTag exifTag) {
+		return exifMap.getAsFloat(exifTag);
+	}
+
 	public BufferedImage getImage() {
 		return image;
 	}
@@ -106,7 +141,7 @@ public class PictureData {
 			if (!orientationAdjusted) {
 				sourceImage = ExifOrientationHelper.correctOrientation(sourceImage, orientation);
 				swapDimensionsIfNeeded();
-				correctForZoom();
+				changeZoomLevel(zoomLevel);
 				orientationAdjusted = true;
 			}
 		}
@@ -117,7 +152,7 @@ public class PictureData {
 			if (orientationAdjusted) {
 				sourceImage = ExifOrientationHelper.undoOrientationCorrection(sourceImage, orientation);
 				swapDimensionsIfNeeded();
-				correctForZoom();
+				changeZoomLevel(zoomLevel);
 				orientationAdjusted = false;
 			}
 		}
@@ -190,23 +225,26 @@ public class PictureData {
 		}
 	}
 
-	public void correctForZoom() {
-		releaseEdges();
-		int zoomLevel = imageHandlingPreferences.getZoomLevel();
-		if (zoomLevel == 100) {
-			width = sourceWidth;
-			height = sourceHeight;
-			image = sourceImage;
-		} else {
-			width = sourceWidth * zoomLevel / 100;
-			height = sourceHeight * zoomLevel / 100;
-			image = new BufferedImage(width, height, sourceImage.getType());
-			Graphics2D graphics = image.createGraphics();
-			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
-			graphics.dispose();
-		}
-		if (edgesDetectorPreferences.isShowEdges()) {
-			startEdgesCalculation();
+	public void changeZoomLevel(int newZoomLevel) {
+		if (zoomLevel != newZoomLevel) {
+			zoomLevel = newZoomLevel;
+			releaseEdges();
+			if (zoomLevel == 100) {
+				width = sourceWidth;
+				height = sourceHeight;
+				image = sourceImage;
+			} else {
+				width = sourceWidth * zoomLevel / 100;
+				height = sourceHeight * zoomLevel / 100;
+				image = new BufferedImage(width, height, sourceImage.getType());
+				Graphics2D graphics = image.createGraphics();
+				graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1,
+						null);
+				graphics.dispose();
+			}
+			if (edgesDetectorPreferences.isShowEdges()) {
+				startEdgesCalculation();
+			}
 		}
 	}
 }

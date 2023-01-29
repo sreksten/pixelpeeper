@@ -76,8 +76,14 @@ public class DataModelImpl implements DataModel {
 					}
 				}
 			});
-			files.forEach(file -> imageSlicesManager.createImageSlice(loadedPictures.get(file)));
+			for (File file : files) {
+				PictureData pictureData = loadedPictures.get(file);
+				if (pictureData != null) {
+					imageSlicesManager.createImageSlice(pictureData);
+				}
+			}
 			imageSlicesManager.resetMovement();
+			imageSlicesManager.changeZoomLevel();
 			tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
 			pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));

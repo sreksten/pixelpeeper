@@ -98,7 +98,8 @@ public class Main {
 
 	// BUGFIX: the controls panel's glue seems not to work
 
-	// TODO: zoom based on focal length
+	// BUGFIX: Canon does not provide the 35mm equivalence tag - fix
+	// DrewNoakesExifReader somehow
 
 	// TODO: the browse directory should impede to load too many files
 

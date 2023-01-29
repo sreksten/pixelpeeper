@@ -12,9 +12,9 @@ import java.beans.PropertyChangeSupport;
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
-import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
+import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -105,8 +105,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	}
 
 	@Override
-	public void changeZoomLevel() {
-		pictureData.correctForZoom();
+	public void changeZoomLevel(int zoomLevel) {
+		pictureData.changeZoomLevel(zoomLevel);
 	}
 
 	@Override

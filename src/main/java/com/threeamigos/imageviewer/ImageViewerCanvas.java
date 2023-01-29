@@ -248,6 +248,16 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 					repaint();
 				});
+		addCheckboxMenuItem(imageHandlingMenu, "Normalize for crop factor", -1,
+				imageHandlingPreferences.isNormalizedForCrop(), event -> {
+					imageHandlingPreferences.setNormalizedForCrop(!imageHandlingPreferences.isNormalizedForCrop());
+					repaint();
+				});
+		addCheckboxMenuItem(imageHandlingMenu, "Normalize for focal length", -1,
+				imageHandlingPreferences.isNormalizedForFocalLength(), event -> {
+					imageHandlingPreferences.setNormalizedForFocalLength(!imageHandlingPreferences.isNormalizedForFocalLength());
+					repaint();
+				});
 
 		JMenu gridSpacingMenu = new JMenu("Grid spacing");
 		imageHandlingMenu.add(gridSpacingMenu);

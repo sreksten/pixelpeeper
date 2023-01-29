@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Optional;
 
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.lang.Rational;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
@@ -11,6 +12,7 @@ import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.makernotes.CanonMakernoteDirectory;
 import com.drew.metadata.exif.makernotes.NikonType1MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.NikonType2MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.PanasonicMakernoteDirectory;
@@ -37,10 +39,10 @@ public class DrewNoakesExifReader implements ExifReader {
 
 	boolean consume() {
 
-		// printAllTags(metadata);
-
 		try {
 			Metadata metadata = ImageMetadataReader.readMetadata(file);
+
+			// printAllTags(metadata);
 
 			for (Directory directory : metadata.getDirectories()) {
 				Class<? extends Directory> directoryClass = directory.getClass();
@@ -56,6 +58,8 @@ public class DrewNoakesExifReader implements ExifReader {
 					consumeNikon1((NikonType1MakernoteDirectory) directory);
 				} else if (directoryClass.equals(NikonType2MakernoteDirectory.class)) {
 					consumeNikon2((NikonType2MakernoteDirectory) directory);
+				} else if (directoryClass.equals(CanonMakernoteDirectory.class)) {
+					consumeCanon((CanonMakernoteDirectory) directory);
 				}
 			}
 
@@ -95,6 +99,7 @@ public class DrewNoakesExifReader implements ExifReader {
 	}
 
 	private void consumeImage(ExifSubIFDDirectory directory) {
+		consume(directory, ExifTag.LENS_MODEL, ExifDirectoryBase.TAG_LENS_MODEL);
 		consume(directory, ExifTag.LENS_MAXIMUM_APERTURE, ExifDirectoryBase.TAG_MAX_APERTURE);
 		consume(directory, ExifTag.PICTURE_DATE, ExifDirectoryBase.TAG_DATETIME_ORIGINAL);
 		consume(directory, ExifTag.FOCAL_LENGTH, ExifDirectoryBase.TAG_FOCAL_LENGTH);
@@ -139,6 +144,24 @@ public class DrewNoakesExifReader implements ExifReader {
 		consume(directory, ExifTag.LENS_MODEL, NikonType2MakernoteDirectory.TAG_LENS);
 		consume(directory, ExifTag.LENS_FIRMWARE, NikonType2MakernoteDirectory.TAG_FIRMWARE_VERSION);
 		consume(directory, ExifTag.FOCUS_MODE, NikonType2MakernoteDirectory.TAG_AF_TYPE);
+	}
+
+	private void consumeCanon(CanonMakernoteDirectory directory) {
+
+		// FIXME Canon does not provide the FOCAL_LENGTH_35MM_EQUIVALENT
+
+		String cameraModel = exifMap.getTagDescriptive(ExifTag.CAMERA_MODEL);
+		if ("Canon EOS RP".equals(cameraModel)) {
+			String focalLengthDescriptive = exifMap.getTagDescriptive(ExifTag.FOCAL_LENGTH);
+			Object object = exifMap.getTagObject(ExifTag.FOCAL_LENGTH);
+			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLengthDescriptive, object);
+		} else if ("Canon EOS 200D".equals(cameraModel)) {
+			Rational rational = (Rational) exifMap.getTagObject(ExifTag.FOCAL_LENGTH);
+			int focalLength = (int) (rational.getNumerator() / rational.getDenominator() * 1.6f);
+			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLength + "mm", focalLength);
+		}
+
+		// https://exiftool.org/TagNames/Canon.html#SensorInfo
 	}
 
 	private void consume(Directory directory, ExifTag exifTag, int tag) {
