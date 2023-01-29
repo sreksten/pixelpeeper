@@ -111,10 +111,6 @@ public class Main {
 
 	// TODO: set up an unique queue for message processing?
 
-	// TODO: if the edges preference window is changed to a non-dialog window, the
-	// menu should be switched off (or the window itself should be shut down and
-	// called once again)
-
 	// TODO: drag and drop window with an image instead of text (or both)
 
 	// TODO: lens manufacturer

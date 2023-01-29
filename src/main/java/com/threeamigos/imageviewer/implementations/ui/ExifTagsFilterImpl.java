@@ -45,11 +45,10 @@ import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 
 public class ExifTagsFilterImpl implements ExifTagsFilter {
 
-	private static final String OK_OPTION = "OK";
-	private static final String CANCEL_OPTION = "Cancel";
-
 	private final ExifImageReader imageReader;
 	private final MessageHandler messageHandler;
+
+	private List<ExifTag> selectableTags = new ArrayList<>();
 
 	private Map<File, ExifMap> filesToTagsMap;
 	private Map<ExifTag, JList<ExifValue>> tagsToSelectedValues;
@@ -78,8 +77,14 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		TagsClassifier tagsClassifier = new TagsClassifierImpl();
 		tagsClassifier.classifyTags(filesToTagsMap.values());
 
-		Map<ExifTag, Collection<ExifValue>> tagsToFilterBy = findTagsBy(tagsClassifier, ExifTag.CAMERA_MODEL,
-				ExifTag.LENS_MODEL, ExifTag.APERTURE, ExifTag.ISO, ExifTag.EXPOSURE_TIME);
+		selectableTags = new ArrayList<>();
+		selectableTags.add(ExifTag.CAMERA_MODEL);
+		selectableTags.add(ExifTag.LENS_MODEL);
+		selectableTags.add(ExifTag.APERTURE);
+		selectableTags.add(ExifTag.ISO);
+		selectableTags.add(ExifTag.EXPOSURE_TIME);
+
+		Map<ExifTag, Collection<ExifValue>> tagsToFilterBy = tagsClassifier.getUncommonTagsToValues(selectableTags);
 
 		if (tagsToFilterBy.isEmpty()) {
 			messageHandler.handleWarnMessage("Images do not have different tags to filter by.");
@@ -95,6 +100,19 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		}
 	}
 
+	private void mapFilesToTags(Collection<File> files) {
+		filesToTagsMap = new HashMap<>();
+		for (File file : files) {
+			if (file.isFile()) {
+				Optional<ExifMap> exifMapOpt = imageReader.readExifMap(file);
+				if (exifMapOpt.isPresent()) {
+					filesToTagsMap.put(file, exifMapOpt.get());
+				}
+			}
+		}
+	}
+
+	////
 	private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
 		Map<ExifTag, Collection<ExifValue>> selectionMap = new EnumMap<>(ExifTag.class);
 
@@ -121,26 +139,14 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return filesToLoad;
 	}
 
-	private void mapFilesToTags(Collection<File> files) {
-		filesToTagsMap = new HashMap<>();
-		for (File file : files) {
-			if (file.isFile()) {
-				Optional<ExifMap> exifMapOpt = imageReader.readExifMap(file);
-				if (exifMapOpt.isPresent()) {
-					filesToTagsMap.put(file, exifMapOpt.get());
-				}
-			}
-		}
-	}
-
-	private Map<ExifTag, Collection<ExifValue>> findTagsBy(TagsClassifier localTagsClassifier, ExifTag... tagsToCheck) {
-		Map<ExifTag, Collection<ExifValue>> tagsToFilter = new EnumMap<>(ExifTag.class);
-		for (ExifTag exifTag : tagsToCheck) {
+	private Collection<ExifTag> findTagsForGrouping(TagsClassifier localTagsClassifier) {
+		List<ExifTag> tagsForGrouping = new ArrayList<>();
+		for (ExifTag exifTag : selectableTags) {
 			if (!localTagsClassifier.isCommonTag(exifTag)) {
-				tagsToFilter.put(exifTag, localTagsClassifier.getUncommonTagsToValues().get(exifTag));
+				tagsForGrouping.add(exifTag);
 			}
 		}
-		return tagsToFilter;
+		return tagsForGrouping;
 	}
 
 	private Map<ExifTag, Collection<ExifValue>> filterTags(Component component,

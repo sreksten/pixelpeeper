@@ -26,4 +26,6 @@ public interface TagsClassifier {
 
 	public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues();
 
+	public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues(Collection<ExifTag> tagsToFilter);
+
 }

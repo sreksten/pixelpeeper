@@ -60,4 +60,16 @@ public class TagsClassifierImpl implements TagsClassifier {
 		return Collections.unmodifiableMap(uncommonTagsToValues);
 	}
 
+	@Override
+	public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues(Collection<ExifTag> tagsToReturn) {
+		Map<ExifTag, Collection<ExifValue>> filteredMap = new EnumMap<>(ExifTag.class);
+		for (ExifTag tag : tagsToReturn) {
+			Collection<ExifValue> values = uncommonTagsToValues.get(tag);
+			if (values != null && !values.isEmpty()) {
+				filteredMap.put(tag, values);
+			}
+		}
+		return Collections.unmodifiableMap(filteredMap);
+	}
+
 }
