@@ -103,7 +103,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	private JMenuItem gridVisibleMenuItem;
 	private JMenuItem miniatureVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
-	private Map<Integer, JMenuItem> zoomByLevel = new HashMap<>();
 
 	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
@@ -142,7 +141,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 		setPreferredSize(new Dimension(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight()));
 		setSize(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight());
-		setMinimumSize(getSize());
+		setMinimumSize(new Dimension(800, 600));
 
 		setBackground(Color.LIGHT_GRAY);
 		setFocusable(true);
@@ -280,19 +279,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
 		}
-		JMenu zoomMenu = new JMenu("Zoom level");
-		imageHandlingMenu.add(zoomMenu);
-		for (int zoomLevel = ImageHandlingPreferences.MIN_ZOOM_LEVEL; zoomLevel <= ImageHandlingPreferences.MAX_ZOOM_LEVEL; zoomLevel += ImageHandlingPreferences.ZOOM_LEVEL_STEP) {
-			final int currentZoom = zoomLevel;
-			JMenuItem zoomLevelItem = addCheckboxMenuItem(zoomMenu, String.valueOf(zoomLevel), -1,
-					zoomLevel == imageHandlingPreferences.getZoomLevel(), event -> {
-						imageHandlingPreferences.setZoomLevel(currentZoom);
-						dataModel.changeZoomLevel();
-						updateZoomLevelMenu(currentZoom);
-						repaint();
-					});
-			zoomByLevel.put(zoomLevel, zoomLevelItem);
-		}
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
@@ -409,12 +395,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		}
 	}
 
-	private void updateZoomLevelMenu(final int zoomLevel) {
-		for (Map.Entry<Integer, JMenuItem> entry : zoomByLevel.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == zoomLevel);
-		}
-	}
-
 	private void updateExifTagMenu(ExifTag exifTag) {
 		JMenu exifTagMenu = exifTagMenusByTag.get(exifTag);
 		Component[] items = exifTagMenu.getMenuComponents();
@@ -465,6 +445,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		for (ImageDecorator decorator : decorators) {
 			decorator.paint(g2d);
 		}
+		requestFocus();
 	}
 
 	@Override
@@ -485,6 +466,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
 			updateGridSpacingMenu(gridPreferences.getGridSpacing());
+			repaint();
+		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			repaint();
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
 			repaint();
@@ -538,23 +521,16 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					int zoomLevel = imageHandlingPreferences.getZoomLevel();
 					if (zoomLevel < ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
 						imageHandlingPreferences.setZoomLevel(zoomLevel + ImageHandlingPreferences.ZOOM_LEVEL_STEP);
-						dataModel.changeZoomLevel();
-						updateZoomLevelMenu(zoomLevel);
-						repaint();
 					}
 					e.consume();
 				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
 					int zoomLevel = imageHandlingPreferences.getZoomLevel();
 					if (zoomLevel > ImageHandlingPreferences.MIN_ZOOM_LEVEL) {
 						imageHandlingPreferences.setZoomLevel(zoomLevel - ImageHandlingPreferences.ZOOM_LEVEL_STEP);
-						dataModel.changeZoomLevel();
-						updateZoomLevelMenu(zoomLevel);
-						repaint();
 					}
 					e.consume();
 				}
 			}
-
 		};
 
 	}

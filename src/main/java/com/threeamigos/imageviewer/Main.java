@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -64,11 +65,11 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWi
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.HintsPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareBigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
@@ -91,12 +92,14 @@ public class Main {
 
 	// BUGFIX: empty messages if preferences files are empty/not valid
 
-	// BUGFIX: check the tags filter size
+	// BUGFIX: check the tags filter size - the window may be too big
 
-	// BUGFIX: tags are not sorted (sorted alphabetically but not semantically)
+	// BUGFIX: tags are not semantically sorted
 
 	// BUGFIX: images may have a different ordering when reloaded (due to the fact
 	// they're loaded in parallel?)
+
+	// TODO: zoom based on focal length
 
 	// TODO: the browse directory should impede to load too many files
 
@@ -112,7 +115,7 @@ public class Main {
 
 	// TODO: set up an unique queue for message processing?
 
-	// TODO: when the edges preference window is changed to a non-dialog window, the
+	// TODO: if the edges preference window is changed to a non-dialog window, the
 	// menu should be switched off (or the window itself should be shut down and
 	// called once again)
 
@@ -144,7 +147,7 @@ public class Main {
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
 		preferencesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
-		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
+		PropertyChangeAwareImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
 		preferencesHelper.register(imageHandlingPreferences, "image_handling.preferences");
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
@@ -206,6 +209,7 @@ public class Main {
 				pathPreferences, edgesDetectorPreferences, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
+		imageHandlingPreferences.addPropertyChangeListener(dataModel);
 
 		// User Interface
 
@@ -241,6 +245,10 @@ public class Main {
 				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
 				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
 		hintsCollector.addHints(imageViewerCanvas);
+		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
+
+		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences);
+		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
@@ -248,7 +256,8 @@ public class Main {
 		JMenuBar menuBar = new JMenuBar();
 		imageViewerCanvas.addMenus(menuBar);
 
-		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, mainWindowPreferences, preferencesHelper);
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences,
+				preferencesHelper);
 
 		jframe.setVisible(true);
 
@@ -257,11 +266,12 @@ public class Main {
 		}
 	}
 
-	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas imageViewerCanvas,
+	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas imageViewerCanvas, ControlsPanel controlsPanel,
 			MainWindowPreferences mainWindowPreferences, Persistable persistable) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
 		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		jframe.setMinimumSize(new Dimension(800, 600));
 
 		jframe.addWindowListener(new WindowAdapter() {
 			@Override
@@ -275,12 +285,7 @@ public class Main {
 
 		jframe.add(imageViewerCanvas, BorderLayout.CENTER);
 
-//		JPanel controlsPanel = new JPanel();
-//		controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.LINE_AXIS));
-//		controlsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-//		controlsPanel.add(Box.createHorizontalGlue());
-//		controlsPanel.add(new JButton("coucou"));
-//		jframe.add(controlsPanel, BorderLayout.SOUTH);
+		jframe.add(controlsPanel, BorderLayout.SOUTH);
 
 		jframe.pack();
 		jframe.setResizable(true);

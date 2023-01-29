@@ -1,10 +1,14 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareImageHandlingPreferences;
 
-public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
+public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHandlingPreferences {
 
 	private boolean autorotation;
 	private boolean movementInPercentage;
@@ -13,6 +17,9 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 	private int zoomLevel;
 	private ImageReaderFlavour imageReaderFlavour;
 	private ExifReaderFlavour metadataReaderFlavour;
+
+	// transient to make Gson serializer ignore this
+	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
 	@Override
 	public void setAutorotation(boolean autorotation) {
@@ -55,7 +62,14 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 
 	@Override
 	public void setZoomLevel(int zoomLevel) {
+		int previousLevel = this.zoomLevel;
+		if (zoomLevel < MIN_ZOOM_LEVEL) {
+			zoomLevel = MIN_ZOOM_LEVEL;
+		} else if (zoomLevel > MAX_ZOOM_LEVEL) {
+			zoomLevel = MAX_ZOOM_LEVEL;
+		}
 		this.zoomLevel = zoomLevel;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, previousLevel, zoomLevel);
 	}
 
 	@Override
@@ -106,4 +120,15 @@ public class ImageHandlingPreferencesImpl implements ImageHandlingPreferences {
 			throw new IllegalArgumentException("Invalid zoom level");
 		}
 	}
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
+	}
+
 }

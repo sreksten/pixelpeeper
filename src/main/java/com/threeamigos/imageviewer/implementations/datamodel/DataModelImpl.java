@@ -198,6 +198,8 @@ public class DataModelImpl implements DataModel {
 			handleEdgeCalculationStarted(evt);
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationCompleted(evt);
+		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
+			changeZoomLevel();
 		}
 	}
 
@@ -217,6 +219,7 @@ public class DataModelImpl implements DataModel {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
+
 				} else if (e.getKeyCode() == KeyEvent.VK_P) {
 					imageHandlingPreferences
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
@@ -231,7 +234,6 @@ public class DataModelImpl implements DataModel {
 					isMovementAppliedToAllImagesTemporarilyInverted = false;
 				}
 			}
-
 		};
 	}
 

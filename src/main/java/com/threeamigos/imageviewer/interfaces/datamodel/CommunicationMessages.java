@@ -18,6 +18,8 @@ public interface CommunicationMessages {
 
 	public static final String GRID_SIZE_CHANGED = "GridSizeChanged";
 
+	public static final String ZOOM_LEVEL_CHANGED = "ZoomLevelChanged";
+
 	public static final String REQUEST_REPAINT = "RequestRepaint";
 
 }
