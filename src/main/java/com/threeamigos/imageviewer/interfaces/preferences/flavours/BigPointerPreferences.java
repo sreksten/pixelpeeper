@@ -27,9 +27,14 @@ public interface BigPointerPreferences extends Preferences {
 
 	public enum Rotation {
 
-		ROTATION_1((float) (7 * Math.PI / 4)), ROTATION_2((float) (6 * Math.PI / 4)),
-		ROTATION_3((float) (5 * Math.PI / 4)), ROTATION_4(0.0f), ROTATION_6((float) (Math.PI)),
-		ROTATION_7((float) (Math.PI / 4)), ROTATION_8((float) (Math.PI / 2)), ROTATION_9((float) (3 * Math.PI / 4));
+		ROTATION_1((float) (7 * Math.PI / 4)),
+		ROTATION_2((float) (6 * Math.PI / 4)),
+		ROTATION_3((float) (5 * Math.PI / 4)),
+		ROTATION_4(0.0f),
+		ROTATION_6((float) (Math.PI)),
+		ROTATION_7((float) (Math.PI / 4)),
+		ROTATION_8((float) (Math.PI / 2)),
+		ROTATION_9((float) (3 * Math.PI / 4));
 
 		private float radians;
 

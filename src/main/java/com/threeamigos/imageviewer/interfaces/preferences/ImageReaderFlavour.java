@@ -2,7 +2,10 @@ package com.threeamigos.imageviewer.interfaces.preferences;
 
 public enum ImageReaderFlavour {
 
-	JAVA("Java ImageIO"), APACHE_COMMONS_IMAGING("Apache Commons Imaging");
+	// Standard java libraries
+	JAVA("Java ImageIO"),
+	// Extern java libraries
+	APACHE_COMMONS_IMAGING("Apache Commons Imaging");
 
 	private String description;
 
