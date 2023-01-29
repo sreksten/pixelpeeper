@@ -1,6 +1,5 @@
 package com.threeamigos.imageviewer.data;
 
-import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
@@ -74,12 +73,12 @@ public class PictureData {
 		return exifMap;
 	}
 
-	public Collection<ExifTag> getAllTags() {
-		return exifMap.getAllTags();
+	public Collection<ExifTag> getTags() {
+		return exifMap.getTags();
 	}
 
 	public boolean isTagPresent(ExifTag exifTag) {
-		return exifMap.getAllTags().contains(exifTag);
+		return exifMap.getTags().contains(exifTag);
 	}
 
 	public String getTagDescriptive(ExifTag exifTag) {

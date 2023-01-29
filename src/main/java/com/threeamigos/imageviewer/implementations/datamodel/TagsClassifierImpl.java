@@ -26,7 +26,7 @@ public class TagsClassifierImpl implements TagsClassifier {
 		mappedPictures = exifMaps.size();
 
 		Set<ExifTag> allTags = new HashSet<>();
-		exifMaps.forEach(map -> allTags.addAll(map.getAllTags()));
+		exifMaps.forEach(map -> allTags.addAll(map.getTags()));
 
 		for (ExifTag tag : allTags) {
 			Collection<String> values = exifMaps.stream().map(exifMap -> exifMap.getTagDescriptive(tag))

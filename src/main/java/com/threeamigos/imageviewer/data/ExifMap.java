@@ -10,22 +10,25 @@ import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper
 
 public class ExifMap {
 
-	private Set<ExifTag> allTags = new HashSet<>();
+	private Set<ExifTag> tags = new HashSet<>();
 	private Map<ExifTag, String> tagToDescriptions = new EnumMap<>(ExifTag.class);
 	private Map<ExifTag, Object> tagToObjects = new EnumMap<>(ExifTag.class);
+
+	// This tag is used more often than others, so we will just avoid getting it
+	// from the map
 	private int pictureOrientation = ExifOrientationHelper.AS_IS;
 
 	public void setIfAbsent(ExifTag exifTag, String value, Object object) {
 		if (value == null || value.trim().isEmpty()) {
 			return;
 		}
-		allTags.add(exifTag);
+		tags.add(exifTag);
 		tagToDescriptions.putIfAbsent(exifTag, value);
 		tagToObjects.putIfAbsent(exifTag, object);
 	}
 
-	public Collection<ExifTag> getAllTags() {
-		return allTags;
+	public Collection<ExifTag> getTags() {
+		return tags;
 	}
 
 	public String getTagDescriptive(ExifTag exifTag) {
