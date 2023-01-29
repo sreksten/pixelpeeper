@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,6 +41,22 @@ public class PathPreferencesImpl implements PathPreferences {
 	public void validate() {
 		if (lastPath == null) {
 			throw new IllegalArgumentException("Invalid last path");
+		}
+		File path = new File(lastPath);
+		if (!path.exists()) {
+			throw new IllegalArgumentException("Last directory " + lastPath + " does not exist.");
+		}
+		if (!path.canRead()) {
+			throw new IllegalArgumentException("Last directory " + lastPath + " is not readable.");
+		}
+		for (String filename : lastFilenames) {
+			File file = new File(lastPath + File.separator + filename);
+			if (!file.exists()) {
+				throw new IllegalArgumentException("File " + filename + " does not exist.");
+			}
+			if (!file.canRead()) {
+				throw new IllegalArgumentException("File " + filename + " is not readable.");
+			}
 		}
 	}
 
