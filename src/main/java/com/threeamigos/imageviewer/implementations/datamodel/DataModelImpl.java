@@ -8,7 +8,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.threeamigos.imageviewer.data.PictureData;
@@ -65,12 +67,16 @@ public class DataModelImpl implements DataModel {
 	public void loadFiles(Collection<File> files) {
 		if (!files.isEmpty()) {
 			imageSlicesManager.clear();
+			Map<File, PictureData> loadedPictures = new HashMap<>();
 			files.parallelStream().forEach(file -> {
 				PictureData pictureData = imageReader.readImage(file);
 				if (pictureData != null) {
-					imageSlicesManager.createImageSlice(pictureData);
+					synchronized (loadedPictures) {
+						loadedPictures.put(file, pictureData);
+					}
 				}
 			});
+			files.forEach(file -> imageSlicesManager.createImageSlice(loadedPictures.get(file)));
 			imageSlicesManager.resetMovement();
 			tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));

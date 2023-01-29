@@ -94,9 +94,6 @@ public class Main {
 
 	// BUGFIX: tags are not semantically sorted
 
-	// BUGFIX: images may have a different ordering when reloaded (due to the fact
-	// they're loaded in parallel?)
-
 	// BUGFIX: the big pointer may flicker when changed
 
 	// BUGFIX: the controls panel's glue seems not to work
