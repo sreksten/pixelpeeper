@@ -71,7 +71,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 	private static final long serialVersionUID = 1L;
 
-	private final transient MainWindowPreferences mainWindowPreferences;
 	private final transient DragAndDropWindowPreferences dragAndDropWindowPreferences;
 	private final transient ImageHandlingPreferences imageHandlingPreferences;
 	private final transient GridPreferences gridPreferences;
@@ -115,7 +114,6 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
-		this.mainWindowPreferences = mainWindowPreferences;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.gridPreferences = gridPreferences;
@@ -451,31 +449,35 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (CommunicationMessages.EDGES_VISIBILITY.equals(evt.getPropertyName())) {
-			handleEdgesVisibilityChange();
+			showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
+
 		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
 			repaint();
+
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			repaint();
+
 		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
+
 		} else if (CommunicationMessages.MINIATURE_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
 			miniatureVisibleMenuItem.setSelected(imageHandlingPreferences.isPositionMiniatureVisible());
 			repaint();
+
 		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
 			gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
 			repaint();
+
 		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
 			updateGridSpacingMenu(gridPreferences.getGridSpacing());
 			repaint();
+
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			repaint();
+
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
 			repaint();
 		}
-	}
-
-	private void handleEdgesVisibilityChange() {
-		showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
 	}
 
 	private InputConsumer getInputConsumer() {

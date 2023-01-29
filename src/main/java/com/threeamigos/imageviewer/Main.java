@@ -99,6 +99,8 @@ public class Main {
 	// BUGFIX: images may have a different ordering when reloaded (due to the fact
 	// they're loaded in parallel?)
 
+	// BUGFIX: the big pointer flickers when changed
+
 	// TODO: zoom based on focal length
 
 	// TODO: the browse directory should impede to load too many files
