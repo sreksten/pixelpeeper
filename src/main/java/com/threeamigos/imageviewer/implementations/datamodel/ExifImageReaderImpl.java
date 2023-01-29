@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Optional;
 
-import com.threeamigos.common.util.interfaces.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
@@ -22,17 +22,17 @@ public class ExifImageReaderImpl implements ExifImageReader {
 	private final ExifReaderFactory exifReaderFactory;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
-	private final ExceptionHandler exceptionHandler;
+	private final MessageHandler messageHandler;
 
 	public ExifImageReaderImpl(ImageHandlingPreferences imageHandlingPreferences, ImageReaderFactory imageReaderFactory,
 			ExifReaderFactory exifReaderFactory, EdgesDetectorPreferences edgesDetectorPreferences,
-			EdgesDetectorFactory edgesDetectorFactory, ExceptionHandler exceptionHandler) {
+			EdgesDetectorFactory edgesDetectorFactory, MessageHandler messageHandler) {
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.imageReaderFactory = imageReaderFactory;
 		this.exifReaderFactory = exifReaderFactory;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
-		this.exceptionHandler = exceptionHandler;
+		this.messageHandler = messageHandler;
 	}
 
 	public Optional<ExifMap> readExifMap(File file) {
@@ -40,6 +40,16 @@ public class ExifImageReaderImpl implements ExifImageReader {
 	}
 
 	public PictureData readImage(File file) {
+
+		if (!file.exists()) {
+			messageHandler.handleErrorMessage("File " + file.getName() + " was not found.");
+			return null;
+		}
+
+		if (!file.canRead()) {
+			messageHandler.handleErrorMessage("File " + file.getName() + " cannot be read.");
+			return null;
+		}
 
 		ExifMap exifMap;
 
@@ -69,7 +79,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
 			return pictureData;
 
 		} catch (Exception e) {
-			exceptionHandler.handleException(e);
+			messageHandler.handleException(e);
 		}
 
 		return null;
