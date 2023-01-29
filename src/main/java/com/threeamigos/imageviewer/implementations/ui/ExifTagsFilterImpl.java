@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -114,32 +115,31 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	private Map<ExifTag, Collection<ExifValue>> filterTags(Component component,
 			Map<ExifTag, Collection<ExifValue>> map) {
 
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-
-		JLabel matchingFilesLabel = new JLabel("All files match");
-
 		tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
-		for (Entry<ExifTag, Collection<ExifValue>> entry : map.entrySet()) {
+		JLabel matchingFilesLabel = new JLabel("All " + filesToTagsMap.size() + " files match");
 
-			panel.add(createListPanel(map, entry, matchingFilesLabel));
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 
-			panel.add(Box.createVerticalStrut(5));
-		}
+		JScrollPane scrollPane = new JScrollPane(createSelectionTagsPanel(map, matchingFilesLabel),
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		mainPanel.add(scrollPane);
 
-		panel.add(new JSeparator(SwingConstants.HORIZONTAL));
+		mainPanel.add(Box.createVerticalStrut(5));
 
-		panel.add(createMatchingFilesPanel(matchingFilesLabel));
+		mainPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
-		JScrollPane scrollPane = new JScrollPane(panel);
+		mainPanel.add(Box.createVerticalStrut(5));
+
+		mainPanel.add(createMatchingFilesPanel(matchingFilesLabel));
+
+		mainPanel.setPreferredSize(new Dimension(480, 400));
 
 		String[] options = { OK_OPTION, CANCEL_OPTION };
 
-		JOptionPane optionPane = new JOptionPane(scrollPane, -1, JOptionPane.OK_CANCEL_OPTION, null, options,
+		JOptionPane optionPane = new JOptionPane(mainPanel, -1, JOptionPane.OK_CANCEL_OPTION, null, options,
 				options[1]);
 
 		JDialog dialog = optionPane.createDialog(component, "Select tags to filter by");
@@ -168,8 +168,26 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return createSelectionMap(map);
 	}
 
-	private JPanel createListPanel(Map<ExifTag, Collection<ExifValue>> map, Entry<ExifTag, Collection<ExifValue>> entry,
-			JLabel matchingFilesLabel) {
+	private JPanel createSelectionTagsPanel(Map<ExifTag, Collection<ExifValue>> map, JLabel matchingFilesLabel) {
+
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+		for (Entry<ExifTag, Collection<ExifValue>> entry : map.entrySet()) {
+
+			panel.add(createSingleListPanel(map, entry, matchingFilesLabel));
+
+			panel.add(Box.createVerticalStrut(5));
+		}
+
+		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+		return panel;
+	}
+
+	private JPanel createSingleListPanel(Map<ExifTag, Collection<ExifValue>> map,
+			Entry<ExifTag, Collection<ExifValue>> entry, JLabel matchingFilesLabel) {
 
 		ExifTag tag = entry.getKey();
 
@@ -194,7 +212,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 				String newLabel;
 				Map<ExifTag, Collection<ExifValue>> selectionMap = createSelectionMap(map);
 				if (selectionMap.isEmpty()) {
-					newLabel = "All files match";
+					newLabel = "All " + filesToTagsMap.size() + " files match";
 				} else {
 					int matchingFiles = getFilesBySelection(selectionMap).size();
 					if (matchingFiles == 0) {

@@ -93,8 +93,6 @@ public class Main {
 	// BUGFIX: Canon does not provide the 35mm equivalence tag - fix
 	// DrewNoakesExifReader somehow
 
-	// BUGFIX: check the tags filter size - the window may be too big
-
 	// BUGFIX: the big pointer may flicker when changed
 
 	// BUGFIX: the controls panel's glue seems not to work
