@@ -22,8 +22,8 @@ public class ChainedInputConsumer implements InputConsumer {
 	private Map<Integer, List<InputConsumer>> inputConsumers = new TreeMap<>(Comparator.reverseOrder());
 	List<InputConsumer> sortedConsumers = Collections.emptyList();
 
-	public void addConsumer(InputConsumer adapter, int priority) {
-		inputConsumers.computeIfAbsent(priority, key -> new ArrayList<>()).add(adapter);
+	public void addConsumer(InputConsumer consumer, int priority) {
+		inputConsumers.computeIfAbsent(priority, key -> new ArrayList<>()).add(consumer);
 		sortedConsumers = new LinkedList<>();
 		inputConsumers.entrySet().stream().map(entry -> entry.getValue()).forEach(sortedConsumers::addAll);
 	}
