@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.interfaces.preferences.flavours;
 
 import java.util.List;
 
+import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 
 /**
@@ -23,5 +24,13 @@ public interface PathPreferences extends Preferences {
 	public void setLastFilenames(List<String> lastFilenames);
 
 	public List<String> getLastFilenames();
+
+	public void setTagToGroupBy(ExifTag exifTag);
+
+	public ExifTag getTagToGroupBy();
+
+	public void setLastGroup(int lastGroup);
+
+	public int getLastGroup();
 
 }

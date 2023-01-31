@@ -20,6 +20,8 @@ public interface CommunicationMessages {
 
 	public static final String ZOOM_LEVEL_CHANGED = "ZoomLevelChanged";
 
+	public static final String DATA_MODEL_CHANGED = "DataModelChanged";
+
 	public static final String REQUEST_REPAINT = "RequestRepaint";
 
 }

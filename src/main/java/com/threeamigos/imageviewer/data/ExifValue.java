@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Comparator;
 
 import com.drew.lang.Rational;
 
@@ -65,4 +66,15 @@ public class ExifValue {
 		return String.format("%16.6f", floatValue);
 	}
 
+	public static final Comparator<ExifValue> getComparator() {
+		return (ev1, ev2) -> {
+			if (ev1 == null) {
+				return -1;
+			} else if (ev2 == null) {
+				return 1;
+			} else {
+				return ev1.asComparable().compareTo(ev2.asComparable());
+			}
+		};
+	}
 }

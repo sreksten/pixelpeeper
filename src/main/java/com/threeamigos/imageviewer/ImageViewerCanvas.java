@@ -336,7 +336,8 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 
 				if (!filesToLoad.isEmpty()) {
 					pathPreferences.setLastPath(directory.getPath());
-					dataModel.loadFiles(filesToLoad);
+					pathPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
+					dataModel.loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), 0);
 					dataModel.reframe(getWidth(), getHeight());
 					repaint();
 				}
@@ -483,6 +484,10 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			repaint();
 
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
+			repaint();
+
+		} else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
+			dataModel.reframe(getWidth(), getHeight());
 			repaint();
 
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {

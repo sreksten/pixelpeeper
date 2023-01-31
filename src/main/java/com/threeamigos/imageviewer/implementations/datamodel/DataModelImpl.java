@@ -11,12 +11,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
@@ -33,38 +37,95 @@ public class DataModelImpl implements DataModel {
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
+	private final ExifCache exifCache;
 	private final ExifImageReader imageReader;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
+	private GroupedFilesByExifTag groupedFiles;
+
 	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlicesManager imageSlicesManager,
 			ImageHandlingPreferences imageHandlingPreferences, PathPreferences pathPreferences,
-			EdgesDetectorPreferences edgesDetectorPreferences, ExifImageReader imageReader) {
+			EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader) {
 		this.tagsClassifier = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.pathPreferences = pathPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
+		this.exifCache = exifCache;
 		this.imageReader = imageReader;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
-		List<String> lastFilenames = pathPreferences.getLastFilenames();
-		if (!lastFilenames.isEmpty()) {
-			loadFilenames(lastFilenames);
+		groupedFiles = new GroupedFilesByExifTag(exifCache);
+	}
+
+	@Override
+	public void loadLastFiles() {
+		if (!pathPreferences.getLastFilenames().isEmpty()) {
+			loadFilesByName();
 		}
 	}
 
-	private void loadFilenames(List<String> filenames) {
+	private void loadFilesByName() {
 		String path = pathPreferences.getLastPath() + File.separator;
-		loadFiles(filenames.stream().map(name -> new File(path + name)).collect(Collectors.toList()));
+		List<File> files = pathPreferences.getLastFilenames().stream().map(name -> new File(path + name))
+				.collect(Collectors.toList());
+		loadFiles(files, pathPreferences.getTagToGroupBy(), pathPreferences.getLastGroup());
 	}
 
 	@Override
 	public void loadFiles(Collection<File> files) {
+		loadFiles(files, null, 0);
+	}
+
+	@Override
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int groupIndex) {
+		pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
+		pathPreferences.setTagToGroupBy(tagToGroupBy);
+		groupedFiles.set(files, tagToGroupBy, groupIndex);
+		loadFilesImpl();
+	}
+
+	@Override
+	public int getGroupsCount() {
+		return groupedFiles.getGroupsCount();
+	}
+
+	@Override
+	public int getCurrentGroup() {
+		return groupedFiles.getCurrentGroup();
+	}
+
+	@Override
+	public Optional<ExifValue> getCurrentExifValue() {
+		return groupedFiles.getCurrentExifValue();
+	}
+
+	@Override
+	public void moveToNextGroup() {
+		if (groupedFiles.getGroupsCount() > 1) {
+			groupedFiles.next();
+			pathPreferences.setLastGroup(groupedFiles.getCurrentGroup());
+			loadFilesImpl();
+		}
+	}
+
+	@Override
+	public void moveToPreviousGroup() {
+		if (groupedFiles.getGroupsCount() > 1) {
+			groupedFiles.previous();
+			pathPreferences.setLastGroup(groupedFiles.getCurrentGroup());
+			loadFilesImpl();
+		}
+	}
+
+	private void loadFilesImpl() {
+		Collection<File> files = groupedFiles.getCurrentFiles();
+
 		if (!files.isEmpty()) {
 			imageSlicesManager.clear();
 			Map<File, PictureData> loadedPictures = new HashMap<>();
@@ -86,7 +147,8 @@ public class DataModelImpl implements DataModel {
 			imageSlicesManager.changeZoomLevel();
 			tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
 					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
-			pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
+
+			propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
 		}
 	}
 

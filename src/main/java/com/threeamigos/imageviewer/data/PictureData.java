@@ -47,7 +47,7 @@ public class PictureData {
 
 	private int zoomLevel;
 
-	public PictureData(int width, int height, int orientation, ExifMap exifMap, BufferedImage image, File file,
+	public PictureData(int orientation, ExifMap exifMap, BufferedImage image, File file,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorFactory edgesDetectorFactory) {
 		this.orientation = orientation;
@@ -58,8 +58,8 @@ public class PictureData {
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
 
-		this.sourceWidth = width;
-		this.sourceHeight = height;
+		this.sourceWidth = image.getWidth();
+		this.sourceHeight = image.getHeight();
 		this.sourceImage = image;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);

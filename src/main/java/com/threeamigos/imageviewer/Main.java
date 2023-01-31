@@ -21,6 +21,7 @@ import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.preferences.filebased.implementations.RootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ExifCacheImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageReaderFactoryImpl;
@@ -52,6 +53,7 @@ import com.threeamigos.imageviewer.implementations.ui.HintsWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
@@ -97,7 +99,7 @@ public class Main {
 
 	// BUGFIX: the controls panel's glue seems not to work
 
-	// TODO: image grouping
+	// TODO: image grouping - add a tolerance for focal length
 
 	// TODO: offer more options to subdivide the images panel (e.g. 3x2 grid)
 
@@ -180,11 +182,13 @@ public class Main {
 
 		ExifReaderFactory exifReaderFactory = new ExifReaderFactoryImpl(imageHandlingPreferences);
 
+		ExifCache exifCache = new ExifCacheImpl(exifReaderFactory);
+
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
 
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
-				exifReaderFactory, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
+				exifCache, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
 
 		TagsClassifier tagsClassifier = new TagsClassifierImpl();
 
@@ -193,12 +197,12 @@ public class Main {
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 
-		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifImageReader, messageHandler);
+		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifCache, messageHandler);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
-				pathPreferences, edgesDetectorPreferences, exifImageReader);
+				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
@@ -239,8 +243,9 @@ public class Main {
 		hintsCollector.addHints(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 
-		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences);
+		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
+		dataModel.addPropertyChangeListener(controlsPanel);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
@@ -250,6 +255,8 @@ public class Main {
 
 		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences,
 				preferencesHelper);
+
+		dataModel.loadLastFiles();
 
 		jframe.setVisible(true);
 

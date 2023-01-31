@@ -8,8 +8,8 @@ import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
-import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
@@ -19,24 +19,21 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final ImageReaderFactory imageReaderFactory;
-	private final ExifReaderFactory exifReaderFactory;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 	private final MessageHandler messageHandler;
 
+	private final ExifCache exifCache;
+
 	public ExifImageReaderImpl(ImageHandlingPreferences imageHandlingPreferences, ImageReaderFactory imageReaderFactory,
-			ExifReaderFactory exifReaderFactory, EdgesDetectorPreferences edgesDetectorPreferences,
+			ExifCache exifCache, EdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorFactory edgesDetectorFactory, MessageHandler messageHandler) {
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.imageReaderFactory = imageReaderFactory;
-		this.exifReaderFactory = exifReaderFactory;
+		this.exifCache = exifCache;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
 		this.messageHandler = messageHandler;
-	}
-
-	public Optional<ExifMap> readExifMap(File file) {
-		return exifReaderFactory.getExifReader().readMetadata(file);
 	}
 
 	public PictureData readImage(File file) {
@@ -53,7 +50,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
 		ExifMap exifMap;
 
-		Optional<ExifMap> exifMapOpt = readExifMap(file);
+		Optional<ExifMap> exifMapOpt = exifCache.getExifMap(file);
 
 		int pictureOrientation = ExifOrientationHelper.AS_IS;
 
@@ -68,9 +65,8 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
 			BufferedImage bufferedImage = imageReaderFactory.getImageReader().readImage(file);
 
-			PictureData pictureData = new PictureData(bufferedImage.getWidth(), bufferedImage.getHeight(),
-					pictureOrientation, exifMap, bufferedImage, file, imageHandlingPreferences,
-					edgesDetectorPreferences, edgesDetectorFactory);
+			PictureData pictureData = new PictureData(pictureOrientation, exifMap, bufferedImage, file,
+					imageHandlingPreferences, edgesDetectorPreferences, edgesDetectorFactory);
 
 			if (imageHandlingPreferences.isAutorotation()) {
 				pictureData.correctOrientation();

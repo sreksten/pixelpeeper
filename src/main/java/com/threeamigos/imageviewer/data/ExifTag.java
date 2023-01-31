@@ -46,4 +46,8 @@ public enum ExifTag {
 		return description;
 	}
 
+	public String toString() {
+		return description;
+	}
+
 }

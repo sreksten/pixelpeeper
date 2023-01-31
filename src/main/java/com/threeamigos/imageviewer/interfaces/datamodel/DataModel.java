@@ -4,7 +4,10 @@ import java.awt.Graphics2D;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.Optional;
 
+import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
@@ -50,7 +53,21 @@ public interface DataModel extends PropertyChangeListener, HintsProducer {
 
 	// Data part
 
+	public void loadLastFiles();
+
 	public void loadFiles(Collection<File> files);
+
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int preferredGroupIndex);
+
+	public int getGroupsCount();
+
+	public int getCurrentGroup();
+
+	public Optional<ExifValue> getCurrentExifValue();
+
+	public void moveToNextGroup();
+
+	public void moveToPreviousGroup();
 
 	public boolean hasLoadedImages();
 

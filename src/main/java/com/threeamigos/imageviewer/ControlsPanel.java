@@ -1,11 +1,14 @@
 package com.threeamigos.imageviewer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -14,17 +17,24 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 public class ControlsPanel extends JPanel implements ChangeListener, PropertyChangeListener {
 
 	private final ImageHandlingPreferences imageHandlingPreferences;
+	private final DataModel dataModel;
 
-	private final JLabel zoomLabel;
-	private final JSlider zoomSlider;
+	private JButton previousGroupButton;
+	private JLabel groupLabel;
+	private JButton nextGroupButton;
 
-	public ControlsPanel(ImageHandlingPreferences imageHandlingPreferences) {
+	private JLabel zoomLabel;
+	private JSlider zoomSlider;
+
+	public ControlsPanel(ImageHandlingPreferences imageHandlingPreferences, DataModel dataModel) {
 		this.imageHandlingPreferences = imageHandlingPreferences;
+		this.dataModel = dataModel;
 
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -32,21 +42,57 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 		Box controlsBox = Box.createHorizontalBox();
 		controlsBox.add(Box.createGlue());
 
+		createGroupControls(controlsBox);
+
+		controlsBox.add(Box.createHorizontalStrut(5));
+
 		controlsBox.add(new JSeparator(JSeparator.VERTICAL));
+
+		controlsBox.add(Box.createHorizontalStrut(5));
+
+		createZoomControls(controlsBox);
+
+		add(controlsBox);
+	}
+
+	private void createGroupControls(Box controlsBox) {
+		previousGroupButton = new JButton("<");
+		previousGroupButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dataModel.moveToPreviousGroup();
+			}
+		});
+		controlsBox.add(previousGroupButton);
+
+		controlsBox.add(Box.createHorizontalStrut(5));
+
+		groupLabel = new JLabel("");
+		controlsBox.add(groupLabel);
+
+		controlsBox.add(Box.createHorizontalStrut(5));
+
+		nextGroupButton = new JButton(">");
+		nextGroupButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dataModel.moveToNextGroup();
+			}
+		});
+		controlsBox.add(nextGroupButton);
+	}
+
+	private void createZoomControls(Box controlsBox) {
 
 		zoomLabel = new JLabel();
 		buildZoomLabel();
 		controlsBox.add(zoomLabel);
 
-		zoomSlider = new JSlider(JSlider.HORIZONTAL, imageHandlingPreferences.MIN_ZOOM_LEVEL,
-				imageHandlingPreferences.MAX_ZOOM_LEVEL, imageHandlingPreferences.getZoomLevel());
+		zoomSlider = new JSlider(JSlider.HORIZONTAL, ImageHandlingPreferences.MIN_ZOOM_LEVEL,
+				ImageHandlingPreferences.MAX_ZOOM_LEVEL, imageHandlingPreferences.getZoomLevel());
 		zoomSlider.setMajorTickSpacing(10);
 		zoomSlider.setMinorTickSpacing(5);
 		zoomSlider.setPaintTicks(true);
 		zoomSlider.addChangeListener(this);
 		controlsBox.add(zoomSlider);
-
-		add(controlsBox);
 	}
 
 	@Override
@@ -65,6 +111,8 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			zoomSlider.setValue(imageHandlingPreferences.getZoomLevel());
+		} else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
+			groupLabel.setText("Group " + (dataModel.getCurrentGroup() + 1) + " of " + dataModel.getGroupsCount());
 		}
 	}
 
