@@ -160,26 +160,13 @@ public class ImageViewerCanvas extends JPanel
 	public void addMenus(JMenuBar menuBar) {
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open Files...", OPEN_FILES_KEY, event -> {
-			accept(fileSelector.getSelectedFiles(this));
-		});
-		addMenuItem(fileMenu, "Browse directory", BROWSE_DIRECTORY_KEY, event -> {
-			browseDirectory();
-		});
-		addMenuItem(fileMenu, "Open Drag and Drop panel", OPEN_DRAG_AND_DROP_PANEL_KEY, event -> {
-			dragAndDropWindowPreferences.setVisible(true);
-			dragAndDropWindow.setVisible(true);
-		});
-		addMenuItem(fileMenu, "Show hints", SHOW_HINTS_KEY, event -> {
-			hintsWindow.showHints(this);
-		});
-
-		addMenuItem(fileMenu, "About", SHOW_ABOUT_KEY, event -> aboutWindow.about(this));
-
-		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> {
-			preferencesPersisterHelper.persist();
-			System.exit(0);
-		});
+		addMenuItem(fileMenu, "Open Files...", OPEN_FILES_KEY, event -> openFiles());
+		addMenuItem(fileMenu, "Browse directory", BROWSE_DIRECTORY_KEY, event -> browseDirectory());
+		addMenuItem(fileMenu, "Open Drag and Drop panel", OPEN_DRAG_AND_DROP_PANEL_KEY,
+				event -> openDragAndDropPanel());
+		addMenuItem(fileMenu, "Show hints", SHOW_HINTS_KEY, event -> showHints());
+		addMenuItem(fileMenu, "About", SHOW_ABOUT_KEY, event -> showAboutWindow());
+		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> quit());
 
 		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
 		menuBar.add(edgesDetectorMenu);
@@ -239,7 +226,7 @@ public class ImageViewerCanvas extends JPanel
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", SHOW_POSITION_KEY,
+		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", SHOW_POSITION_MINIATURE_KEY,
 				imageHandlingPreferences.isPositionMiniatureVisible(), event -> {
 					imageHandlingPreferences
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
@@ -327,6 +314,10 @@ public class ImageViewerCanvas extends JPanel
 		}
 	}
 
+	private void openFiles() {
+		accept(fileSelector.getSelectedFiles(this));
+	}
+
 	private void browseDirectory() {
 		File directory = fileSelector.getSelectedDirectory(this);
 		if (directory != null) {
@@ -347,6 +338,24 @@ public class ImageViewerCanvas extends JPanel
 				messageHandler.handleErrorMessage("Selected file is not a directory.");
 			}
 		}
+	}
+
+	private void openDragAndDropPanel() {
+		dragAndDropWindowPreferences.setVisible(true);
+		dragAndDropWindow.setVisible(true);
+	}
+
+	private void showHints() {
+		hintsWindow.showHints(this);
+	}
+
+	private void showAboutWindow() {
+		aboutWindow.about(this);
+	}
+
+	private void quit() {
+		preferencesPersisterHelper.persist();
+		System.exit(0);
 	}
 
 	private Collection<File> findImageFiles(File directory) {
@@ -422,7 +431,7 @@ public class ImageViewerCanvas extends JPanel
 		if (actionListener != null) {
 			menuItem.addActionListener(actionListener);
 		}
-		if (mnemonic != -1) {
+		if (mnemonic != NO_KEY) {
 			menuItem.setMnemonic(mnemonic);
 		}
 		menuItem.setSelected(initialValue);
@@ -435,7 +444,7 @@ public class ImageViewerCanvas extends JPanel
 		if (actionListener != null) {
 			menuItem.addActionListener(actionListener);
 		}
-		if (mnemonic != -1) {
+		if (mnemonic != NO_KEY) {
 			menuItem.setMnemonic(mnemonic);
 		}
 		menu.add(menuItem);
@@ -536,13 +545,26 @@ public class ImageViewerCanvas extends JPanel
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ADD) {
+				int key = e.getKeyCode();
+				if (key == OPEN_FILES_KEY) {
+					openFiles();
+				} else if (key == BROWSE_DIRECTORY_KEY) {
+					browseDirectory();
+				} else if (key == OPEN_DRAG_AND_DROP_PANEL_KEY) {
+					openDragAndDropPanel();
+				} else if (key == SHOW_ABOUT_KEY) {
+					showAboutWindow();
+				} else if (key == QUIT_KEY) {
+					quit();
+				}
+
+				if (key == KeyEvent.VK_ADD) {
 					int zoomLevel = imageHandlingPreferences.getZoomLevel();
 					if (zoomLevel < ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
 						imageHandlingPreferences.setZoomLevel(zoomLevel + ImageHandlingPreferences.ZOOM_LEVEL_STEP);
 					}
 					e.consume();
-				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
+				} else if (key == KeyEvent.VK_SUBTRACT) {
 					int zoomLevel = imageHandlingPreferences.getZoomLevel();
 					if (zoomLevel > ImageHandlingPreferences.MIN_ZOOM_LEVEL) {
 						imageHandlingPreferences.setZoomLevel(zoomLevel - ImageHandlingPreferences.ZOOM_LEVEL_STEP);

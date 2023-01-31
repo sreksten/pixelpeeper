@@ -19,7 +19,7 @@ public interface KeyRegistry {
 	public static final int SHOW_EDGES_DETETECTOR_PARAMETERS_KEY = KeyEvent.VK_P;
 	public static final int QUIT_KEY = KeyEvent.VK_Q;
 	public static final int AUTOROTATION_KEY = KeyEvent.VK_R;
-	public static final int SHOW_POSITION_KEY = KeyEvent.VK_S;
+	public static final int SHOW_POSITION_MINIATURE_KEY = KeyEvent.VK_S;
 	public static final int SHOW_TAGS_KEY = KeyEvent.VK_T;
 	public static final int SHOW_TAGS_OVERRIDING_PREFERENCES_KEY = KeyEvent.VK_V;
 
