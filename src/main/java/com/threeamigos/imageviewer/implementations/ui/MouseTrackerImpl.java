@@ -39,10 +39,10 @@ public class MouseTrackerImpl implements MouseTracker {
 		int endY = e.getY();
 		int deltaY = pointerStartY - endY;
 
-		dataModel.move(deltaX, deltaY);
-
 		pointerStartX = endX;
 		pointerStartY = endY;
+
+		dataModel.move(deltaX, deltaY);
 	}
 
 	@Override

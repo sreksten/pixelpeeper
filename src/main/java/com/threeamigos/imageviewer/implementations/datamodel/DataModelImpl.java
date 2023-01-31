@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.data.PictureData;
@@ -28,6 +30,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class DataModelImpl implements DataModel {
@@ -39,6 +42,8 @@ public class DataModelImpl implements DataModel {
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifCache exifCache;
 	private final ExifImageReader imageReader;
+	private final ExifTagsFilter exifTagsFilter;
+	private final MessageHandler messageHandler;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -48,7 +53,8 @@ public class DataModelImpl implements DataModel {
 
 	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlicesManager imageSlicesManager,
 			ImageHandlingPreferences imageHandlingPreferences, PathPreferences pathPreferences,
-			EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader) {
+			EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader,
+			ExifTagsFilter exifTagsFilter, MessageHandler messageHandler) {
 		this.tagsClassifier = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
@@ -57,6 +63,8 @@ public class DataModelImpl implements DataModel {
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.exifCache = exifCache;
 		this.imageReader = imageReader;
+		this.exifTagsFilter = exifTagsFilter;
+		this.messageHandler = messageHandler;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -88,6 +96,35 @@ public class DataModelImpl implements DataModel {
 		pathPreferences.setTagToGroupBy(tagToGroupBy);
 		groupedFiles.set(files, tagToGroupBy, groupIndex);
 		loadFilesImpl();
+	}
+
+	public void browseDirectory(File directory, Component component) {
+		if (directory != null) {
+			if (directory.isDirectory()) {
+
+				Collection<File> files = findImageFiles(directory);
+
+				Collection<File> filesToLoad = exifTagsFilter.filterByTags(component, files);
+
+				if (!filesToLoad.isEmpty()) {
+					pathPreferences.setLastPath(directory.getPath());
+					pathPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
+					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), 0);
+				}
+			} else {
+				messageHandler.handleErrorMessage("Selected file is not a directory.");
+			}
+		}
+	}
+
+	private Collection<File> findImageFiles(File directory) {
+		Collection<File> files = new ArrayList<>();
+		for (File file : directory.listFiles()) {
+			if (file.isFile()) {
+				files.add(file);
+			}
+		}
+		return files;
 	}
 
 	@Override
@@ -188,6 +225,7 @@ public class DataModelImpl implements DataModel {
 			isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
 		}
 		imageSlicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
 	@Override

@@ -202,7 +202,7 @@ public class Main {
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
-				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader);
+				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter, messageHandler);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
@@ -236,10 +236,10 @@ public class Main {
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
-				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, pathPreferences,
-				exifTagsFilter, dataModel, preferencesHelper, mouseTracker, cursorManager, fileSelector,
-				edgesDetectorPreferences, edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators,
-				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
+				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, exifTagsFilter,
+				dataModel, preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
+				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
+				hintsWindow, dragAndDropWindow, messageHandler);
 		hintsCollector.addHints(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 

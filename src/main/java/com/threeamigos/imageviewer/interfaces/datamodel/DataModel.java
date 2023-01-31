@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.interfaces.datamodel;
 
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -58,6 +59,8 @@ public interface DataModel extends PropertyChangeListener, HintsProducer {
 	public void loadFiles(Collection<File> files);
 
 	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int preferredGroupIndex);
+
+	public void browseDirectory(File directory, Component component);
 
 	public int getGroupsCount();
 

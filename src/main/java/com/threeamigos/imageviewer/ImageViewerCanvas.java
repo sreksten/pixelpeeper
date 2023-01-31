@@ -47,7 +47,6 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPrefer
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
@@ -77,7 +76,6 @@ public class ImageViewerCanvas extends JPanel
 	private final transient GridPreferences gridPreferences;
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
-	private final transient PathPreferences pathPreferences;
 	private final transient ExifTagsFilter exifTagsFilter;
 	private final transient DataModel dataModel;
 	private final transient Persistable preferencesPersisterHelper;
@@ -108,9 +106,9 @@ public class ImageViewerCanvas extends JPanel
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences,
-			PathPreferences pathPreferences, ExifTagsFilter exifTagsFilter, DataModel dataModel,
-			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, CursorManager cursorManager,
-			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
+			ExifTagsFilter exifTagsFilter, DataModel dataModel, Persistable preferencesPersisterHelper,
+			MouseTracker mouseTracker, CursorManager cursorManager, FileSelector fileSelector,
+			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
@@ -120,7 +118,6 @@ public class ImageViewerCanvas extends JPanel
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
-		this.pathPreferences = pathPreferences;
 		this.exifTagsFilter = exifTagsFilter;
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
@@ -318,30 +315,13 @@ public class ImageViewerCanvas extends JPanel
 	}
 
 	private void browseDirectory() {
-		File directory = fileSelector.getSelectedDirectory(this);
-		if (directory != null) {
-			if (directory.isDirectory()) {
-
-				Collection<File> files = findImageFiles(directory);
-
-				Collection<File> filesToLoad = exifTagsFilter.filterByTags(this, files);
-
-				if (!filesToLoad.isEmpty()) {
-					pathPreferences.setLastPath(directory.getPath());
-					pathPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
-					dataModel.loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), 0);
-					dataModel.reframe(getWidth(), getHeight());
-					repaint();
-				}
-			} else {
-				messageHandler.handleErrorMessage("Selected file is not a directory.");
-			}
-		}
+		dataModel.browseDirectory(fileSelector.getSelectedDirectory(this), this);
 	}
 
 	private void openDragAndDropPanel() {
-		dragAndDropWindowPreferences.setVisible(true);
-		dragAndDropWindow.setVisible(true);
+		boolean visible = !dragAndDropWindowPreferences.isVisible();
+		dragAndDropWindowPreferences.setVisible(visible);
+		dragAndDropWindow.setVisible(visible);
 	}
 
 	private void showHints() {
@@ -357,16 +337,6 @@ public class ImageViewerCanvas extends JPanel
 		System.exit(0);
 	}
 
-	private Collection<File> findImageFiles(File directory) {
-		Collection<File> files = new ArrayList<>();
-		for (File file : directory.listFiles()) {
-			if (file.isFile()) {
-				files.add(file);
-			}
-		}
-		return files;
-	}
-
 	private void updateCursor() {
 		setCursor(cursorManager.getCursor());
 	}
@@ -375,8 +345,6 @@ public class ImageViewerCanvas extends JPanel
 	public void accept(List<File> selectedFiles) {
 		if (!selectedFiles.isEmpty()) {
 			dataModel.loadFiles(selectedFiles);
-			dataModel.reframe(getWidth(), getHeight());
-			repaint();
 		}
 	}
 
@@ -497,8 +465,7 @@ public class ImageViewerCanvas extends JPanel
 			repaint();
 
 		} else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
-			dataModel.reframe(getWidth(), getHeight());
-			repaint();
+			reframeDataModel();
 
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
 			repaint();
@@ -527,7 +494,6 @@ public class ImageViewerCanvas extends JPanel
 			public void mouseDragged(MouseEvent e) {
 				if (dataModel.hasLoadedImages()) {
 					mouseTracker.mouseDragged(e);
-					repaint();
 				}
 			}
 
