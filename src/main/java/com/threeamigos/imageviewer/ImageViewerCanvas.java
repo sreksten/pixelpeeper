@@ -2,7 +2,6 @@ package com.threeamigos.imageviewer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -513,26 +512,15 @@ public class ImageViewerCanvas extends JPanel
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (dataModel.hasLoadedImages()) {
-					if (!bigPointerPreferences.isBigPointerVisible()) {
-						setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					}
 					mouseTracker.mousePressed(e);
-					repaint();
 				}
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				updateCursor();
 				if (dataModel.hasLoadedImages()) {
 					mouseTracker.mouseReleased(e);
-					repaint();
 				}
-			}
-
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				repaint();
 			}
 
 			@Override
