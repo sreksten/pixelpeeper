@@ -506,20 +506,12 @@ public class ImageViewerCanvas extends JPanel
 					showAboutWindow();
 				} else if (key == QUIT_KEY) {
 					quit();
-				}
-
-				if (key == KeyEvent.VK_ADD) {
-					int zoomLevel = imageHandlingPreferences.getZoomLevel();
-					if (zoomLevel < ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
-						imageHandlingPreferences.setZoomLevel(zoomLevel + ImageHandlingPreferences.ZOOM_LEVEL_STEP);
-					}
-					e.consume();
-				} else if (key == KeyEvent.VK_SUBTRACT) {
-					int zoomLevel = imageHandlingPreferences.getZoomLevel();
-					if (zoomLevel > ImageHandlingPreferences.MIN_ZOOM_LEVEL) {
-						imageHandlingPreferences.setZoomLevel(zoomLevel - ImageHandlingPreferences.ZOOM_LEVEL_STEP);
-					}
-					e.consume();
+				} else if (key == ENLARGE_KEY) {
+					imageHandlingPreferences.setZoomLevel(
+							imageHandlingPreferences.getZoomLevel() + ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+				} else if (key == REDUCE_KEY) {
+					imageHandlingPreferences.setZoomLevel(
+							imageHandlingPreferences.getZoomLevel() - ImageHandlingPreferences.ZOOM_LEVEL_STEP);
 				}
 			}
 		};

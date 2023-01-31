@@ -23,5 +23,8 @@ public interface KeyRegistry {
 	public static final int SHOW_TAGS_KEY = KeyEvent.VK_T;
 	public static final int SHOW_TAGS_OVERRIDING_PREFERENCES_KEY = KeyEvent.VK_V;
 
+	public static final int ENLARGE_KEY = KeyEvent.VK_ADD;
+	public static final int REDUCE_KEY = KeyEvent.VK_SUBTRACT;
+
 	public static final int NO_KEY = -1;
 }
