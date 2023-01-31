@@ -236,8 +236,8 @@ public class Main {
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
-				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, exifTagsFilter,
-				dataModel, preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
+				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
+				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
 				hintsWindow, dragAndDropWindow, messageHandler);
 		hintsCollector.addHints(imageViewerCanvas);

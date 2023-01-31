@@ -51,7 +51,6 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChang
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
-import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
@@ -76,7 +75,6 @@ public class ImageViewerCanvas extends JPanel
 	private final transient GridPreferences gridPreferences;
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
-	private final transient ExifTagsFilter exifTagsFilter;
 	private final transient DataModel dataModel;
 	private final transient Persistable preferencesPersisterHelper;
 	private final transient MouseTracker mouseTracker;
@@ -105,10 +103,9 @@ public class ImageViewerCanvas extends JPanel
 	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
-			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences,
-			ExifTagsFilter exifTagsFilter, DataModel dataModel, Persistable preferencesPersisterHelper,
-			MouseTracker mouseTracker, CursorManager cursorManager, FileSelector fileSelector,
-			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
+			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
+			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, CursorManager cursorManager,
+			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
@@ -118,7 +115,6 @@ public class ImageViewerCanvas extends JPanel
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
-		this.exifTagsFilter = exifTagsFilter;
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
