@@ -1,53 +1,54 @@
 package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
-import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class MouseTrackerImpl implements MouseTracker {
 
-	private final DataModel dataModel;
+	private final PropertyChangeSupport propertyChangeSupport;
 
-	private boolean dragging;
+	private MouseEvent oldEvent;
 
-	private int pointerStartX;
-	private int pointerStartY;
+	public MouseTrackerImpl() {
+		propertyChangeSupport = new PropertyChangeSupport(this);
+	}
 
-	public MouseTrackerImpl(DataModel dataModel) {
-		this.dataModel = dataModel;
+	public InputConsumer getInputConsumer() {
+		return new InputAdapter() {
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_PRESSED, null, e);
+				oldEvent = e;
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_RELEASED, null, null);
+				oldEvent = null;
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_DRAGGED, oldEvent, e);
+				oldEvent = e;
+			}
+		};
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
-		dataModel.setActiveSlice(e.getX(), e.getY());
-		pointerStartX = e.getX();
-		pointerStartY = e.getY();
-		dragging = true;
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
-		dataModel.resetActiveSlice();
-		dragging = false;
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		int endX = e.getX();
-		int deltaX = pointerStartX - endX;
-		int endY = e.getY();
-		int deltaY = pointerStartY - endY;
-
-		pointerStartX = endX;
-		pointerStartY = endY;
-
-		dataModel.move(deltaX, deltaY);
-	}
-
-	@Override
-	public boolean isDragging() {
-		return dragging;
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

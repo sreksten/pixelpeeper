@@ -105,8 +105,6 @@ public class Main {
 
 	// TODO highlight function
 
-	// TODO check the InputAdapter of the main canvas
-
 	// TODO: prepare the image with edges instead of drawing it every time ?
 
 	// TODO: ImageReader should use also other image libraries
@@ -215,7 +213,9 @@ public class Main {
 
 		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
 
-		MouseTracker mouseTracker = new MouseTrackerImpl(dataModel);
+		MouseTracker mouseTracker = new MouseTrackerImpl();
+		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
+		mouseTracker.addPropertyChangeListener(dataModel);
 
 		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, fontService,
 				messageHandler);
@@ -237,7 +237,7 @@ public class Main {
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
 				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
-				preferencesHelper, mouseTracker, cursorManager, fileSelector, edgesDetectorPreferences,
+				preferencesHelper, cursorManager, fileSelector, edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
 				hintsWindow, dragAndDropWindow, messageHandler);
 		hintsCollector.addHints(imageViewerCanvas);

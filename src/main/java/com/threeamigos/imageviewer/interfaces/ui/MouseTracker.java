@@ -1,6 +1,6 @@
 package com.threeamigos.imageviewer.interfaces.ui;
 
-import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Listens to mouse movements to update the images' shift
@@ -10,12 +10,10 @@ import java.awt.event.MouseEvent;
  */
 public interface MouseTracker {
 
-	public void mousePressed(MouseEvent e);
+	public InputConsumer getInputConsumer();
 
-	public void mouseReleased(MouseEvent e);
+	public void addPropertyChangeListener(PropertyChangeListener pcl);
 
-	public void mouseDragged(MouseEvent e);
-
-	public boolean isDragging();
+	public void removePropertyChangeListener(PropertyChangeListener pcl);
 
 }

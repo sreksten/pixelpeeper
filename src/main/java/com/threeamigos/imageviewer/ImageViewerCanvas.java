@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -57,7 +56,6 @@ import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
-import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
  * The canvas on which we draw the various image slices
@@ -77,7 +75,6 @@ public class ImageViewerCanvas extends JPanel
 	private final transient ExifTagPreferences exifTagPreferences;
 	private final transient DataModel dataModel;
 	private final transient Persistable preferencesPersisterHelper;
-	private final transient MouseTracker mouseTracker;
 	private final transient CursorManager cursorManager;
 	private final transient FileSelector fileSelector;
 	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
@@ -104,8 +101,8 @@ public class ImageViewerCanvas extends JPanel
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
-			Persistable preferencesPersisterHelper, MouseTracker mouseTracker, CursorManager cursorManager,
-			FileSelector fileSelector, PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
+			Persistable preferencesPersisterHelper, CursorManager cursorManager, FileSelector fileSelector,
+			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
 			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
 			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
 			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
@@ -118,7 +115,6 @@ public class ImageViewerCanvas extends JPanel
 		this.dataModel = dataModel;
 		dataModel.addPropertyChangeListener(this);
 		this.preferencesPersisterHelper = preferencesPersisterHelper;
-		this.mouseTracker = mouseTracker;
 		this.cursorManager = cursorManager;
 		this.fileSelector = fileSelector;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
@@ -471,27 +467,6 @@ public class ImageViewerCanvas extends JPanel
 	private InputConsumer getInputConsumer() {
 
 		return new InputAdapter() {
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (dataModel.hasLoadedImages()) {
-					mouseTracker.mousePressed(e);
-				}
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if (dataModel.hasLoadedImages()) {
-					mouseTracker.mouseReleased(e);
-				}
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				if (dataModel.hasLoadedImages()) {
-					mouseTracker.mouseDragged(e);
-				}
-			}
 
 			@Override
 			public void keyPressed(KeyEvent e) {

@@ -3,6 +3,7 @@ package com.threeamigos.imageviewer.implementations.datamodel;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -312,6 +313,12 @@ public class DataModelImpl implements DataModel {
 			handleEdgeCalculationCompleted(evt);
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			changeZoomLevel();
+		} else if (CommunicationMessages.MOUSE_PRESSED.equals(evt.getPropertyName())) {
+			handleMousePressed(evt);
+		} else if (CommunicationMessages.MOUSE_RELEASED.equals(evt.getPropertyName())) {
+			handleMouseReleased(evt);
+		} else if (CommunicationMessages.MOUSE_DRAGGED.equals(evt.getPropertyName())) {
+			handleMouseDragged(evt);
 		}
 	}
 
@@ -321,6 +328,32 @@ public class DataModelImpl implements DataModel {
 
 	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+	}
+
+	private void handleMousePressed(PropertyChangeEvent evt) {
+		if (hasLoadedImages()) {
+			MouseEvent e = (MouseEvent) evt.getNewValue();
+			setActiveSlice(e.getX(), e.getY());
+			requestRepaint();
+		}
+	}
+
+	private void handleMouseReleased(PropertyChangeEvent evt) {
+		if (hasLoadedImages()) {
+			resetActiveSlice();
+			requestRepaint();
+		}
+	}
+
+	private void handleMouseDragged(PropertyChangeEvent evt) {
+		if (hasLoadedImages()) {
+			MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
+			MouseEvent newEvent = (MouseEvent) evt.getNewValue();
+			int deltaX = oldEvent.getX() - newEvent.getX();
+			int deltaY = oldEvent.getY() - newEvent.getY();
+			move(deltaX, deltaY);
+			requestRepaint();
+		}
 	}
 
 	@Override

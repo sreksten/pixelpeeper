@@ -24,4 +24,9 @@ public interface CommunicationMessages {
 
 	public static final String REQUEST_REPAINT = "RequestRepaint";
 
+	public static final String MOUSE_PRESSED = "MousePressed";
+
+	public static final String MOUSE_RELEASED = "MouseReleased";
+
+	public static final String MOUSE_DRAGGED = "MouseDragged";
 }
