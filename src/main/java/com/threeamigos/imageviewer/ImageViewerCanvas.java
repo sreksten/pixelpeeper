@@ -160,30 +160,30 @@ public class ImageViewerCanvas extends JPanel
 	public void addMenus(JMenuBar menuBar) {
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open Files...", KeyEvent.VK_O, event -> {
+		addMenuItem(fileMenu, "Open Files...", OPEN_FILES_KEY, event -> {
 			accept(fileSelector.getSelectedFiles(this));
 		});
-		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_B, event -> {
+		addMenuItem(fileMenu, "Browse directory", BROWSE_DIRECTORY_KEY, event -> {
 			browseDirectory();
 		});
-		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
+		addMenuItem(fileMenu, "Open Drag and Drop panel", OPEN_DRAG_AND_DROP_PANEL_KEY, event -> {
 			dragAndDropWindowPreferences.setVisible(true);
 			dragAndDropWindow.setVisible(true);
 		});
-		addMenuItem(fileMenu, "Show hints", KeyEvent.VK_H, event -> {
+		addMenuItem(fileMenu, "Show hints", SHOW_HINTS_KEY, event -> {
 			hintsWindow.showHints(this);
 		});
 
-		addMenuItem(fileMenu, "About", KeyEvent.VK_A, event -> aboutWindow.about(this));
+		addMenuItem(fileMenu, "About", SHOW_ABOUT_KEY, event -> aboutWindow.about(this));
 
-		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> {
+		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> {
 			preferencesPersisterHelper.persist();
 			System.exit(0);
 		});
 
 		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
 		menuBar.add(edgesDetectorMenu);
-		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyEvent.VK_M,
+		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", SHOW_EDGES_KEY,
 				edgesDetectorPreferences.isShowEdges(), event -> {
 					dataModel.toggleShowingEdges();
 					repaint();
@@ -197,7 +197,7 @@ public class ImageViewerCanvas extends JPanel
 					});
 			edgesDetectorFlavourMenuItemsByFlavour.put(flavour, flavourMenuItem);
 		}
-		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyEvent.VK_C, event -> {
+		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", SHOW_EDGES_DETETECTOR_PARAMETERS_KEY, event -> {
 			edgesDetectorPreferencesSelectorFactory.createSelector(this).selectParameters(this);
 		});
 
@@ -225,38 +225,38 @@ public class ImageViewerCanvas extends JPanel
 					});
 			exifReadersByFlavour.put(flavour, exifReaderItem);
 		}
-		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_R, dataModel.isAutorotation(), event -> {
+		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", AUTOROTATION_KEY, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();
 		});
-		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", KeyEvent.VK_I,
+		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", MOVEMENT_IN_PERCENTAGE_KEY,
 				imageHandlingPreferences.isMovementInPercentage(), event -> {
 					imageHandlingPreferences
 							.setMovementInPercentage(!imageHandlingPreferences.isMovementInPercentage());
 				});
-		addCheckboxMenuItem(imageHandlingMenu, "Move all images", KeyEvent.VK_M,
+		addCheckboxMenuItem(imageHandlingMenu, "Move all images", MOVE_ALL_IMAGES_KEY,
 				dataModel.isMovementAppliedToAllImages(), event -> {
 					dataModel.toggleMovementAppliedToAllImages();
 					repaint();
 				});
-		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", KeyEvent.VK_P,
+		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", SHOW_POSITION_KEY,
 				imageHandlingPreferences.isPositionMiniatureVisible(), event -> {
 					imageHandlingPreferences
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
 					repaint();
 				});
-		addCheckboxMenuItem(imageHandlingMenu, "Normalize for crop factor", -1,
+		addCheckboxMenuItem(imageHandlingMenu, "Normalize for crop factor", NORMALIZE_FOR_CROP_FACTOR_KEY,
 				imageHandlingPreferences.isNormalizedForCrop(), event -> {
 					imageHandlingPreferences.setNormalizedForCrop(!imageHandlingPreferences.isNormalizedForCrop());
 					repaint();
 				});
-		addCheckboxMenuItem(imageHandlingMenu, "Normalize for focal length", -1,
+		addCheckboxMenuItem(imageHandlingMenu, "Normalize for focal length", NORMALIZE_FOR_FOCAL_LENGTH_KEY,
 				imageHandlingPreferences.isNormalizedForFocalLength(), event -> {
 					imageHandlingPreferences
 							.setNormalizedForFocalLength(!imageHandlingPreferences.isNormalizedForFocalLength());
 					repaint();
 				});
-		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyEvent.VK_M,
+		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", SHOW_GRID_KEY,
 				gridPreferences.isGridVisible(), event -> {
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 					repaint();
@@ -273,7 +273,7 @@ public class ImageViewerCanvas extends JPanel
 					});
 			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
 		}
-		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", KeyEvent.VK_M,
+		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", SHOW_BIG_POINTER_KEY,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
 				});
@@ -292,11 +292,11 @@ public class ImageViewerCanvas extends JPanel
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
-		addCheckboxMenuItem(tagsMenu, "Show tags", KeyEvent.VK_I, exifTagPreferences.isTagsVisible(), event -> {
+		addCheckboxMenuItem(tagsMenu, "Show tags", SHOW_TAGS_KEY, exifTagPreferences.isTagsVisible(), event -> {
 			exifTagPreferences.setTagsVisible(!exifTagPreferences.isTagsVisible());
 			repaint();
 		});
-		addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyEvent.VK_I,
+		addCheckboxMenuItem(tagsMenu, "overriding visibility", SHOW_TAGS_OVERRIDING_PREFERENCES_KEY,
 				exifTagPreferences.isOverridingTagsVisibility(), event -> {
 					exifTagPreferences.setOverridingTagsVisibility(!exifTagPreferences.isOverridingTagsVisibility());
 					repaint();
