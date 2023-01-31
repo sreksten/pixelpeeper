@@ -190,16 +190,16 @@ public class Main {
 		ExifImageReader exifImageReader = new ExifImageReaderImpl(imageHandlingPreferences, imageReaderFactory,
 				exifCache, edgesDetectorPreferences, edgesDetectorFactory, messageHandler);
 
-		TagsClassifier tagsClassifier = new TagsClassifierImpl();
-
-		FontService fontService = new FontServiceImpl();
-
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
-				imageHandlingPreferences, edgesDetectorPreferences, fontService);
-
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifCache, messageHandler);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+
+		FontService fontService = new FontServiceImpl();
+
+		TagsClassifier tagsClassifier = new TagsClassifierImpl();
+
+		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
+				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
 				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter, messageHandler);
