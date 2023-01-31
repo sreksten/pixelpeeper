@@ -278,7 +278,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		JMenu bigPointerSizeMenu = new JMenu("Big pointer size");
 		imageHandlingMenu.add(bigPointerSizeMenu);
 		int maxDimension = cursorManager.getMaxCursorSize();
-		for (int pointerSize = 32; pointerSize <= maxDimension; pointerSize += 16) {
+		for (int pointerSize = BigPointerPreferences.BIG_POINTER_MIN_SIZE; pointerSize <= maxDimension; pointerSize += BigPointerPreferences.BIG_POINTER_SIZE_STEP) {
 			final int currentSize = pointerSize;
 			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize), -1,
 					pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {

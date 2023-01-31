@@ -5,8 +5,9 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 public interface BigPointerPreferences extends Preferences {
 
 	public static final boolean BIG_POINTER_VISIBLE_DEFAULT = false;
+	public static final int BIG_POINTER_MIN_SIZE = 32;
+	public static final int BIG_POINTER_SIZE_STEP = 16;
 	public static final int BIG_POINTER_SIZE_DEFAULT = 100;
-	public static final float BIG_POINTER_ROTATION_DEFAULT = (float) (5 * Math.PI / 4);
 	public static final Rotation POINTER_ROTATION_DEFAULT = Rotation.ROTATION_3;
 
 	default String getDescription() {
