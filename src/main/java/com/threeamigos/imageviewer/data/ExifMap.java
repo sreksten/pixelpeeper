@@ -21,7 +21,7 @@ public class ExifMap {
 		if (value == null || value.trim().isEmpty()) {
 			return;
 		}
-		map.put(exifTag, new ExifValue(value, object));
+		map.put(exifTag, new ExifValue(exifTag, value, object));
 	}
 
 	public Collection<ExifTag> getKeys() {

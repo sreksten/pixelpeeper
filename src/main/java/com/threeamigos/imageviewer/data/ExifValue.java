@@ -8,12 +8,18 @@ import com.drew.lang.Rational;
 
 public class ExifValue {
 
+	private ExifTag exifTag;
 	private String description;
 	private Object value;
 
-	ExifValue(String description, Object value) {
+	ExifValue(ExifTag exifTag, String description, Object value) {
+		this.exifTag = exifTag;
 		this.description = description;
 		this.value = value;
+	}
+
+	public ExifTag getExifTag() {
+		return exifTag;
 	}
 
 	public String getDescription() {

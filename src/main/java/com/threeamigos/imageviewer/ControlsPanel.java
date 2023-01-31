@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Optional;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -16,6 +17,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -112,7 +114,19 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 		if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			zoomSlider.setValue(imageHandlingPreferences.getZoomLevel());
 		} else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
-			groupLabel.setText("Group " + (dataModel.getCurrentGroup() + 1) + " of " + dataModel.getGroupsCount());
+			Optional<ExifValue> exifValueOpt = dataModel.getCurrentExifValue();
+			if (exifValueOpt.isPresent()) {
+				ExifValue exifValue = exifValueOpt.get();
+				previousGroupButton.setEnabled(true);
+				groupLabel.setText(
+						"Grouping by " + exifValue.getExifTag().getDescription() + " - " + exifValue.getDescription()
+								+ " (" + (dataModel.getCurrentGroup() + 1) + " of " + dataModel.getGroupsCount() + ")");
+				nextGroupButton.setEnabled(true);
+			} else {
+				previousGroupButton.setEnabled(false);
+				groupLabel.setText("Grouping not active");
+				nextGroupButton.setEnabled(false);
+			}
 		}
 	}
 
