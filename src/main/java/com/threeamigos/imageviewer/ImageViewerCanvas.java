@@ -59,6 +59,7 @@ import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -67,7 +68,8 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
  * @author Stefano Reksten
  *
  */
-public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, PropertyChangeListener, HintsProducer {
+public class ImageViewerCanvas extends JPanel
+		implements Consumer<List<File>>, PropertyChangeListener, HintsProducer, KeyRegistry {
 
 	private static final long serialVersionUID = 1L;
 
@@ -161,7 +163,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 		addMenuItem(fileMenu, "Open Files...", KeyEvent.VK_O, event -> {
 			accept(fileSelector.getSelectedFiles(this));
 		});
-		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_D, event -> {
+		addMenuItem(fileMenu, "Browse directory", KeyEvent.VK_B, event -> {
 			browseDirectory();
 		});
 		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyEvent.VK_D, event -> {
@@ -172,7 +174,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 			hintsWindow.showHints(this);
 		});
 
-		addMenuItem(fileMenu, "About", KeyEvent.VK_S, event -> aboutWindow.about(this));
+		addMenuItem(fileMenu, "About", KeyEvent.VK_A, event -> aboutWindow.about(this));
 
 		addMenuItem(fileMenu, "Quit", KeyEvent.VK_Q, event -> {
 			preferencesPersisterHelper.persist();
@@ -223,7 +225,7 @@ public class ImageViewerCanvas extends JPanel implements Consumer<List<File>>, P
 					});
 			exifReadersByFlavour.put(flavour, exifReaderItem);
 		}
-		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_A, dataModel.isAutorotation(), event -> {
+		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyEvent.VK_R, dataModel.isAutorotation(), event -> {
 			dataModel.toggleAutorotation();
 			repaint();
 		});
