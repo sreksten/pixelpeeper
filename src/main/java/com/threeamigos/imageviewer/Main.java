@@ -174,8 +174,6 @@ public class Main {
 
 		// Data model
 
-		HintsCollector hintsCollector = new HintsCollectorImpl();
-
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
 		ExifReaderFactory exifReaderFactory = new ExifReaderFactoryImpl(imageHandlingPreferences);
@@ -190,14 +188,16 @@ public class Main {
 
 		ExifTagsFilter exifTagsFilter = new ExifTagsFilterImpl(exifCache, messageHandler);
 
-		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+		TagsClassifier tagsClassifier = new TagsClassifierImpl();
 
 		FontService fontService = new FontServiceImpl();
 
-		TagsClassifier tagsClassifier = new TagsClassifierImpl();
-
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
+
+		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
+
+		HintsCollector hintsCollector = new HintsCollectorImpl();
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
 				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter, messageHandler);
