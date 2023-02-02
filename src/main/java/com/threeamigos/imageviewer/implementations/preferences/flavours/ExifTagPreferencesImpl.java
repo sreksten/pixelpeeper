@@ -6,9 +6,10 @@ import java.util.Map;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 
-public class ExifTagPreferencesImpl implements ExifTagPreferences {
+public class ExifTagPreferencesImpl extends PropertyChangeAwareImpl implements ExifTagPreferences {
 
 	private boolean tagsVisible = TAGS_VISIBLE_DEFAULT;
 	private boolean overridingTagsVisibility = OVERRIDING_TAGS_VISIBILITY_DEFAULT;
@@ -17,6 +18,7 @@ public class ExifTagPreferencesImpl implements ExifTagPreferences {
 	@Override
 	public void setTagVisibility(ExifTag tag, ExifTagVisibility tagVisibility) {
 		tagsMap.put(tag, tagVisibility);
+		firePropertyChange(CommunicationMessages.TAG_VISIBILITY_CHANGED, tag, tagVisibility);
 	}
 
 	@Override
@@ -36,7 +38,9 @@ public class ExifTagPreferencesImpl implements ExifTagPreferences {
 
 	@Override
 	public void setTagsVisible(boolean tagsVisible) {
+		boolean oldTagsVisible = this.tagsVisible;
 		this.tagsVisible = tagsVisible;
+		firePropertyChange(CommunicationMessages.TAGS_VISIBILITY_CHANGED, oldTagsVisible, tagsVisible);
 	}
 
 	@Override
@@ -46,7 +50,10 @@ public class ExifTagPreferencesImpl implements ExifTagPreferences {
 
 	@Override
 	public void setOverridingTagsVisibility(boolean overridingTagsVisibility) {
+		boolean oldOverridingTagsVisibility = this.overridingTagsVisibility;
 		this.overridingTagsVisibility = overridingTagsVisibility;
+		firePropertyChange(CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED, oldOverridingTagsVisibility,
+				overridingTagsVisibility);
 	}
 
 	@Override

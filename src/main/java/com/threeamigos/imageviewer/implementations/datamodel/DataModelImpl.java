@@ -147,7 +147,7 @@ public class DataModelImpl implements DataModel {
 	public void moveToNextGroup() {
 		if (groupedFiles.getGroupsCount() > 1) {
 			groupedFiles.next();
-			pathPreferences.setLastGroup(groupedFiles.getCurrentGroup());
+			pathPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
 			loadFilesImpl();
 		}
 	}
@@ -156,7 +156,7 @@ public class DataModelImpl implements DataModel {
 	public void moveToPreviousGroup() {
 		if (groupedFiles.getGroupsCount() > 1) {
 			groupedFiles.previous();
-			pathPreferences.setLastGroup(groupedFiles.getCurrentGroup());
+			pathPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
 			loadFilesImpl();
 		}
 	}
@@ -307,7 +307,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.CHANGE_EDGES_VISIBILITY.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.EDGES_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
 			handleEdgesVisibilityChanged();
 		} else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
 			calculateEdges();
@@ -378,8 +378,8 @@ public class DataModelImpl implements DataModel {
 				} else if (e.getKeyCode() == KeyEvent.VK_P) {
 					imageHandlingPreferences
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
-					propertyChangeSupport.firePropertyChange(CommunicationMessages.MINIATURE_VISIBILITY_CHANGE, null,
-							null);
+					propertyChangeSupport.firePropertyChange(
+							CommunicationMessages.POSITION_MINIATURE_VISIBILITY_CHANGED, null, null);
 				}
 			}
 

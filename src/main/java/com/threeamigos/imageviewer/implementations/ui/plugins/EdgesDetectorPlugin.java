@@ -65,7 +65,7 @@ public class EdgesDetectorPlugin extends AbstractMainWindowPlugin {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(CommunicationMessages.CHANGE_EDGES_VISIBILITY)) {
+		if (evt.getPropertyName().equals(CommunicationMessages.EDGES_VISIBILITY_CHANGED)) {
 			showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
 		}
 	}

@@ -29,7 +29,7 @@ public interface PathPreferences extends Preferences {
 
 	public ExifTag getTagToGroupBy();
 
-	public void setLastGroup(int lastGroup);
+	public void setGroupIndex(int lastGroup);
 
 	public int getLastGroup();
 

@@ -199,8 +199,6 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

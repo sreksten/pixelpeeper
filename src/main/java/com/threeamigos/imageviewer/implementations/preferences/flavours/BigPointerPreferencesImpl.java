@@ -1,25 +1,20 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareBigPointerPreferences;
 
-public class BigPointerPreferencesImpl implements PropertyChangeAwareBigPointerPreferences {
+public class BigPointerPreferencesImpl extends PropertyChangeAwareImpl implements BigPointerPreferences {
 
 	private boolean bigPointerVisible;
 	private int bigPointerSize;
 	private Rotation bigPointerRotation;
 
-	// transient to make Gson serializer ignore this
-	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
 	@Override
 	public void setBigPointerVisible(boolean bigPointerVisible) {
+		boolean oldBigPointerVisible = this.bigPointerVisible;
 		this.bigPointerVisible = bigPointerVisible;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.BIG_POINTER_VISIBILITY_CHANGED, oldBigPointerVisible,
+				bigPointerVisible);
 	}
 
 	@Override
@@ -29,8 +24,9 @@ public class BigPointerPreferencesImpl implements PropertyChangeAwareBigPointerP
 
 	@Override
 	public void setBigPointerSize(int bigPointerSize) {
+		int oldBigPointerSize = this.bigPointerSize;
 		this.bigPointerSize = bigPointerSize;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.BIG_POINTER_SIZE_CHANGED, oldBigPointerSize, bigPointerSize);
 	}
 
 	@Override
@@ -39,9 +35,11 @@ public class BigPointerPreferencesImpl implements PropertyChangeAwareBigPointerP
 	}
 
 	@Override
-	public void setBigPointerRotation(Rotation rotation) {
-		this.bigPointerRotation = rotation;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED, null, null);
+	public void setBigPointerRotation(Rotation bigPointerRotation) {
+		Rotation oldBigPointerRotation = this.bigPointerRotation;
+		this.bigPointerRotation = bigPointerRotation;
+		firePropertyChange(CommunicationMessages.BIG_POINTER_ROTATION_CHANGED, oldBigPointerRotation,
+				bigPointerRotation);
 	}
 
 	@Override
@@ -58,16 +56,6 @@ public class BigPointerPreferencesImpl implements PropertyChangeAwareBigPointerP
 
 	@Override
 	public void validate() {
-	}
-
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.addPropertyChangeListener(pcl);
-	}
-
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

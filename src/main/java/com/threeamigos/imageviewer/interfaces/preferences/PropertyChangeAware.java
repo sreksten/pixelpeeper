@@ -1,8 +1,8 @@
-package com.threeamigos.imageviewer.interfaces.preferences.flavours;
+package com.threeamigos.imageviewer.interfaces.preferences;
 
 import java.beans.PropertyChangeListener;
 
-public interface PropertyChangeAwareGridPreferences extends GridPreferences {
+public interface PropertyChangeAware {
 
 	public void addPropertyChangeListener(PropertyChangeListener pcl);
 

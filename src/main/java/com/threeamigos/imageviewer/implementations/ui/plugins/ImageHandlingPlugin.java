@@ -57,9 +57,9 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 					imageHandlingPreferences.setAutorotation(!imageHandlingPreferences.isAutorotation());
 				});
 		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", MOVEMENT_IN_PERCENTAGE_KEY,
-				imageHandlingPreferences.isMovementInPercentage(), event -> {
+				imageHandlingPreferences.isRelativeMovement(), event -> {
 					imageHandlingPreferences
-							.setMovementInPercentage(!imageHandlingPreferences.isMovementInPercentage());
+							.setRelativeMovement(!imageHandlingPreferences.isRelativeMovement());
 				});
 		addCheckboxMenuItem(imageHandlingMenu, "Move all images", MOVE_ALL_IMAGES_KEY,
 				imageHandlingPreferences.isMovementAppliedToAllImages(), event -> {

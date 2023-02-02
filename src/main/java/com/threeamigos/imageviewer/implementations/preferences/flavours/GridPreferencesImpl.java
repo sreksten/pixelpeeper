@@ -1,23 +1,18 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareGridPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 
-public class GridPreferencesImpl implements PropertyChangeAwareGridPreferences {
+public class GridPreferencesImpl extends PropertyChangeAwareImpl implements GridPreferences {
 
 	private boolean gridVisible;
 	private int gridSpacing;
 
-	// transient to make Gson serializer ignore this
-	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
 	@Override
 	public void setGridVisible(boolean gridVisible) {
+		boolean oldGridVisible = this.gridVisible;
 		this.gridVisible = gridVisible;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGE, null, null);
+		firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGED, oldGridVisible, gridVisible);
 	}
 
 	@Override
@@ -27,8 +22,9 @@ public class GridPreferencesImpl implements PropertyChangeAwareGridPreferences {
 
 	@Override
 	public void setGridSpacing(int gridSpacing) {
+		int oldGridSpacing = this.gridSpacing;
 		this.gridSpacing = gridSpacing;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.GRID_SPACING_CHANGED, oldGridSpacing, gridSpacing);
 	}
 
 	@Override
@@ -47,16 +43,6 @@ public class GridPreferencesImpl implements PropertyChangeAwareGridPreferences {
 		if (gridSpacing < GRID_SPACING_MIN || gridSpacing > GRID_SPACING_MAX) {
 			throw new IllegalArgumentException("Invalid grid spacing");
 		}
-	}
-
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.addPropertyChangeListener(pcl);
-	}
-
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

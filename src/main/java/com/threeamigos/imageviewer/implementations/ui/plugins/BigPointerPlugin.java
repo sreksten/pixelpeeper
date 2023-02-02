@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -16,6 +17,7 @@ public class BigPointerPlugin extends AbstractMainWindowPlugin {
 	private final BigPointerPreferences bigPointerPreferences;
 	private final CursorManager cursorManager;
 
+	private JCheckBoxMenuItem bigPointerVisibleMenuItem;
 	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 
 	public BigPointerPlugin(BigPointerPreferences bigPointerPreferences, CursorManager cursorManager) {
@@ -29,7 +31,7 @@ public class BigPointerPlugin extends AbstractMainWindowPlugin {
 
 		JMenu imageHandlingMenu = mainWindow.getMenu("Image handling");
 
-		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", SHOW_BIG_POINTER_KEY,
+		bigPointerVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", SHOW_BIG_POINTER_KEY,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
 				});
@@ -47,16 +49,20 @@ public class BigPointerPlugin extends AbstractMainWindowPlugin {
 
 	}
 
-	private void updateBigPointerSizeMenu(final int pointerSize) {
-		for (Map.Entry<Integer, JMenuItem> entry : bigPointerBySize.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == pointerSize);
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_VISIBILITY_CHANGED)) {
+			bigPointerVisibleMenuItem.setSelected(bigPointerPreferences.isBigPointerVisible());
+		} else if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_SIZE_CHANGED)) {
+			updateBigPointerSizeMenu(bigPointerPreferences.getBigPointerSize());
+		} else if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_ROTATION_CHANGED)) {
+			// Do nothing here
 		}
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED)) {
-			updateBigPointerSizeMenu(bigPointerPreferences.getBigPointerSize());
+	private void updateBigPointerSizeMenu(final int pointerSize) {
+		for (Map.Entry<Integer, JMenuItem> entry : bigPointerBySize.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == pointerSize);
 		}
 	}
 

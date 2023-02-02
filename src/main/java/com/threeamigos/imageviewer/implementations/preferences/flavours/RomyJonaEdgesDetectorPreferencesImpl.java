@@ -2,7 +2,8 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 
-public class RomyJonaEdgesDetectorPreferencesImpl implements RomyJonaEdgesDetectorPreferences {
+public class RomyJonaEdgesDetectorPreferencesImpl extends PropertyChangeAwareImpl
+		implements RomyJonaEdgesDetectorPreferences {
 
 	private int puppamento;
 	private boolean aNastro;

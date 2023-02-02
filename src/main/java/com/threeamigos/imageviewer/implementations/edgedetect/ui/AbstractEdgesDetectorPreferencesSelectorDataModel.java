@@ -9,12 +9,14 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.threeamigos.imageviewer.implementations.preferences.flavours.PropertyChangeAwareImpl;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 
-abstract class AbstractEdgesDetectorPreferencesSelectorDataModel implements EdgesDetectorPreferences, ChangeListener {
+abstract class AbstractEdgesDetectorPreferencesSelectorDataModel extends PropertyChangeAwareImpl
+		implements EdgesDetectorPreferences, ChangeListener {
 
 	protected final DataModel dataModel;
 	protected final EdgesDetectorPreferences edgesDetectorPreferences;

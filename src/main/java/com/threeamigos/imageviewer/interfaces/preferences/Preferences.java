@@ -6,7 +6,7 @@ package com.threeamigos.imageviewer.interfaces.preferences;
  * @author stefano
  *
  */
-public interface Preferences {
+public interface Preferences extends PropertyChangeAware {
 
 	public String getDescription();
 

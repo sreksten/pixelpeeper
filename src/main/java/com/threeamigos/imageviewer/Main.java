@@ -63,16 +63,16 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.HintsPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareBigPointerPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareGridPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
@@ -142,7 +142,7 @@ public class Main {
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
 		preferencesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
-		PropertyChangeAwareImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
+		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
 		preferencesHelper.register(imageHandlingPreferences, "image_handling.preferences");
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
@@ -153,15 +153,15 @@ public class Main {
 
 		// Decorators preferences
 
-		PropertyChangeAwareGridPreferences gridPreferences = new GridPreferencesImpl();
+		GridPreferences gridPreferences = new GridPreferencesImpl();
 		preferencesHelper.register(gridPreferences, "grid.preferences");
 
-		PropertyChangeAwareBigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
+		BigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
 		preferencesHelper.register(bigPointerPreferences, "pointer.preferences");
 
 		// Edges Detector and implementations preferences
 
-		PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
+		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
 		preferencesHelper.register(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
@@ -228,7 +228,6 @@ public class Main {
 		Collection<ImageDecorator> decorators = new ArrayList<>();
 
 		GridDecorator gridDecorator = new GridDecorator(mainWindowPreferences, gridPreferences);
-		chainedInputConsumer.addConsumer(gridDecorator.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 		decorators.add(gridDecorator);
 		hintsCollector.addHints(gridDecorator);
 
@@ -250,6 +249,7 @@ public class Main {
 
 		GridPlugin gridPlugin = new GridPlugin(gridPreferences);
 		gridPreferences.addPropertyChangeListener(gridPlugin);
+		chainedInputConsumer.addConsumer(gridPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
 
 		BigPointerPlugin bigPointerPlugin = new BigPointerPlugin(bigPointerPreferences, cursorManager);
 
@@ -273,7 +273,6 @@ public class Main {
 		dataModel.addPropertyChangeListener(controlsPanel);
 
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
-		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
 
 		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences);
 

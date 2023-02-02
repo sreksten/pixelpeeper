@@ -3,37 +3,24 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.WindowPreferences;
 
-public abstract class AbstractWindowPreferencesImpl implements WindowPreferences {
+public abstract class AbstractWindowPreferencesImpl extends PropertyChangeAwareImpl implements WindowPreferences {
 
-	protected int width;
-	protected int height;
 	private int x;
 	private int y;
-
-	public int getWidth() {
-		return width;
-	}
-
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-
-	public void setHeight(int height) {
-		this.height = height;
-	}
+	protected int width;
+	protected int height;
 
 	public int getX() {
 		return x;
 	}
 
 	public void setX(int x) {
+		int oldX = this.x;
 		this.x = x;
+		firePropertyChange(CommunicationMessages.WINDOW_X_POSITION_CHANGED, oldX, x);
 	}
 
 	public int getY() {
@@ -41,7 +28,29 @@ public abstract class AbstractWindowPreferencesImpl implements WindowPreferences
 	}
 
 	public void setY(int y) {
+		int oldY = this.y;
 		this.y = y;
+		firePropertyChange(CommunicationMessages.WINDOW_Y_POSITION_CHANGED, oldY, y);
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		int oldWidth = this.width;
+		this.width = width;
+		firePropertyChange(CommunicationMessages.WINDOW_WIDTH_CHANGED, oldWidth, width);
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		int oldHeight = this.height;
+		this.height = height;
+		firePropertyChange(CommunicationMessages.WINDOW_HEIGHT_CHANGED, oldHeight, height);
 	}
 
 	public void loadDefaultValues() {
@@ -70,5 +79,4 @@ public abstract class AbstractWindowPreferencesImpl implements WindowPreferences
 					.format("Invalid %s window preferences: height must be greater than %d", windowName, minDimension));
 		}
 	}
-
 }

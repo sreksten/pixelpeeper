@@ -11,8 +11,8 @@ public interface ImageHandlingPreferences extends Preferences {
 	public static final int ZOOM_LEVEL_DEFAULT = 100;
 	public static final int MAX_ZOOM_LEVEL = 100;
 	public static final int ZOOM_LEVEL_STEP = 10;
-	public static final boolean ADAPT_TO_CROP_DEFAULT = false;
-	public static final boolean ADAPT_TO_FOCAL_LENGTH_DEFAULT = false;
+	public static final boolean NORMALIZED_FOR_CROP_DEFAULT = false;
+	public static final boolean NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT = false;
 	public static final boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
 	public static final boolean POSITION_MINIATURE_VISIBLE_DEFAULT = false;
@@ -43,9 +43,9 @@ public interface ImageHandlingPreferences extends Preferences {
 
 	public boolean isNormalizedForFocalLength();
 
-	public void setMovementInPercentage(boolean movementInPercentage);
+	public void setRelativeMovement(boolean movementInPercentage);
 
-	public boolean isMovementInPercentage();
+	public boolean isRelativeMovement();
 
 	public void setPositionMiniatureVisible(boolean positionMiniatureVisible);
 

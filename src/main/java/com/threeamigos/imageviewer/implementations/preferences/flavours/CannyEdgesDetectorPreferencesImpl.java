@@ -1,8 +1,10 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 
-public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPreferences {
+public class CannyEdgesDetectorPreferencesImpl extends PropertyChangeAwareImpl
+		implements CannyEdgesDetectorPreferences {
 
 	private float lowThreshold;
 	private float highThreshold;
@@ -17,7 +19,9 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void setLowThreshold(float lowThreshold) {
+		float oldLowThreshold = this.lowThreshold;
 		this.lowThreshold = lowThreshold;
+		firePropertyChange(CommunicationMessages.CANNY_LOW_THRESHOLD_CHANGED, oldLowThreshold, lowThreshold);
 	}
 
 	@Override
@@ -27,7 +31,9 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void setHighThreshold(float highThreshold) {
+		float oldHighThreshold = this.highThreshold;
 		this.highThreshold = highThreshold;
+		firePropertyChange(CommunicationMessages.CANNY_HIGH_THRESHOLD_CHANGED, oldHighThreshold, highThreshold);
 	}
 
 	@Override
@@ -37,7 +43,10 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void setGaussianKernelRadius(float gaussianKernelRadius) {
+		float oldGaussianKernelRadius = this.gaussianKernelRadius;
 		this.gaussianKernelRadius = gaussianKernelRadius;
+		firePropertyChange(CommunicationMessages.CANNY_GAUSSIAN_KERNEL_RADIUS_CHANGED, oldGaussianKernelRadius,
+				gaussianKernelRadius);
 	}
 
 	@Override
@@ -47,7 +56,10 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void setGaussianKernelWidth(int gaussianKernelWidth) {
+		float oldGaussianKernelWidth = this.gaussianKernelWidth;
 		this.gaussianKernelWidth = gaussianKernelWidth;
+		firePropertyChange(CommunicationMessages.CANNY_GAUSSIAN_KERNEL_WIDTH_CHANGED, oldGaussianKernelWidth,
+				gaussianKernelWidth);
 	}
 
 	@Override
@@ -57,7 +69,10 @@ public class CannyEdgesDetectorPreferencesImpl implements CannyEdgesDetectorPref
 
 	@Override
 	public void setContrastNormalized(boolean contrastNormalized) {
+		boolean oldContrastNormalized = this.contrastNormalized;
 		this.contrastNormalized = contrastNormalized;
+		firePropertyChange(CommunicationMessages.CANNY_CONTRAST_NORMALIZED_CHANGED, oldContrastNormalized,
+				contrastNormalized);
 	}
 
 	@Override

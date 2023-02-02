@@ -1,32 +1,27 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareImageHandlingPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
-public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHandlingPreferences {
+public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implements ImageHandlingPreferences {
 
 	private boolean autorotation;
 	private int zoomLevel;
 	private boolean normalizedForCrop;
 	private boolean normalizedForFocalLength;
-	private boolean movementInPercentage;
+	private boolean relativeMovement;
 	private boolean movementAppliedToAllImages;
 	private boolean positionMiniatureVisible;
 	private ImageReaderFlavour imageReaderFlavour;
-	private ExifReaderFlavour metadataReaderFlavour;
-
-	// transient to make Gson serializer ignore this
-	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	private ExifReaderFlavour exifReaderFlavour;
 
 	@Override
 	public void setAutorotation(boolean autorotation) {
+		boolean oldAutorotation = this.autorotation;
 		this.autorotation = autorotation;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.AUTOROTATION_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.AUTOROTATION_CHANGED, oldAutorotation, autorotation);
 	}
 
 	@Override
@@ -36,14 +31,14 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	@Override
 	public void setZoomLevel(int zoomLevel) {
-		int previousLevel = this.zoomLevel;
+		int oldZoomLevel = this.zoomLevel;
 		if (zoomLevel < MIN_ZOOM_LEVEL) {
 			zoomLevel = MIN_ZOOM_LEVEL;
 		} else if (zoomLevel > MAX_ZOOM_LEVEL) {
 			zoomLevel = MAX_ZOOM_LEVEL;
 		}
 		this.zoomLevel = zoomLevel;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, previousLevel, zoomLevel);
+		firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, oldZoomLevel, zoomLevel);
 	}
 
 	@Override
@@ -53,8 +48,9 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	@Override
 	public void setNormalizedForCrop(boolean normalizedForCrop) {
+		boolean oldNormalizedForCrop = this.normalizedForCrop;
 		this.normalizedForCrop = normalizedForCrop;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED, oldNormalizedForCrop, normalizedForCrop);
 	}
 
 	@Override
@@ -64,8 +60,10 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	@Override
 	public void setNormalizedForFocalLength(boolean normalizedForFocalLength) {
+		boolean oldNormalizedForFocalLength = this.normalizedForFocalLength;
 		this.normalizedForFocalLength = normalizedForFocalLength;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, null, null);
+		firePropertyChange(CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED, oldNormalizedForFocalLength,
+				normalizedForFocalLength);
 	}
 
 	@Override
@@ -74,20 +72,23 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	}
 
 	@Override
-	public void setMovementInPercentage(boolean movementInPercentage) {
-		this.movementInPercentage = movementInPercentage;
+	public void setRelativeMovement(boolean relativeMovement) {
+		boolean oldRelativeMovement = this.relativeMovement;
+		this.relativeMovement = relativeMovement;
+		firePropertyChange(CommunicationMessages.RELATIVE_MOVEMENT_CHANGED, oldRelativeMovement, relativeMovement);
 	}
 
 	@Override
-	public boolean isMovementInPercentage() {
-		return movementInPercentage;
+	public boolean isRelativeMovement() {
+		return relativeMovement;
 	}
 
 	@Override
 	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages) {
+		boolean oldMovementAppliedToAllImages = this.movementAppliedToAllImages;
 		this.movementAppliedToAllImages = movementAppliesToAllImages;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED, null,
-				null);
+		firePropertyChange(CommunicationMessages.MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED, oldMovementAppliedToAllImages,
+				movementAppliesToAllImages);
 	}
 
 	@Override
@@ -97,8 +98,10 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	@Override
 	public void setPositionMiniatureVisible(boolean positionMiniatureVisible) {
+		boolean oldPositionMiniatureVisible = this.positionMiniatureVisible;
 		this.positionMiniatureVisible = positionMiniatureVisible;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+		firePropertyChange(CommunicationMessages.POSITION_MINIATURE_VISIBILITY_CHANGED, oldPositionMiniatureVisible,
+				positionMiniatureVisible);
 	}
 
 	public boolean isPositionMiniatureVisible() {
@@ -107,7 +110,10 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 
 	@Override
 	public void setImageReaderFlavour(ImageReaderFlavour imageReaderFlavour) {
+		ImageReaderFlavour oldImageReaderFlavour = this.imageReaderFlavour;
 		this.imageReaderFlavour = imageReaderFlavour;
+		firePropertyChange(CommunicationMessages.IMAGE_READER_FLAVOUR_CHANGED, oldImageReaderFlavour,
+				imageReaderFlavour);
 	}
 
 	@Override
@@ -116,24 +122,28 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	}
 
 	@Override
-	public void setExifReaderFlavour(ExifReaderFlavour metadataReaderFlavour) {
-		this.metadataReaderFlavour = metadataReaderFlavour;
+	public void setExifReaderFlavour(ExifReaderFlavour exifReaderFlavour) {
+		ExifReaderFlavour oldExifReaderFlavour = this.exifReaderFlavour;
+		this.exifReaderFlavour = exifReaderFlavour;
+		firePropertyChange(CommunicationMessages.EXIF_READER_FLAVOUR_CHANGED, oldExifReaderFlavour, exifReaderFlavour);
 	}
 
 	@Override
 	public ExifReaderFlavour getExifReaderFlavour() {
-		return metadataReaderFlavour;
+		return exifReaderFlavour;
 	}
 
 	@Override
 	public void loadDefaultValues() {
 		autorotation = AUTOROTATION_DEFAULT;
-		movementInPercentage = MOVEMENT_IN_PERCENTAGE_DEFAULT;
+		zoomLevel = ZOOM_LEVEL_DEFAULT;
+		normalizedForCrop = NORMALIZED_FOR_CROP_DEFAULT;
+		normalizedForFocalLength = NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT;
+		relativeMovement = MOVEMENT_IN_PERCENTAGE_DEFAULT;
 		movementAppliedToAllImages = MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT;
 		positionMiniatureVisible = POSITION_MINIATURE_VISIBLE_DEFAULT;
-		zoomLevel = ZOOM_LEVEL_DEFAULT;
 		imageReaderFlavour = IMAGE_READER_FLAVOUR_DEFAULT;
-		metadataReaderFlavour = METADATA_READER_FLAVOUR_DEFAULT;
+		exifReaderFlavour = METADATA_READER_FLAVOUR_DEFAULT;
 	}
 
 	@Override
@@ -141,22 +151,12 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 		if (imageReaderFlavour == null) {
 			throw new IllegalArgumentException("Invalid image reader flavour");
 		}
-		if (metadataReaderFlavour == null) {
+		if (exifReaderFlavour == null) {
 			throw new IllegalArgumentException("Invalid metadata reader flavour");
 		}
 		if (zoomLevel < 10 || zoomLevel > 100) {
 			throw new IllegalArgumentException("Invalid zoom level");
 		}
-	}
-
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.addPropertyChangeListener(pcl);
-	}
-
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

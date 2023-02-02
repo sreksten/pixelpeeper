@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.SecondaryWindowPreferences;
 
 public abstract class AbstractSecondaryWindowPreferencesImpl extends AbstractWindowPreferencesImpl
@@ -8,13 +9,15 @@ public abstract class AbstractSecondaryWindowPreferencesImpl extends AbstractWin
 	private boolean visible;
 
 	@Override
-	public void setVisible(boolean visible) {
-		this.visible = visible;
+	public boolean isVisible() {
+		return visible;
 	}
 
 	@Override
-	public boolean isVisible() {
-		return visible;
+	public void setVisible(boolean visible) {
+		boolean oldVisible = this.visible;
+		this.visible = visible;
+		firePropertyChange(CommunicationMessages.WINDOW_VISIBILITY_CHANGED, oldVisible, visible);
 	}
 
 }

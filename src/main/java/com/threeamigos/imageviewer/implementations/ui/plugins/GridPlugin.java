@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.ui.plugins;
 
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +8,11 @@ import java.util.Map;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
 public class GridPlugin extends AbstractMainWindowPlugin {
 
@@ -44,9 +48,9 @@ public class GridPlugin extends AbstractMainWindowPlugin {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.GRID_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
 			gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
-		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
+		} else if (CommunicationMessages.GRID_SPACING_CHANGED.equals(evt.getPropertyName())) {
 			updateGridSpacingMenu(gridPreferences.getGridSpacing());
 		}
 	}
@@ -56,4 +60,35 @@ public class GridPlugin extends AbstractMainWindowPlugin {
 			entry.getValue().setSelected(entry.getKey() == gridSpacing);
 		}
 	}
+
+	public InputConsumer getInputConsumer() {
+		return new InputAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+
+				if (e.getKeyCode() == KeyRegistry.SHOW_GRID_KEY) {
+					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
+					e.consume();
+				} else if (e.getKeyCode() == KeyRegistry.ENLARGE_KEY) {
+					if (gridPreferences.isGridVisible()) {
+						int spacing = gridPreferences.getGridSpacing();
+						if (spacing < GridPreferences.GRID_SPACING_MAX) {
+							gridPreferences.setGridSpacing(spacing + GridPreferences.GRID_SPACING_STEP);
+						}
+						e.consume();
+					}
+				} else if (e.getKeyCode() == KeyRegistry.REDUCE_KEY) {
+					if (gridPreferences.isGridVisible()) {
+						int spacing = gridPreferences.getGridSpacing();
+						if (spacing > GridPreferences.GRID_SPACING_MIN) {
+							gridPreferences.setGridSpacing(spacing - GridPreferences.GRID_SPACING_STEP);
+						}
+						e.consume();
+					}
+				}
+			}
+		};
+	}
+
 }

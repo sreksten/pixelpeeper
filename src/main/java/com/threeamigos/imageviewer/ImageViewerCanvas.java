@@ -194,37 +194,12 @@ public class ImageViewerCanvas extends JPanel
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-
-		if (CommunicationMessages.CHANGE_EDGES_VISIBILITY.equals(evt.getPropertyName())) {
-			repaint();
-
-		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-			repaint();
-
-		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-			repaint();
-
-		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST.equals(evt.getPropertyName())) {
 			updateCursor();
-
-		} else if (CommunicationMessages.MINIATURE_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
-			updateCursor();
-
-		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
-			repaint();
-
-		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
-			repaint();
-
-		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
-			repaint();
-
 		} else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
 			reframeDataModel();
-
-		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
+		} else {
 			repaint();
-
 		}
 	}
 

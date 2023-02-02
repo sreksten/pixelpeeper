@@ -109,7 +109,7 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 				cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 			}
 		}
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_CHANGED, null, this);
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null, this);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -250,9 +250,11 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.BIG_POINTER_VISIBILITY_CHANGED.equals(evt.getPropertyName())
+				|| CommunicationMessages.BIG_POINTER_SIZE_CHANGED.equals(evt.getPropertyName())
+				|| CommunicationMessages.BIG_POINTER_ROTATION_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
-			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_CHANGED, null, this);
+			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null, this);
 		}
 	}
 

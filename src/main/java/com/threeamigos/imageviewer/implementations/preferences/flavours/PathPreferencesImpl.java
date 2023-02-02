@@ -5,18 +5,21 @@ import java.util.Collections;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.ExifTag;
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 
-public class PathPreferencesImpl implements PathPreferences {
+public class PathPreferencesImpl extends PropertyChangeAwareImpl implements PathPreferences {
 
 	private String lastPath;
 	private List<String> lastFilenames;
 	private ExifTag tagToGroupBy;
-	private int lastGroup;
+	private int groupIndex;
 
 	@Override
 	public void setLastPath(String path) {
+		String oldLastPath = this.lastPath;
 		this.lastPath = path;
+		firePropertyChange(CommunicationMessages.LAST_PATH_CHANGED, oldLastPath, lastPath);
 	}
 
 	@Override
@@ -26,7 +29,9 @@ public class PathPreferencesImpl implements PathPreferences {
 
 	@Override
 	public void setLastFilenames(List<String> lastFilenames) {
+		List<String> oldLastFilenames = this.lastFilenames;
 		this.lastFilenames = lastFilenames;
+		firePropertyChange(CommunicationMessages.LAST_FILES_CHANGED, oldLastFilenames, lastFilenames);
 	}
 
 	@Override
@@ -36,7 +41,9 @@ public class PathPreferencesImpl implements PathPreferences {
 
 	@Override
 	public void setTagToGroupBy(ExifTag exifTag) {
+		ExifTag oldTagToGroupBy = this.tagToGroupBy;
 		this.tagToGroupBy = exifTag;
+		firePropertyChange(CommunicationMessages.TAG_TO_GROUP_BY_CHANGED, oldTagToGroupBy, tagToGroupBy);
 	}
 
 	@Override
@@ -45,13 +52,15 @@ public class PathPreferencesImpl implements PathPreferences {
 	}
 
 	@Override
-	public void setLastGroup(int lastGroup) {
-		this.lastGroup = lastGroup;
+	public void setGroupIndex(int groupIndex) {
+		int oldGroupIndex = this.groupIndex;
+		this.groupIndex = groupIndex;
+		firePropertyChange(CommunicationMessages.GROUP_INDEX_CHANGED, oldGroupIndex, groupIndex);
 	}
 
 	@Override
 	public int getLastGroup() {
-		return lastGroup;
+		return groupIndex;
 	}
 
 	@Override
@@ -59,7 +68,7 @@ public class PathPreferencesImpl implements PathPreferences {
 		lastPath = System.getProperty("user.home");
 		lastFilenames = Collections.emptyList();
 		tagToGroupBy = null;
-		lastGroup = 0;
+		groupIndex = 0;
 	}
 
 	@Override
