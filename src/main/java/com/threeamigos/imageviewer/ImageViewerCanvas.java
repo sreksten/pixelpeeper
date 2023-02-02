@@ -283,7 +283,11 @@ public class ImageViewerCanvas extends JPanel
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+
+		if (CommunicationMessages.CHANGE_EDGES_VISIBILITY.equals(evt.getPropertyName())) {
+			repaint();
+
+		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
 			repaint();
 
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
@@ -291,6 +295,15 @@ public class ImageViewerCanvas extends JPanel
 
 		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
+
+		} else if (CommunicationMessages.MINIATURE_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
+			updateCursor();
+
+		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
+			repaint();
+
+		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
+			repaint();
 
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			repaint();
@@ -300,6 +313,7 @@ public class ImageViewerCanvas extends JPanel
 
 		} else if (CommunicationMessages.REQUEST_REPAINT.equals(evt.getPropertyName())) {
 			repaint();
+
 		}
 	}
 

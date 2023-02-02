@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
-import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
 public class GridDecorator implements ImageDecorator, HintsProducer {
 
@@ -63,27 +63,22 @@ public class GridDecorator implements ImageDecorator, HintsProducer {
 			@Override
 			public void keyPressed(KeyEvent e) {
 
-				if (e.getKeyCode() == KeyEvent.VK_G) {
+				if (e.getKeyCode() == KeyRegistry.SHOW_GRID_KEY) {
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
-					propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGE, null, this);
 					e.consume();
-				} else if (e.getKeyCode() == KeyEvent.VK_ADD) {
+				} else if (e.getKeyCode() == KeyRegistry.ENLARGE_KEY) {
 					if (gridPreferences.isGridVisible()) {
 						int spacing = gridPreferences.getGridSpacing();
 						if (spacing < GridPreferences.GRID_SPACING_MAX) {
 							gridPreferences.setGridSpacing(spacing + GridPreferences.GRID_SPACING_STEP);
-							propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null,
-									this);
 						}
 						e.consume();
 					}
-				} else if (e.getKeyCode() == KeyEvent.VK_SUBTRACT) {
+				} else if (e.getKeyCode() == KeyRegistry.REDUCE_KEY) {
 					if (gridPreferences.isGridVisible()) {
 						int spacing = gridPreferences.getGridSpacing();
 						if (spacing > GridPreferences.GRID_SPACING_MIN) {
 							gridPreferences.setGridSpacing(spacing - GridPreferences.GRID_SPACING_STEP);
-							propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null,
-									this);
 						}
 						e.consume();
 					}

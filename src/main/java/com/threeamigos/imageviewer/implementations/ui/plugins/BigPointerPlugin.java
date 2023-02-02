@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 
@@ -40,7 +41,6 @@ public class BigPointerPlugin extends AbstractMainWindowPlugin {
 			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize), -1,
 					pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {
 						bigPointerPreferences.setBigPointerSize(currentSize - 1);
-						updateBigPointerSizeMenu(currentSize);
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
 		}
@@ -55,7 +55,9 @@ public class BigPointerPlugin extends AbstractMainWindowPlugin {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-
+		if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_PREFERENCES_CHANGED)) {
+			updateBigPointerSizeMenu(bigPointerPreferences.getBigPointerSize());
+		}
 	}
 
 }

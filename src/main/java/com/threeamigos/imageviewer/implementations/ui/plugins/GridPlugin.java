@@ -44,14 +44,10 @@ public class GridPlugin extends AbstractMainWindowPlugin {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-
 		if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
 			gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
-			repaint();
-
 		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
 			updateGridSpacingMenu(gridPreferences.getGridSpacing());
-			repaint();
 		}
 	}
 

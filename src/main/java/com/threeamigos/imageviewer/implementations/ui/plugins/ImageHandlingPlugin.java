@@ -4,9 +4,11 @@ import java.beans.PropertyChangeEvent;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -14,6 +16,8 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 
 	private final ImageHandlingPreferences imageHandlingPreferences;
+
+	private JCheckBoxMenuItem autorotationMenuItem;
 
 	private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
 	private Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
@@ -48,7 +52,7 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 					});
 			exifReadersByFlavour.put(flavour, exifReaderItem);
 		}
-		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", AUTOROTATION_KEY,
+		autorotationMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", AUTOROTATION_KEY,
 				imageHandlingPreferences.isAutorotation(), event -> {
 					imageHandlingPreferences.setAutorotation(!imageHandlingPreferences.isAutorotation());
 				});
@@ -93,5 +97,8 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(CommunicationMessages.AUTOROTATION_CHANGED)) {
+			autorotationMenuItem.setSelected(imageHandlingPreferences.isAutorotation());
+		}
 	}
 }

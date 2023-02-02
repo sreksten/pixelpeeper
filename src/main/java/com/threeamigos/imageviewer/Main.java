@@ -99,6 +99,10 @@ public class Main {
 
 	// BUGFIX: the controls panel's glue seems not to work
 
+	// BUGFIX: proportional movement does not consider the focal length/crop factor
+
+	// TODO: move the tags to a plugin
+
 	// TODO: image grouping - add a tolerance for focal length
 
 	// TODO: offer more options to subdivide the images panel (e.g. 3x2 grid)
@@ -261,7 +265,7 @@ public class Main {
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 		bigPointerPreferences.addPropertyChangeListener(imageViewerCanvas);
-		gridPlugin.addPropertyChangeListener(imageViewerCanvas);
+		gridPreferences.addPropertyChangeListener(imageViewerCanvas);
 
 		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
