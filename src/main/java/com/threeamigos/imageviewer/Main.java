@@ -51,6 +51,7 @@ import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.imageviewer.implementations.ui.plugins.BigPointerPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.EdgesDetectorPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.ExifTagsPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.GridPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.ImageHandlingPlugin;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
@@ -100,8 +101,6 @@ public class Main {
 	// BUGFIX: the controls panel's glue seems not to work
 
 	// BUGFIX: proportional movement does not consider the focal length/crop factor
-
-	// TODO: move the tags to a plugin
 
 	// TODO: image grouping - add a tolerance for focal length
 
@@ -254,18 +253,20 @@ public class Main {
 
 		BigPointerPlugin bigPointerPlugin = new BigPointerPlugin(bigPointerPreferences, cursorManager);
 
+		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagPreferences);
+
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
-				dragAndDropWindowPreferences, imageHandlingPreferences, gridPreferences, bigPointerPreferences,
-				exifTagPreferences, dataModel, preferencesHelper, cursorManager, fileSelector, edgesDetectorPlugin,
-				imageHandlingPlugin, gridPlugin, bigPointerPlugin, chainedInputConsumer, decorators,
-				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
+				dragAndDropWindowPreferences, imageHandlingPreferences, dataModel, cursorManager, fileSelector,
+				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
+				edgesDetectorPlugin, imageHandlingPlugin, gridPlugin, bigPointerPlugin, exifTagsPlugin);
 		hintsCollector.addHints(imageViewerCanvas);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 		bigPointerPreferences.addPropertyChangeListener(imageViewerCanvas);
 		gridPreferences.addPropertyChangeListener(imageViewerCanvas);
+		exifTagsPlugin.addPropertyChangeListener(imageViewerCanvas);
 
 		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
