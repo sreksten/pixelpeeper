@@ -234,25 +234,22 @@ public class PictureData {
 	}
 
 	public void changeZoomLevel(int newZoomLevel) {
-		if (zoomLevel != newZoomLevel || image == null) {
-			zoomLevel = newZoomLevel;
-			releaseEdges();
-			if (zoomLevel == 100) {
-				width = sourceWidth;
-				height = sourceHeight;
-				image = sourceImage;
-			} else {
-				width = sourceWidth * zoomLevel / 100;
-				height = sourceHeight * zoomLevel / 100;
-				image = new BufferedImage(width, height, sourceImage.getType());
-				Graphics2D graphics = image.createGraphics();
-				graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1,
-						null);
-				graphics.dispose();
-			}
-			if (edgesDetectorPreferences.isShowEdges()) {
-				startEdgesCalculation();
-			}
+		zoomLevel = newZoomLevel;
+		releaseEdges();
+		if (zoomLevel == 100) {
+			width = sourceWidth;
+			height = sourceHeight;
+			image = sourceImage;
+		} else {
+			width = sourceWidth * zoomLevel / 100;
+			height = sourceHeight * zoomLevel / 100;
+			image = new BufferedImage(width, height, sourceImage.getType());
+			Graphics2D graphics = image.createGraphics();
+			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
+			graphics.dispose();
+		}
+		if (edgesDetectorPreferences.isShowEdges()) {
+			startEdgesCalculation();
 		}
 	}
 }

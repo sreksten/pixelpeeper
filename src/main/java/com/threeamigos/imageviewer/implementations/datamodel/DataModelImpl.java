@@ -306,7 +306,9 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.EDGES_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
+			toggleAutorotation();
+		} else if (CommunicationMessages.EDGES_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
 			handleEdgesVisibilityChanged();
 		} else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
 			calculateEdges();
@@ -316,7 +318,9 @@ public class DataModelImpl implements DataModel {
 			handleEdgeCalculationCompleted(evt);
 		} else if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
 			toggleAutorotation();
-		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
+		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())
+				|| CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED.equals(evt.getPropertyName())
+				|| CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED.equals(evt.getPropertyName())) {
 			changeZoomLevel();
 		} else if (CommunicationMessages.MOUSE_PRESSED.equals(evt.getPropertyName())) {
 			handleMousePressed(evt);
