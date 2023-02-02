@@ -2,7 +2,9 @@ package com.threeamigos.imageviewer.interfaces.datamodel;
 
 public interface CommunicationMessages {
 
-	public static final String EDGES_VISIBILITY = "EdgesVisibility";
+	public static final String CHANGE_EDGES_VISIBILITY = "ChangeEdgesVisibility";
+
+	public static final String REQUEST_EDGES_CALCULATION = "RequestEdgesCalculation";
 
 	public static final String EDGES_CALCULATION_STARTED = "EdgesCalculationStarted";
 
@@ -18,7 +20,11 @@ public interface CommunicationMessages {
 
 	public static final String GRID_SIZE_CHANGED = "GridSizeChanged";
 
+	public static final String AUTOROTATION_CHANGED = "AutoRotationChanged";
+
 	public static final String ZOOM_LEVEL_CHANGED = "ZoomLevelChanged";
+
+	public static final String MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED = "MovementAppliedToAllImagesChanged";
 
 	public static final String DATA_MODEL_CHANGED = "DataModelChanged";
 

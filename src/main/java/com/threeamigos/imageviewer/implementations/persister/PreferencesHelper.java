@@ -20,6 +20,8 @@ public class PreferencesHelper implements PersistableCollector {
 	public PreferencesHelper(RootPathProvider rootPathProvider, MessageHandler messageHandler) {
 		this.rootPathProvider = rootPathProvider;
 		this.messageHandler = messageHandler;
+
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> persist()));
 	}
 
 	public void register(Preferences preferences, String filename) {

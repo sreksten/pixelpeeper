@@ -26,6 +26,7 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	@Override
 	public void setAutorotation(boolean autorotation) {
 		this.autorotation = autorotation;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.AUTOROTATION_CHANGED, null, null);
 	}
 
 	@Override
@@ -85,6 +86,8 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	@Override
 	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages) {
 		this.movementAppliedToAllImages = movementAppliesToAllImages;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED, null,
+				null);
 	}
 
 	@Override
@@ -95,6 +98,7 @@ public class ImageHandlingPreferencesImpl implements PropertyChangeAwareImageHan
 	@Override
 	public void setPositionMiniatureVisible(boolean positionMiniatureVisible) {
 		this.positionMiniatureVisible = positionMiniatureVisible;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
 	public boolean isPositionMiniatureVisible() {

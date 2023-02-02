@@ -207,11 +207,11 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void toggleAutorotation() {
-		boolean autorotation = !imageHandlingPreferences.isAutorotation();
-		imageHandlingPreferences.setAutorotation(autorotation);
+		boolean autorotation = imageHandlingPreferences.isAutorotation();
 		for (ImageSlice slice : imageSlicesManager.getImageSlices()) {
 			slice.adjustRotation(autorotation);
 		}
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
 	@Override
@@ -307,10 +307,16 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.CHANGE_EDGES_VISIBILITY.equals(evt.getPropertyName())) {
+			handleEdgesVisibilityChanged();
+		} else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
+			calculateEdges();
+		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationStarted(evt);
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationCompleted(evt);
+		} else if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
+			toggleAutorotation();
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			changeZoomLevel();
 		} else if (CommunicationMessages.MOUSE_PRESSED.equals(evt.getPropertyName())) {
@@ -320,6 +326,10 @@ public class DataModelImpl implements DataModel {
 		} else if (CommunicationMessages.MOUSE_DRAGGED.equals(evt.getPropertyName())) {
 			handleMouseDragged(evt);
 		}
+	}
+
+	private void handleEdgesVisibilityChanged() {
+		requestRepaint();
 	}
 
 	private void handleEdgeCalculationStarted(PropertyChangeEvent evt) {

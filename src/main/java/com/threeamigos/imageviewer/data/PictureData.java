@@ -11,6 +11,7 @@ import com.threeamigos.imageviewer.implementations.helpers.ExifOrientationHelper
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
+import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 
@@ -35,6 +36,7 @@ public class PictureData {
 	private boolean edgeCalculationInProgress;
 	private boolean edgeCalculationAborted;
 	private EdgesDetector detector;
+	private EdgesDetectorFlavour flavour;
 	private BufferedImage edgesImage;
 
 	private int width;
@@ -64,9 +66,14 @@ public class PictureData {
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
+		this.zoomLevel = 100;
+
+		if (imageHandlingPreferences.isAutorotation()) {
+			correctOrientation();
+		}
+
 		calculateCropFactor();
 
-		this.zoomLevel = 100;
 		changeZoomLevel(imageHandlingPreferences.getZoomLevel());
 	}
 
@@ -167,6 +174,9 @@ public class PictureData {
 	}
 
 	public BufferedImage getEdgesImage() {
+		if (flavour != edgesDetectorPreferences.getEdgesDetectorFlavour()) {
+			edgesImage = null;
+		}
 		if (edgesImage == null) {
 			startEdgesCalculation();
 		}
@@ -191,6 +201,7 @@ public class PictureData {
 					public void run() {
 						detector = edgesDetectorFactory.getEdgesDetector();
 						detector.setSourceImage(image);
+						flavour = edgesDetectorPreferences.getEdgesDetectorFlavour();
 						detector.process();
 						if (!edgeCalculationAborted) {
 							edgesImage = detector.getEdgesImage();
@@ -209,6 +220,7 @@ public class PictureData {
 
 	public void releaseEdges() {
 		edgesImage = null;
+		flavour = null;
 		if (detector != null) {
 			edgeCalculationAborted = true;
 			detector.abort();

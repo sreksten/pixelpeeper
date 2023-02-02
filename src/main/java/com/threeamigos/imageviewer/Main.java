@@ -4,15 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.implementations.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.ConsoleMessageHandler;
@@ -52,6 +49,10 @@ import com.threeamigos.imageviewer.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.HintsWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
+import com.threeamigos.imageviewer.implementations.ui.plugins.BigPointerPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.EdgesDetectorPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.GridPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.ImageHandlingPlugin;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
@@ -61,16 +62,15 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
-import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareBigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareGridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
@@ -150,7 +150,7 @@ public class Main {
 
 		// Decorators preferences
 
-		GridPreferences gridPreferences = new GridPreferencesImpl();
+		PropertyChangeAwareGridPreferences gridPreferences = new GridPreferencesImpl();
 		preferencesHelper.register(gridPreferences, "grid.preferences");
 
 		PropertyChangeAwareBigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
@@ -204,6 +204,7 @@ public class Main {
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
+		edgesDetectorPreferences.addPropertyChangeListener(dataModel);
 
 		// User Interface
 
@@ -235,13 +236,32 @@ public class Main {
 
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
-		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(mainWindowPreferences, dragAndDropWindowPreferences,
-				imageHandlingPreferences, gridPreferences, bigPointerPreferences, exifTagPreferences, dataModel,
-				preferencesHelper, cursorManager, fileSelector, edgesDetectorPreferences,
-				edgesDetectorParametersSelectorFactory, chainedInputConsumer, decorators, new AboutWindowImpl(),
-				hintsWindow, dragAndDropWindow, messageHandler);
+		EdgesDetectorPlugin edgesDetectorPlugin = new EdgesDetectorPlugin(edgesDetectorPreferences,
+				edgesDetectorParametersSelectorFactory);
+		edgesDetectorPlugin.addPropertyChangeListener(dataModel);
+		edgesDetectorPreferences.addPropertyChangeListener(edgesDetectorPlugin);
+
+		ImageHandlingPlugin imageHandlingPlugin = new ImageHandlingPlugin(imageHandlingPreferences);
+		imageHandlingPlugin.addPropertyChangeListener(dataModel);
+		imageHandlingPreferences.addPropertyChangeListener(imageHandlingPlugin);
+
+		GridPlugin gridPlugin = new GridPlugin(gridPreferences);
+		gridPreferences.addPropertyChangeListener(gridPlugin);
+
+		BigPointerPlugin bigPointerPlugin = new BigPointerPlugin(bigPointerPreferences, cursorManager);
+
+		JMenuBar menuBar = new JMenuBar();
+
+		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
+				dragAndDropWindowPreferences, imageHandlingPreferences, gridPreferences, bigPointerPreferences,
+				exifTagPreferences, dataModel, preferencesHelper, cursorManager, fileSelector, edgesDetectorPlugin,
+				imageHandlingPlugin, gridPlugin, bigPointerPlugin, chainedInputConsumer, decorators,
+				new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler);
 		hintsCollector.addHints(imageViewerCanvas);
+		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
+		bigPointerPreferences.addPropertyChangeListener(imageViewerCanvas);
+		gridPlugin.addPropertyChangeListener(imageViewerCanvas);
 
 		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
@@ -250,11 +270,7 @@ public class Main {
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 		gridDecorator.addPropertyChangeListener(imageViewerCanvas);
 
-		JMenuBar menuBar = new JMenuBar();
-		imageViewerCanvas.addMenus(menuBar);
-
-		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences,
-				preferencesHelper);
+		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences);
 
 		dataModel.loadLastFiles();
 
@@ -266,19 +282,10 @@ public class Main {
 	}
 
 	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas imageViewerCanvas, ControlsPanel controlsPanel,
-			MainWindowPreferences mainWindowPreferences, Persistable persistable) {
+			MainWindowPreferences mainWindowPreferences) {
 
 		JFrame jframe = new JFrame("3AM Image Viewer");
-		jframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		jframe.setMinimumSize(new Dimension(800, 600));
-
-		jframe.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				persistable.persist();
-				System.exit(0);
-			}
-		});
 
 		jframe.setJMenuBar(menuBar);
 

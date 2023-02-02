@@ -1,15 +1,23 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
-public class GridPreferencesImpl implements GridPreferences {
+import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareGridPreferences;
+
+public class GridPreferencesImpl implements PropertyChangeAwareGridPreferences {
 
 	private boolean gridVisible;
 	private int gridSpacing;
 
+	// transient to make Gson serializer ignore this
+	private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
 	@Override
 	public void setGridVisible(boolean gridVisible) {
 		this.gridVisible = gridVisible;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGE, null, null);
 	}
 
 	@Override
@@ -20,6 +28,7 @@ public class GridPreferencesImpl implements GridPreferences {
 	@Override
 	public void setGridSpacing(int gridSpacing) {
 		this.gridSpacing = gridSpacing;
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.GRID_SIZE_CHANGED, null, null);
 	}
 
 	@Override
@@ -38,6 +47,16 @@ public class GridPreferencesImpl implements GridPreferences {
 		if (gridSpacing < GRID_SPACING_MIN || gridSpacing > GRID_SPACING_MAX) {
 			throw new IllegalArgumentException("Invalid grid spacing");
 		}
+	}
+
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.addPropertyChangeListener(pcl);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+		propertyChangeSupport.removePropertyChangeListener(pcl);
 	}
 
 }

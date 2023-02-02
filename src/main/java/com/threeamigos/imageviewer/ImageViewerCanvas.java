@@ -17,7 +17,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -32,21 +31,19 @@ import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.data.ExifTagVisibility;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
+import com.threeamigos.imageviewer.implementations.ui.plugins.BigPointerPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.EdgesDetectorPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.GridPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.ImageHandlingPlugin;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
-import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
-import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.persister.Persistable;
-import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
-import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PropertyChangeAwareEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
@@ -56,6 +53,7 @@ import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
+import com.threeamigos.imageviewer.interfaces.ui.MainWindow;
 
 /**
  * The canvas on which we draw the various image slices
@@ -64,7 +62,7 @@ import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
  *
  */
 public class ImageViewerCanvas extends JPanel
-		implements Consumer<List<File>>, PropertyChangeListener, HintsProducer, KeyRegistry {
+		implements Consumer<List<File>>, PropertyChangeListener, HintsProducer, KeyRegistry, MainWindow {
 
 	private static final long serialVersionUID = 1L;
 
@@ -74,57 +72,49 @@ public class ImageViewerCanvas extends JPanel
 	private final transient BigPointerPreferences bigPointerPreferences;
 	private final transient ExifTagPreferences exifTagPreferences;
 	private final transient DataModel dataModel;
-	private final transient Persistable preferencesPersisterHelper;
 	private final transient CursorManager cursorManager;
 	private final transient FileSelector fileSelector;
-	private final transient EdgesDetectorPreferences edgesDetectorPreferences;
-	private final transient EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory;
+	private final transient EdgesDetectorPlugin edgesDetectorPlugin;
+	private final transient ImageHandlingPlugin imageHandlingPlugin;
+	private final transient GridPlugin gridPlugin;
+	private final transient BigPointerPlugin bigPointerPlugin;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient HintsWindow hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
-	private final transient MessageHandler messageHandler;
 
-	private JMenuItem showEdgesMenuItem;
+	private final JMenuBar menuBar;
+	private final Map<String, JMenu> menues = new HashMap<>();
 
 	private Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
-	private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
-	private Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
-	private Map<EdgesDetectorFlavour, JMenuItem> edgesDetectorFlavourMenuItemsByFlavour = new EnumMap<>(
-			EdgesDetectorFlavour.class);
-	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
-	private JMenuItem gridVisibleMenuItem;
-	private JMenuItem miniatureVisibleMenuItem;
-	private Map<Integer, JMenuItem> bigPointerBySize = new HashMap<>();
 
-	public ImageViewerCanvas(MainWindowPreferences mainWindowPreferences,
+	public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, GridPreferences gridPreferences,
 			BigPointerPreferences bigPointerPreferences, ExifTagPreferences exifTagPreferences, DataModel dataModel,
 			Persistable preferencesPersisterHelper, CursorManager cursorManager, FileSelector fileSelector,
-			PropertyChangeAwareEdgesDetectorPreferences edgesDetectorPreferences,
-			EdgesDetectorPreferencesSelectorFactory edgesDetectorPreferencesSelectorFactory,
-			ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
-			HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
+			EdgesDetectorPlugin edgesDetectorPlugin, ImageHandlingPlugin imageHandlingPlugin, GridPlugin gridPlugin,
+			BigPointerPlugin bigPointerPlugin, ChainedInputConsumer chainedInputAdapter,
+			Collection<ImageDecorator> decorators, AboutWindow aboutWindow, HintsWindow hintsWindow,
+			DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler) {
 		super();
+		this.menuBar = menuBar;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.gridPreferences = gridPreferences;
 		this.bigPointerPreferences = bigPointerPreferences;
 		this.exifTagPreferences = exifTagPreferences;
 		this.dataModel = dataModel;
-		dataModel.addPropertyChangeListener(this);
-		this.preferencesPersisterHelper = preferencesPersisterHelper;
 		this.cursorManager = cursorManager;
 		this.fileSelector = fileSelector;
-		this.edgesDetectorPreferences = edgesDetectorPreferences;
-		edgesDetectorPreferences.addPropertyChangeListener(this);
-		this.edgesDetectorPreferencesSelectorFactory = edgesDetectorPreferencesSelectorFactory;
+		this.edgesDetectorPlugin = edgesDetectorPlugin;
+		this.imageHandlingPlugin = imageHandlingPlugin;
+		this.gridPlugin = gridPlugin;
+		this.bigPointerPlugin = bigPointerPlugin;
 		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
 		this.hintsWindow = hintsWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
-		this.messageHandler = messageHandler;
 		dragAndDropWindow.setProxyFor(this);
 
 		setPreferredSize(new Dimension(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight()));
@@ -143,9 +133,12 @@ public class ImageViewerCanvas extends JPanel
 		updateCursor();
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
+
+		addMenus();
 	}
 
-	public void addMenus(JMenuBar menuBar) {
+	private void addMenus() {
+
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
 		addMenuItem(fileMenu, "Open Files...", OPEN_FILES_KEY, event -> openFiles());
@@ -156,114 +149,10 @@ public class ImageViewerCanvas extends JPanel
 		addMenuItem(fileMenu, "About", SHOW_ABOUT_KEY, event -> showAboutWindow());
 		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> quit());
 
-		JMenu edgesDetectorMenu = new JMenu("Edges Detector");
-		menuBar.add(edgesDetectorMenu);
-		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", SHOW_EDGES_KEY,
-				edgesDetectorPreferences.isShowEdges(), event -> {
-					dataModel.toggleShowingEdges();
-					repaint();
-				});
-		JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
-		edgesDetectorMenu.add(edgesDetectorFlavourMenuItem);
-		for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.values()) {
-			JMenuItem flavourMenuItem = addCheckboxMenuItem(edgesDetectorFlavourMenuItem, flavour.getDescription(), -1,
-					edgesDetectorPreferences.getEdgesDetectorFlavour() == flavour, event -> {
-						updateEdgesDetectorFlavour(flavour);
-					});
-			edgesDetectorFlavourMenuItemsByFlavour.put(flavour, flavourMenuItem);
-		}
-		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", SHOW_EDGES_DETETECTOR_PARAMETERS_KEY, event -> {
-			edgesDetectorPreferencesSelectorFactory.createSelector(this).selectParameters(this);
-		});
-
-		JMenu imageHandlingMenu = new JMenu("Image handling");
-		menuBar.add(imageHandlingMenu);
-		JMenu imageReaderMenu = new JMenu("Image reader library");
-		imageHandlingMenu.add(imageReaderMenu);
-		for (ImageReaderFlavour flavour : ImageReaderFlavour.values()) {
-			JMenuItem imageReaderItem = addCheckboxMenuItem(imageReaderMenu, flavour.getDescription(), -1,
-					flavour == imageHandlingPreferences.getImageReaderFlavour(), event -> {
-						imageHandlingPreferences.setImageReaderFlavour(flavour);
-						updateImageReaderMenu(flavour);
-						repaint();
-					});
-			imageReadersByFlavour.put(flavour, imageReaderItem);
-		}
-		JMenu exifReaderMenu = new JMenu("Exif reader library");
-		imageHandlingMenu.add(exifReaderMenu);
-		for (ExifReaderFlavour flavour : ExifReaderFlavour.values()) {
-			JMenuItem exifReaderItem = addCheckboxMenuItem(exifReaderMenu, flavour.getDescription(), -1,
-					flavour == imageHandlingPreferences.getExifReaderFlavour(), event -> {
-						imageHandlingPreferences.setExifReaderFlavour(flavour);
-						updateExifReaderMenu(flavour);
-						repaint();
-					});
-			exifReadersByFlavour.put(flavour, exifReaderItem);
-		}
-		addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", AUTOROTATION_KEY, dataModel.isAutorotation(), event -> {
-			dataModel.toggleAutorotation();
-			repaint();
-		});
-		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", MOVEMENT_IN_PERCENTAGE_KEY,
-				imageHandlingPreferences.isMovementInPercentage(), event -> {
-					imageHandlingPreferences
-							.setMovementInPercentage(!imageHandlingPreferences.isMovementInPercentage());
-				});
-		addCheckboxMenuItem(imageHandlingMenu, "Move all images", MOVE_ALL_IMAGES_KEY,
-				dataModel.isMovementAppliedToAllImages(), event -> {
-					dataModel.toggleMovementAppliedToAllImages();
-					repaint();
-				});
-		miniatureVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show position", SHOW_POSITION_MINIATURE_KEY,
-				imageHandlingPreferences.isPositionMiniatureVisible(), event -> {
-					imageHandlingPreferences
-							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
-					repaint();
-				});
-		addCheckboxMenuItem(imageHandlingMenu, "Normalize for crop factor", NORMALIZE_FOR_CROP_FACTOR_KEY,
-				imageHandlingPreferences.isNormalizedForCrop(), event -> {
-					imageHandlingPreferences.setNormalizedForCrop(!imageHandlingPreferences.isNormalizedForCrop());
-					repaint();
-				});
-		addCheckboxMenuItem(imageHandlingMenu, "Normalize for focal length", NORMALIZE_FOR_FOCAL_LENGTH_KEY,
-				imageHandlingPreferences.isNormalizedForFocalLength(), event -> {
-					imageHandlingPreferences
-							.setNormalizedForFocalLength(!imageHandlingPreferences.isNormalizedForFocalLength());
-					repaint();
-				});
-		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", SHOW_GRID_KEY,
-				gridPreferences.isGridVisible(), event -> {
-					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
-					repaint();
-				});
-		JMenu gridSpacingMenu = new JMenu("Grid spacing");
-		imageHandlingMenu.add(gridSpacingMenu);
-		for (int gridSpacing = GridPreferences.GRID_SPACING_MIN; gridSpacing <= GridPreferences.GRID_SPACING_MAX; gridSpacing += GridPreferences.GRID_SPACING_STEP) {
-			final int currentSpacing = gridSpacing;
-			JMenuItem gridSpacingItem = addCheckboxMenuItem(gridSpacingMenu, String.valueOf(gridSpacing), -1,
-					gridSpacing == gridPreferences.getGridSpacing(), event -> {
-						gridPreferences.setGridSpacing(currentSpacing);
-						updateGridSpacingMenu(currentSpacing);
-						repaint();
-					});
-			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
-		}
-		addCheckboxMenuItem(imageHandlingMenu, "Show big pointer", SHOW_BIG_POINTER_KEY,
-				bigPointerPreferences.isBigPointerVisible(), event -> {
-					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
-				});
-		JMenu bigPointerSizeMenu = new JMenu("Big pointer size");
-		imageHandlingMenu.add(bigPointerSizeMenu);
-		int maxDimension = cursorManager.getMaxCursorSize();
-		for (int pointerSize = BigPointerPreferences.BIG_POINTER_MIN_SIZE; pointerSize <= maxDimension; pointerSize += BigPointerPreferences.BIG_POINTER_SIZE_STEP) {
-			final int currentSize = pointerSize;
-			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize), -1,
-					pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {
-						bigPointerPreferences.setBigPointerSize(currentSize - 1);
-						updateBigPointerSizeMenu(currentSize);
-					});
-			bigPointerBySize.put(pointerSize, pointerSizeItem);
-		}
+		edgesDetectorPlugin.setMainWindow(this);
+		imageHandlingPlugin.setMainWindow(this);
+		gridPlugin.setMainWindow(this);
+		bigPointerPlugin.setMainWindow(this);
 
 		JMenu tagsMenu = new JMenu("Tags");
 		menuBar.add(tagsMenu);
@@ -325,7 +214,6 @@ public class ImageViewerCanvas extends JPanel
 	}
 
 	private void quit() {
-		preferencesPersisterHelper.persist();
 		System.exit(0);
 	}
 
@@ -337,40 +225,6 @@ public class ImageViewerCanvas extends JPanel
 	public void accept(List<File> selectedFiles) {
 		if (!selectedFiles.isEmpty()) {
 			dataModel.loadFiles(selectedFiles);
-		}
-	}
-
-	private void updateEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
-		edgesDetectorPreferences.setEdgesDetectorFlavour(flavour);
-		for (Entry<EdgesDetectorFlavour, JMenuItem> entry : edgesDetectorFlavourMenuItemsByFlavour.entrySet()) {
-			entry.getValue().setSelected(edgesDetectorPreferences.getEdgesDetectorFlavour() == entry.getKey());
-		}
-		if (edgesDetectorPreferences.isShowEdges()) {
-			dataModel.calculateEdges();
-		}
-	}
-
-	private void updateImageReaderMenu(final ImageReaderFlavour flavour) {
-		for (Map.Entry<ImageReaderFlavour, JMenuItem> entry : imageReadersByFlavour.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == flavour);
-		}
-	}
-
-	private void updateExifReaderMenu(final ExifReaderFlavour flavour) {
-		for (Map.Entry<ExifReaderFlavour, JMenuItem> entry : exifReadersByFlavour.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == flavour);
-		}
-	}
-
-	private void updateGridSpacingMenu(final int gridSpacing) {
-		for (Map.Entry<Integer, JMenuItem> entry : gridSpacingBySize.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == gridSpacing);
-		}
-	}
-
-	private void updateBigPointerSizeMenu(final int pointerSize) {
-		for (Map.Entry<Integer, JMenuItem> entry : bigPointerBySize.entrySet()) {
-			entry.getValue().setSelected(entry.getKey() == pointerSize);
 		}
 	}
 
@@ -429,10 +283,7 @@ public class ImageViewerCanvas extends JPanel
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (CommunicationMessages.EDGES_VISIBILITY.equals(evt.getPropertyName())) {
-			showEdgesMenuItem.setSelected(edgesDetectorPreferences.isShowEdges());
-
-		} else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+		if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
 			repaint();
 
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
@@ -440,18 +291,6 @@ public class ImageViewerCanvas extends JPanel
 
 		} else if (CommunicationMessages.BIG_POINTER_IMAGE_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
-
-		} else if (CommunicationMessages.MINIATURE_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
-			miniatureVisibleMenuItem.setSelected(imageHandlingPreferences.isPositionMiniatureVisible());
-			repaint();
-
-		} else if (CommunicationMessages.GRID_VISIBILITY_CHANGE.equals(evt.getPropertyName())) {
-			gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
-			repaint();
-
-		} else if (CommunicationMessages.GRID_SIZE_CHANGED.equals(evt.getPropertyName())) {
-			updateGridSpacingMenu(gridPreferences.getGridSpacing());
-			repaint();
 
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
 			repaint();
@@ -499,6 +338,18 @@ public class ImageViewerCanvas extends JPanel
 		hints.add(
 				"If no grid is visible you can change the images' zoom level using the plus or minus key on the numeric keypad.");
 		return hints;
+	}
+
+	@Override
+	public JMenu getMenu(String menuTitle) {
+		JMenu menu = menues.computeIfAbsent(menuTitle, title -> new JMenu(title));
+		menuBar.add(menu);
+		return menu;
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
 	}
 
 }

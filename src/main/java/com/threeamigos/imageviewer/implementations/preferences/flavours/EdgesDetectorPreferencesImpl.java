@@ -20,7 +20,7 @@ public class EdgesDetectorPreferencesImpl implements PropertyChangeAwareEdgesDet
 	@Override
 	public void setShowEdges(boolean showEdges) {
 		this.showEdges = showEdges;
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_VISIBILITY, !showEdges, showEdges);
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.CHANGE_EDGES_VISIBILITY, !showEdges, showEdges);
 	}
 
 	@Override
