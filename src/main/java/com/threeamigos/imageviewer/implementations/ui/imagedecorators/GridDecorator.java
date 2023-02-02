@@ -2,15 +2,12 @@ package com.threeamigos.imageviewer.implementations.ui.imagedecorators;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
-import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 
-public class GridDecorator implements ImageDecorator, HintsProducer {
+public class GridDecorator implements ImageDecorator {
 
 	private final MainWindowPreferences mainWindowPreferences;
 	private final GridPreferences gridPreferences;
@@ -45,14 +42,6 @@ public class GridDecorator implements ImageDecorator, HintsProducer {
 			graphics.setColor(previousColor);
 
 		}
-	}
-
-	@Override
-	public Collection<String> getHints() {
-		Collection<String> hints = new ArrayList<>();
-		hints.add("Press G to hide or show a grid.");
-		hints.add("If the grid is visible you can change its size using the plus or minus key on the numeric keypad.");
-		return hints;
 	}
 
 }

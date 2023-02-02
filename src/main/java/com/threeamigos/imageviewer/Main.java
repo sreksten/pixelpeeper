@@ -6,6 +6,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -82,6 +83,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.HintsCollector;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
+import com.threeamigos.imageviewer.interfaces.ui.MainWindowPlugin;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 /**
@@ -229,7 +231,6 @@ public class Main {
 
 		GridDecorator gridDecorator = new GridDecorator(mainWindowPreferences, gridPreferences);
 		decorators.add(gridDecorator);
-		hintsCollector.addHints(gridDecorator);
 
 		CursorManager cursorManager = new CursorManagerImpl(bigPointerPreferences);
 		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
@@ -238,29 +239,37 @@ public class Main {
 
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
 
+		List<MainWindowPlugin> plugins = new ArrayList<>();
+
 		EdgesDetectorPlugin edgesDetectorPlugin = new EdgesDetectorPlugin(edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory);
 		edgesDetectorPlugin.addPropertyChangeListener(dataModel);
 		edgesDetectorPreferences.addPropertyChangeListener(edgesDetectorPlugin);
+		plugins.add(edgesDetectorPlugin);
 
 		ImageHandlingPlugin imageHandlingPlugin = new ImageHandlingPlugin(imageHandlingPreferences);
 		imageHandlingPlugin.addPropertyChangeListener(dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(imageHandlingPlugin);
+		plugins.add(imageHandlingPlugin);
 
 		GridPlugin gridPlugin = new GridPlugin(gridPreferences);
 		gridPreferences.addPropertyChangeListener(gridPlugin);
 		chainedInputConsumer.addConsumer(gridPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
+		hintsCollector.addHints(gridPlugin);
+		plugins.add(gridPlugin);
 
 		BigPointerPlugin bigPointerPlugin = new BigPointerPlugin(bigPointerPreferences, cursorManager);
+		plugins.add(bigPointerPlugin);
 
 		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagPreferences);
+		plugins.add(exifTagsPlugin);
 
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
 				dragAndDropWindowPreferences, imageHandlingPreferences, dataModel, cursorManager, fileSelector,
 				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
-				edgesDetectorPlugin, imageHandlingPlugin, gridPlugin, bigPointerPlugin, exifTagsPlugin);
+				plugins);
 		hintsCollector.addHints(imageViewerCanvas);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);

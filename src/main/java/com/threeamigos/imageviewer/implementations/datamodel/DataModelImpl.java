@@ -33,6 +33,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
 public class DataModelImpl implements DataModel {
 
@@ -41,7 +42,6 @@ public class DataModelImpl implements DataModel {
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final PathPreferences pathPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
-	private final ExifCache exifCache;
 	private final ExifImageReader imageReader;
 	private final ExifTagsFilter exifTagsFilter;
 	private final MessageHandler messageHandler;
@@ -62,7 +62,6 @@ public class DataModelImpl implements DataModel {
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.pathPreferences = pathPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
-		this.exifCache = exifCache;
 		this.imageReader = imageReader;
 		this.exifTagsFilter = exifTagsFilter;
 		this.messageHandler = messageHandler;
@@ -372,10 +371,10 @@ public class DataModelImpl implements DataModel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+				if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
 
-				} else if (e.getKeyCode() == KeyEvent.VK_P) {
+				} else if (e.getKeyCode() == KeyRegistry.SHOW_POSITION_MINIATURE_KEY) {
 					imageHandlingPreferences
 							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
 					propertyChangeSupport.firePropertyChange(
@@ -385,7 +384,7 @@ public class DataModelImpl implements DataModel {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+				if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
 					isMovementAppliedToAllImagesTemporarilyInverted = false;
 				}
 			}

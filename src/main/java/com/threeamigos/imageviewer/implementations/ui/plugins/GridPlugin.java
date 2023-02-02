@@ -2,6 +2,8 @@ package com.threeamigos.imageviewer.implementations.ui.plugins;
 
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,10 +13,11 @@ import javax.swing.JMenuItem;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
-public class GridPlugin extends AbstractMainWindowPlugin {
+public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer {
 
 	private final GridPreferences gridPreferences;
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
@@ -89,6 +92,14 @@ public class GridPlugin extends AbstractMainWindowPlugin {
 				}
 			}
 		};
+	}
+
+	@Override
+	public Collection<String> getHints() {
+		Collection<String> hints = new ArrayList<>();
+		hints.add("Press G to hide or show a grid.");
+		hints.add("If the grid is visible you can change its size using the plus or minus key on the numeric keypad.");
+		return hints;
 	}
 
 }

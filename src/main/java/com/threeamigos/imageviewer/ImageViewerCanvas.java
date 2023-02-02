@@ -64,7 +64,7 @@ public class ImageViewerCanvas extends JPanel
 	private final transient AboutWindow aboutWindow;
 	private final transient HintsWindow hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
-	private final transient MainWindowPlugin[] plugins;
+	private final transient List<MainWindowPlugin> plugins;
 
 	private final JMenuBar menuBar;
 	private final Map<String, JMenu> menues = new HashMap<>();
@@ -74,7 +74,7 @@ public class ImageViewerCanvas extends JPanel
 			ImageHandlingPreferences imageHandlingPreferences, DataModel dataModel, CursorManager cursorManager,
 			FileSelector fileSelector, ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators,
 			AboutWindow aboutWindow, HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow,
-			MessageHandler messageHandler, MainWindowPlugin... plugins) {
+			MessageHandler messageHandler, List<MainWindowPlugin> plugins) {
 		super();
 		this.menuBar = menuBar;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
