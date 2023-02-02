@@ -3,16 +3,14 @@ package com.threeamigos.imageviewer.interfaces.ui;
 import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
 
-public interface CursorManager extends PropertyChangeListener, HintsProducer {
+import com.threeamigos.imageviewer.interfaces.preferences.PropertyChangeAware;
 
-	public InputConsumer getInputConsumer();
+public interface CursorManager extends PropertyChangeAware, PropertyChangeListener, HintsProducer {
 
 	public int getMaxCursorSize();
 
 	public Cursor getCursor();
 
-	public void addPropertyChangeListener(PropertyChangeListener pcl);
-
-	public void removePropertyChangeListener(PropertyChangeListener pcl);
+	public InputConsumer getInputConsumer();
 
 }
