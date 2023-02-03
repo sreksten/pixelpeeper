@@ -8,6 +8,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implements ImageHandlingPreferences {
 
 	private boolean autorotation;
+	private Disposition disposition;
 	private int zoomLevel;
 	private boolean normalizedForCrop;
 	private boolean normalizedForFocalLength;
@@ -27,6 +28,18 @@ public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implem
 	@Override
 	public boolean isAutorotation() {
 		return autorotation;
+	}
+
+	@Override
+	public void setDisposition(Disposition disposition) {
+		Disposition oldDisposition = this.disposition;
+		this.disposition = disposition;
+		firePropertyChange(CommunicationMessages.DISPOSITION_CHANGED, oldDisposition, disposition);
+	}
+
+	@Override
+	public Disposition getDisposition() {
+		return disposition;
 	}
 
 	@Override
@@ -136,6 +149,7 @@ public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implem
 	@Override
 	public void loadDefaultValues() {
 		autorotation = AUTOROTATION_DEFAULT;
+		disposition = DISPOSITION_DEFAULT;
 		zoomLevel = ZOOM_LEVEL_DEFAULT;
 		normalizedForCrop = NORMALIZED_FOR_CROP_DEFAULT;
 		normalizedForFocalLength = NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT;

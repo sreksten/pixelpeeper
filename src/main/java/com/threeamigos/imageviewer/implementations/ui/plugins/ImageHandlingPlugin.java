@@ -12,6 +12,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences.Disposition;
 
 public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 
@@ -21,6 +22,7 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 
 	private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
 	private Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
+	private Map<Disposition, JMenuItem> dispositions = new EnumMap<>(Disposition.class);
 
 	public ImageHandlingPlugin(ImageHandlingPreferences imageHandlingPreferences) {
 		super();
@@ -56,10 +58,20 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 				imageHandlingPreferences.isAutorotation(), event -> {
 					imageHandlingPreferences.setAutorotation(!imageHandlingPreferences.isAutorotation());
 				});
+		JMenu dispositionMenu = new JMenu("Disposition");
+		imageHandlingMenu.add(dispositionMenu);
+		for (Disposition disposition : Disposition.values()) {
+			JMenuItem dispositionMenuItem = addCheckboxMenuItem(dispositionMenu, disposition.getDescription(), -1,
+					disposition == imageHandlingPreferences.getDisposition(), event -> {
+						imageHandlingPreferences.setDisposition(disposition);
+						updateDispositionMenu(disposition);
+					});
+			dispositions.put(disposition, dispositionMenuItem);
+
+		}
 		addCheckboxMenuItem(imageHandlingMenu, "Movement in percentage", MOVEMENT_IN_PERCENTAGE_KEY,
 				imageHandlingPreferences.isRelativeMovement(), event -> {
-					imageHandlingPreferences
-							.setRelativeMovement(!imageHandlingPreferences.isRelativeMovement());
+					imageHandlingPreferences.setRelativeMovement(!imageHandlingPreferences.isRelativeMovement());
 				});
 		addCheckboxMenuItem(imageHandlingMenu, "Move all images", MOVE_ALL_IMAGES_KEY,
 				imageHandlingPreferences.isMovementAppliedToAllImages(), event -> {
@@ -92,6 +104,12 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 	private void updateExifReaderMenu(final ExifReaderFlavour flavour) {
 		for (Map.Entry<ExifReaderFlavour, JMenuItem> entry : exifReadersByFlavour.entrySet()) {
 			entry.getValue().setSelected(entry.getKey() == flavour);
+		}
+	}
+
+	private void updateDispositionMenu(final Disposition disposition) {
+		for (Map.Entry<Disposition, JMenuItem> entry : dispositions.entrySet()) {
+			entry.getValue().setSelected(entry.getKey() == disposition);
 		}
 	}
 

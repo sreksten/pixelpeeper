@@ -308,6 +308,8 @@ public class DataModelImpl implements DataModel {
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
 			toggleAutorotation();
+		} else if (CommunicationMessages.DISPOSITION_CHANGED.equals(evt.getPropertyName())) {
+			propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
 		} else if (CommunicationMessages.EDGES_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
 			handleEdgesVisibilityChanged();
 		} else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
@@ -316,8 +318,6 @@ public class DataModelImpl implements DataModel {
 			handleEdgeCalculationStarted(evt);
 		} else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
 			handleEdgeCalculationCompleted(evt);
-		} else if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
-			toggleAutorotation();
 		} else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())
 				|| CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED.equals(evt.getPropertyName())
 				|| CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED.equals(evt.getPropertyName())) {

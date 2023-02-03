@@ -7,6 +7,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 public interface ImageHandlingPreferences extends Preferences {
 
 	public static final boolean AUTOROTATION_DEFAULT = true;
+	public static final Disposition DISPOSITION_DEFAULT = Disposition.VERTICAL;
 	public static final int MIN_ZOOM_LEVEL = 10;
 	public static final int ZOOM_LEVEL_DEFAULT = 100;
 	public static final int MAX_ZOOM_LEVEL = 100;
@@ -23,13 +24,13 @@ public interface ImageHandlingPreferences extends Preferences {
 		return "Image handling preferences";
 	}
 
-	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
-
-	public boolean isMovementAppliedToAllImages();
-
 	public void setAutorotation(boolean autorotation);
 
 	public boolean isAutorotation();
+
+	public void setDisposition(Disposition disposition);
+
+	public Disposition getDisposition();
 
 	public void setZoomLevel(int zoomLevel);
 
@@ -42,6 +43,10 @@ public interface ImageHandlingPreferences extends Preferences {
 	public void setNormalizedForFocalLength(boolean adaptToFocalLength);
 
 	public boolean isNormalizedForFocalLength();
+
+	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
+
+	public boolean isMovementAppliedToAllImages();
 
 	public void setRelativeMovement(boolean movementInPercentage);
 
@@ -58,5 +63,20 @@ public interface ImageHandlingPreferences extends Preferences {
 	public void setExifReaderFlavour(ExifReaderFlavour exifReaderFlavour);
 
 	public ExifReaderFlavour getExifReaderFlavour();
+
+	public enum Disposition {
+
+		VERTICAL("Vertical"), HORIZONTAL("Horizontal"), GRID("Grid");
+
+		private String description;
+
+		private Disposition(String description) {
+			this.description = description;
+		}
+
+		public String getDescription() {
+			return description;
+		}
+	}
 
 }

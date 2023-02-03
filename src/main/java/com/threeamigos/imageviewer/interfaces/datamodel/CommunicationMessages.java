@@ -31,6 +31,7 @@ public interface CommunicationMessages {
 	public static final String HINTS_INDEX_CHANGED = "HintsIndexChanged";
 
 	public static final String AUTOROTATION_CHANGED = "AutoRotationChanged";
+	public static final String DISPOSITION_CHANGED = "DispositionChanged";
 	public static final String ZOOM_LEVEL_CHANGED = "ZoomLevelChanged";
 	public static final String NORMALIZED_FOR_CROP_CHANGED = "NormalizeForCropChanged";
 	public static final String NORMALIZE_FOR_FOCAL_LENGTH_CHANGED = "NormalizeForFocalLengthChanged";
