@@ -21,7 +21,6 @@ public class PictureData {
 	private final ExifMap exifMap;
 	private final File file;
 	private final String filename;
-	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final EdgesDetectorFactory edgesDetectorFactory;
 
@@ -56,7 +55,6 @@ public class PictureData {
 		this.exifMap = exifMap;
 		this.file = file;
 		this.filename = file.getName();
-		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.edgesDetectorFactory = edgesDetectorFactory;
 
