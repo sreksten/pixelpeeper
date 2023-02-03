@@ -104,6 +104,8 @@ public class Main {
 
 	// BUGFIX: proportional movement does not consider the focal length/crop factor
 
+	// TODO: improve zoom in / zoom out centering
+
 	// TODO: image grouping - add a tolerance for focal length
 
 	// TODO: offer more options to subdivide the images panel (e.g. 3x2 grid)

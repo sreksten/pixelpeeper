@@ -105,7 +105,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	}
 
 	@Override
-	public void changeZoomLevel(int zoomLevel) {
+	public void changeZoomLevel(float zoomLevel) {
 		pictureData.changeZoomLevel(zoomLevel);
 	}
 

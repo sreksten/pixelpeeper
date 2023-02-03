@@ -69,7 +69,7 @@ public interface ImageSlice {
 	/**
 	 * To adjust for zoom level
 	 */
-	public void changeZoomLevel(int zoomLevel);
+	public void changeZoomLevel(float zoomLevel);
 
 	public void paint(Graphics2D g2d);
 

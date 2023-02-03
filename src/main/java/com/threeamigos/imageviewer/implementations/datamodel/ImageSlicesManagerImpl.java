@@ -153,7 +153,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 					zoomLevel = zoomLevel * firstFocalLength / focalLength;
 				}
 			}
-			imageSlice.changeZoomLevel((int) zoomLevel);
+			imageSlice.changeZoomLevel(zoomLevel);
 		}
 	}
 

@@ -47,7 +47,7 @@ public class PictureData {
 	private Float focalLength35mmEquivalent;
 	private Float cropFactor;
 
-	private int zoomLevel;
+	private float zoomLevel;
 
 	public PictureData(int orientation, ExifMap exifMap, BufferedImage image, File file,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
@@ -66,7 +66,7 @@ public class PictureData {
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
-		this.zoomLevel = 100;
+		this.zoomLevel = 100.0f;
 
 		if (imageHandlingPreferences.isAutorotation()) {
 			correctOrientation();
@@ -233,7 +233,7 @@ public class PictureData {
 		}
 	}
 
-	public void changeZoomLevel(int newZoomLevel) {
+	public void changeZoomLevel(float newZoomLevel) {
 		zoomLevel = newZoomLevel;
 		releaseEdges();
 		if (zoomLevel == 100) {
@@ -241,8 +241,16 @@ public class PictureData {
 			height = sourceHeight;
 			image = sourceImage;
 		} else {
-			width = sourceWidth * zoomLevel / 100;
-			height = sourceHeight * zoomLevel / 100;
+			width = (int) (sourceWidth * zoomLevel / 100.0f);
+			if (width <= 0) {
+				System.out.println(filename + " sourceWidth: " + sourceWidth + ", zoomLevel: " + zoomLevel + " w*z: "
+						+ sourceWidth * zoomLevel);
+			}
+			height = (int) (sourceHeight * zoomLevel / 100.0f);
+			if (height <= 0) {
+				System.out.println(filename + " sourceHeight: " + sourceHeight + ", zoomLevel: " + zoomLevel + " h*z: "
+						+ sourceHeight * zoomLevel);
+			}
 			image = new BufferedImage(width, height, sourceImage.getType());
 			Graphics2D graphics = image.createGraphics();
 			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
