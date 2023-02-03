@@ -18,6 +18,8 @@ import com.threeamigos.common.util.implementations.SwingMessageHandler;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.preferences.filebased.implementations.RootPathProviderImpl;
 import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.imageviewer.implementations.datamodel.CropFactorRepositoryImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.CropFactorRepositoryManagerImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.DataModelImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifCacheImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
@@ -41,6 +43,7 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPref
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
+import com.threeamigos.imageviewer.implementations.ui.CropFactorProviderImpl;
 import com.threeamigos.imageviewer.implementations.ui.CursorManagerImpl;
 import com.threeamigos.imageviewer.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ExifTagsFilterImpl;
@@ -55,6 +58,8 @@ import com.threeamigos.imageviewer.implementations.ui.plugins.EdgesDetectorPlugi
 import com.threeamigos.imageviewer.implementations.ui.plugins.ExifTagsPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.GridPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.ImageHandlingPlugin;
+import com.threeamigos.imageviewer.interfaces.datamodel.CropFactorRepository;
+import com.threeamigos.imageviewer.interfaces.datamodel.CropFactorRepositoryManager;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
@@ -75,6 +80,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandling
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.CropFactorProvider;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
@@ -95,32 +101,28 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// BUGFIX: Canon does not provide the 35mm equivalence tag - fix
-	// DrewNoakesExifReader somehow
+	// BUGFIX: proportional movement does not consider the focal length/crop factor
 
 	// BUGFIX: the big pointer may flicker when changed
 
 	// BUGFIX: the controls panel's glue seems not to work
 
-	// BUGFIX: proportional movement does not consider the focal length/crop factor
-
 	// TODO: improve zoom in / zoom out centering
 
 	// TODO: image grouping - add a tolerance for focal length
 
-	// TODO: offer more options to subdivide the images panel (e.g. 3x2 grid)
-
 	// TODO highlight function
-
-	// TODO: prepare the image with edges instead of drawing it every time ?
-
-	// TODO: ImageReader should use also other image libraries
-
-	// TODO: set up an unique queue for message processing?
 
 	// TODO: drag and drop window with an image instead of text (or both)
 
 	// TODO: lens manufacturer
+
+	// FOOD-FOR-THOUGHTS: prepare the image with edges instead of drawing it every
+	// time?
+
+	// FOOD-FOR-THOUGHTS: should ImageReader use also other image libraries?
+
+	// FOOD-FOR-THOUGHTS: set up an unique queue for message processing?
 
 	public Main() {
 
@@ -136,56 +138,64 @@ public class Main {
 			System.exit(0);
 		}
 
-		PreferencesHelper preferencesHelper = new PreferencesHelper(rootPathProvider, messageHandler);
+		PreferencesHelper persistablesHelper = new PreferencesHelper(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
 		MainWindowPreferences mainWindowPreferences = new MainWindowPreferencesImpl();
-		preferencesHelper.register(mainWindowPreferences, "main_window.preferences");
+		persistablesHelper.register(mainWindowPreferences, "main_window.preferences");
 
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
-		preferencesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
+		persistablesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
 		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
-		preferencesHelper.register(imageHandlingPreferences, "image_handling.preferences");
+		persistablesHelper.register(imageHandlingPreferences, "image_handling.preferences");
 
 		PathPreferences pathPreferences = new PathPreferencesImpl();
-		preferencesHelper.register(pathPreferences, "path.preferences");
+		persistablesHelper.register(pathPreferences, "path.preferences");
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl();
-		preferencesHelper.register(exifTagPreferences, "exif_tag.preferences");
+		persistablesHelper.register(exifTagPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
 		GridPreferences gridPreferences = new GridPreferencesImpl();
-		preferencesHelper.register(gridPreferences, "grid.preferences");
+		persistablesHelper.register(gridPreferences, "grid.preferences");
 
 		BigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
-		preferencesHelper.register(bigPointerPreferences, "pointer.preferences");
+		persistablesHelper.register(bigPointerPreferences, "pointer.preferences");
 
 		// Edges Detector and implementations preferences
 
 		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
-		preferencesHelper.register(edgesDetectorPreferences, "edges_detector.preferences");
+		persistablesHelper.register(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
-		preferencesHelper.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
+		persistablesHelper.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
-		preferencesHelper.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
+		persistablesHelper.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
 		// Misc preferences
 
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
-		preferencesHelper.register(hintsPreferences, "hints.preferences");
+		persistablesHelper.register(hintsPreferences, "hints.preferences");
 
 		// Data model
+
+		CropFactorRepository cropFactorRepository = new CropFactorRepositoryImpl();
+		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
+				cropFactorRepository, "crop_factor.repository", "Crop factor repository", rootPathProvider,
+				messageHandler);
+		persistablesHelper.add(cropFactorRepositoryManager);
+
+		CropFactorProvider cropFactorProvider = new CropFactorProviderImpl(cropFactorRepository);
 
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
 		ExifReaderFactory exifReaderFactory = new ExifReaderFactoryImpl(imageHandlingPreferences);
 
-		ExifCache exifCache = new ExifCacheImpl(exifReaderFactory);
+		ExifCache exifCache = new ExifCacheImpl(exifReaderFactory, cropFactorProvider);
 
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
