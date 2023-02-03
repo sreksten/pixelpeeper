@@ -2,9 +2,8 @@ package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
 import com.google.gson.Gson;
 import com.threeamigos.imageviewer.interfaces.StatusTracker;
-import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 
-public class JsonStatusTracker<T extends Preferences> implements StatusTracker<T> {
+public class JsonStatusTracker<T> implements StatusTracker<T> {
 
 	private T preferences;
 	private String initialEntityRepresentationAsString;

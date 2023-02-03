@@ -14,11 +14,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.threeamigos.common.util.interfaces.ExceptionHandler;
 import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
-import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 
-public class JsonFilePersister<T extends Preferences> extends FilePersister<T> {
+public class JsonFilePersister<T> extends FilePersister<T> {
 
-	private T entity;
 	private final String filename;
 	private final String entityDescription;
 
