@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -48,7 +49,10 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 
 		controlsBox.add(Box.createHorizontalStrut(5));
 
-		controlsBox.add(new JSeparator(JSeparator.VERTICAL));
+		JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+		separator.setMaximumSize(new Dimension(5, 20));
+
+		controlsBox.add(separator);
 
 		controlsBox.add(Box.createHorizontalStrut(5));
 
@@ -94,6 +98,8 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 		zoomSlider.setMinorTickSpacing(5);
 		zoomSlider.setPaintTicks(true);
 		zoomSlider.addChangeListener(this);
+		zoomSlider.setMaximumSize(new Dimension(600, 20));
+		zoomSlider.setPreferredSize(new Dimension(600, 20));
 		controlsBox.add(zoomSlider);
 	}
 

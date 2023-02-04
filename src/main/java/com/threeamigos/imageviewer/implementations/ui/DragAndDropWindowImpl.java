@@ -2,6 +2,7 @@ package com.threeamigos.imageviewer.implementations.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -175,12 +176,15 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			}
 		});
 
+		JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+		separator.setMaximumSize(new Dimension(5, 20));
+
 		panel.add(Box.createHorizontalGlue());
 		panel.add(sendImmediatelyCheckbox);
 		panel.add(Box.createHorizontalStrut(5));
 		panel.add(label);
 		panel.add(Box.createHorizontalStrut(5));
-		panel.add(new JSeparator(JSeparator.VERTICAL));
+		panel.add(separator);
 		panel.add(Box.createHorizontalStrut(5));
 		panel.add(sendButton);
 

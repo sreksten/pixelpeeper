@@ -103,13 +103,11 @@ public class Main {
 
 	// BUGFIX: the big pointer may flicker when changed
 
-	// BUGFIX: the controls panel's glue seems not to work
-
 	// TODO: improve zoom in / zoom out centering
 
 	// TODO: image grouping - add a tolerance for focal length
 
-	// TODO highlight function
+	// TODO: highlight function
 
 	// TODO: drag and drop window should allow grouping
 
