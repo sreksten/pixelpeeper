@@ -6,8 +6,12 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -16,8 +20,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
@@ -34,7 +45,13 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	private final DragAndDropWindowPreferences dragAndDropWindowPreferences;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
+
 	private Consumer<List<File>> proxifiedObject;
+
+	private List<File> files = new ArrayList<>();
+
+	private JCheckBox sendImmediatelyCheckbox;
+	private JButton sendButton;
 
 	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences, FontService fontService,
 			MessageHandler messageHandler) {
@@ -54,8 +71,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 		setLayout(new BorderLayout());
 
-		JPanel decorativePanel = new DecorativePanel();
-		add(decorativePanel, BorderLayout.CENTER);
+		add(new DecorativePanel(), BorderLayout.CENTER);
+		add(buildCommandsPanel(), BorderLayout.SOUTH);
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -87,12 +104,26 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	@Override
 	public void accept(List<File> selectedFiles) {
 		if (!selectedFiles.isEmpty()) {
-			if (proxifiedObject != null) {
-				proxifiedObject.accept(selectedFiles);
+			if (dragAndDropWindowPreferences.isOpenImmediately()) {
+				sendFiles(selectedFiles);
 			} else {
-				messageHandler
-						.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
+				files.addAll(selectedFiles);
+				repaint();
 			}
+		}
+	}
+
+	private void sendFiles() {
+		sendFiles(files);
+		files.clear();
+		repaint();
+	}
+
+	private void sendFiles(List<File> files) {
+		if (proxifiedObject != null) {
+			proxifiedObject.accept(files);
+		} else {
+			messageHandler.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 		}
 	}
 
@@ -103,7 +134,62 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		return hints;
 	}
 
+	private JPanel buildCommandsPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+		sendButton = new JButton("Open");
+		sendButton.setEnabled(!dragAndDropWindowPreferences.isOpenImmediately());
+		sendButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				sendFiles();
+			}
+		});
+
+		sendImmediatelyCheckbox = new JCheckBox();
+		sendImmediatelyCheckbox.setSelected(dragAndDropWindowPreferences.isOpenImmediately());
+		sendImmediatelyCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean sendImmediately = sendImmediatelyCheckbox.isSelected();
+				dragAndDropWindowPreferences.setOpenImmediately(sendImmediately);
+				sendButton.setEnabled(!sendImmediately);
+				if (sendImmediately) {
+					sendFiles();
+				}
+			}
+		});
+		JLabel label = new JLabel("Open immediately");
+		label.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				boolean sendImmediately = !dragAndDropWindowPreferences.isOpenImmediately();
+				dragAndDropWindowPreferences.setOpenImmediately(sendImmediately);
+				sendImmediatelyCheckbox.setSelected(sendImmediately);
+				sendButton.setEnabled(!sendImmediately);
+				if (sendImmediately) {
+					sendFiles();
+				}
+			}
+		});
+
+		panel.add(Box.createHorizontalGlue());
+		panel.add(sendImmediatelyCheckbox);
+		panel.add(Box.createHorizontalStrut(5));
+		panel.add(label);
+		panel.add(Box.createHorizontalStrut(5));
+		panel.add(new JSeparator(JSeparator.VERTICAL));
+		panel.add(Box.createHorizontalStrut(5));
+		panel.add(sendButton);
+
+		return panel;
+	}
+
 	private class DecorativePanel extends JPanel {
+
+		private static final long serialVersionUID = 1L;
 
 		public void paintComponent(Graphics gfx) {
 			super.paintComponent(gfx);
@@ -123,29 +209,36 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 			final int vertSpacing = fontHeight / 2;
 
-			int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
+			if (files.isEmpty()) {
+				int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
 
-			String word;
-			int wordWidth;
+				String word;
+				int wordWidth;
 
-			word = "Drop";
-			wordWidth = g2d.getFontMetrics().stringWidth(word);
-			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
-					Color.LIGHT_GRAY);
-			startY += fontHeight + vertSpacing;
+				word = "Drop";
+				wordWidth = g2d.getFontMetrics().stringWidth(word);
+				BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+						Color.LIGHT_GRAY);
+				startY += fontHeight + vertSpacing;
 
-			word = "files";
-			wordWidth = g2d.getFontMetrics().stringWidth(word);
-			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
-					Color.LIGHT_GRAY);
-			startY += fontHeight + vertSpacing;
+				word = "files";
+				wordWidth = g2d.getFontMetrics().stringWidth(word);
+				BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+						Color.LIGHT_GRAY);
+				startY += fontHeight + vertSpacing;
 
-			word = "here";
-			wordWidth = g2d.getFontMetrics().stringWidth(word);
-			BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
-					Color.LIGHT_GRAY);
+				word = "here";
+				wordWidth = g2d.getFontMetrics().stringWidth(word);
+				BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
+						Color.LIGHT_GRAY);
+			} else {
+				int startY = (this.getHeight() - ((files.size() + 5 + 2) * fontHeight) / 2) / 2;
+				for (File file : files) {
+					BorderedStringRenderer.drawString(g2d, file.getName(), 5, startY, Color.BLACK, Color.LIGHT_GRAY);
+					startY += 5 + fontHeight;
+				}
+			}
 		}
-
 	}
 
 }

@@ -20,4 +20,10 @@ public abstract class AbstractSecondaryWindowPreferencesImpl extends AbstractWin
 		firePropertyChange(CommunicationMessages.WINDOW_VISIBILITY_CHANGED, oldVisible, visible);
 	}
 
+	@Override
+	public void loadDefaultValues() {
+		super.loadDefaultValues();
+		this.visible = SecondaryWindowPreferences.VISIBLE_DEFAULT;
+	}
+
 }

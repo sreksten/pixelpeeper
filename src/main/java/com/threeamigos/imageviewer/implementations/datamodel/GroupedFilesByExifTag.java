@@ -86,7 +86,8 @@ class GroupedFilesByExifTag {
 
 		ExifValueToFilesHolder(ExifValue exifValue, Collection<File> files) {
 			this.exifValue = exifValue;
-			this.files = files;
+			this.files = new ArrayList<>();
+			this.files.addAll(files);
 		}
 	}
 
