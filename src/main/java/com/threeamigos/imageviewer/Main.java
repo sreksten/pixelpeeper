@@ -101,8 +101,6 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// BUGFIX: proportional movement does not consider the focal length/crop factor
-
 	// BUGFIX: the big pointer may flicker when changed
 
 	// BUGFIX: the controls panel's glue seems not to work

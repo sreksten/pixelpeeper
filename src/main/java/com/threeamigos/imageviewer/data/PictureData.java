@@ -240,15 +240,7 @@ public class PictureData {
 			image = sourceImage;
 		} else {
 			width = (int) (sourceWidth * zoomLevel / 100.0f);
-			if (width <= 0) {
-				System.out.println(filename + " sourceWidth: " + sourceWidth + ", zoomLevel: " + zoomLevel + " w*z: "
-						+ sourceWidth * zoomLevel);
-			}
 			height = (int) (sourceHeight * zoomLevel / 100.0f);
-			if (height <= 0) {
-				System.out.println(filename + " sourceHeight: " + sourceHeight + ", zoomLevel: " + zoomLevel + " h*z: "
-						+ sourceHeight * zoomLevel);
-			}
 			image = new BufferedImage(width, height, sourceImage.getType());
 			Graphics2D graphics = image.createGraphics();
 			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
@@ -257,5 +249,9 @@ public class PictureData {
 		if (edgesDetectorPreferences.isShowEdges()) {
 			startEdgesCalculation();
 		}
+	}
+
+	public float getZoomLevel() {
+		return zoomLevel;
 	}
 }
