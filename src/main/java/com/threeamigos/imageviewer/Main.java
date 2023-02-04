@@ -228,14 +228,12 @@ public class Main {
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
 		edgesDetectorPreferences.addPropertyChangeListener(dataModel);
 
-		Runnable runnable = new Runnable() {
+		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				dataModel.loadLastFiles();
 			}
-
-		};
-		new Thread(runnable).start();
+		}).start();
 
 		// User Interface
 

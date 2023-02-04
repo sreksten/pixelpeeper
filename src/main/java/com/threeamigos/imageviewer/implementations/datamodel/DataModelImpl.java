@@ -161,32 +161,38 @@ public class DataModelImpl implements DataModel {
 	}
 
 	private void loadFilesImpl() {
-		Collection<File> files = groupedFiles.getCurrentFiles();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
 
-		if (!files.isEmpty()) {
-			imageSlicesManager.clear();
-			Map<File, PictureData> loadedPictures = new HashMap<>();
-			files.parallelStream().forEach(file -> {
-				PictureData pictureData = imageReader.readImage(file);
-				if (pictureData != null) {
-					synchronized (loadedPictures) {
-						loadedPictures.put(file, pictureData);
+				Collection<File> files = groupedFiles.getCurrentFiles();
+
+				if (!files.isEmpty()) {
+					imageSlicesManager.clear();
+					Map<File, PictureData> loadedPictures = new HashMap<>();
+					files.parallelStream().forEach(file -> {
+						PictureData pictureData = imageReader.readImage(file);
+						if (pictureData != null) {
+							synchronized (loadedPictures) {
+								loadedPictures.put(file, pictureData);
+							}
+						}
+					});
+					for (File file : files) {
+						PictureData pictureData = loadedPictures.get(file);
+						if (pictureData != null) {
+							imageSlicesManager.createImageSlice(pictureData);
+						}
 					}
-				}
-			});
-			for (File file : files) {
-				PictureData pictureData = loadedPictures.get(file);
-				if (pictureData != null) {
-					imageSlicesManager.createImageSlice(pictureData);
+					imageSlicesManager.resetMovement();
+					imageSlicesManager.changeZoomLevel();
+					tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
+							.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
+
+					propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
 				}
 			}
-			imageSlicesManager.resetMovement();
-			imageSlicesManager.changeZoomLevel();
-			tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
-					.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
-
-			propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
-		}
+		}).start();
 	}
 
 	@Override
