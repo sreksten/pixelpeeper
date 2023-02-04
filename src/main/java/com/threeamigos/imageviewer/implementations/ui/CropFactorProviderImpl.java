@@ -19,7 +19,8 @@ import com.threeamigos.imageviewer.interfaces.ui.CropFactorProvider;
 public class CropFactorProviderImpl implements CropFactorProvider {
 
 	private final CropFactorRepository cropFactorRepository;
-	private JTextField cropFactorTextField;
+
+	boolean busy;
 
 	public CropFactorProviderImpl(CropFactorRepository cropFactorRepository) {
 		this.cropFactorRepository = cropFactorRepository;
@@ -27,22 +28,46 @@ public class CropFactorProviderImpl implements CropFactorProvider {
 
 	@Override
 	public float getCropFactor(String cameraManufacturer, String cameraModel, Component component) {
+
+		boolean lockAcquired = false;
+
+		while (!lockAcquired) {
+			synchronized (CropFactorProvider.class) {
+				if (!busy) {
+					lockAcquired = true;
+					busy = true;
+				}
+			}
+			if (!lockAcquired) {
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+
 		Optional<Float> cropFactorOpt = cropFactorRepository.loadCropFactor(cameraManufacturer, cameraModel);
 		if (cropFactorOpt.isPresent()) {
+			busy = false;
 			return cropFactorOpt.get();
 		}
+
 		Float cropFactor = requestCropFactor(cameraManufacturer, cameraModel, component);
 		if (cropFactor != null) {
 			cropFactorRepository.storeCropFactor(cameraManufacturer, cameraModel, cropFactor);
-			return cropFactor;
 		} else {
-			return CROP_FACTOR_DEFAULT;
+			cropFactor = CROP_FACTOR_DEFAULT;
+			cropFactorRepository.storeTemporaryCropFactor(cameraManufacturer, cameraModel, cropFactor);
 		}
+		busy = false;
+		return cropFactor;
 	}
 
 	private Float requestCropFactor(String cameraManufacturer, String cameraModel, Component component) {
 
-		JPanel mainPanel = buildJPanel(cameraManufacturer, cameraModel);
+		JTextField cropFactorTextField = new JTextField();
+
+		JPanel mainPanel = buildJPanel(cropFactorTextField, cameraManufacturer, cameraModel);
 
 		JOptionPane optionPane = new JOptionPane();
 		optionPane.setMessage(mainPanel);
@@ -54,25 +79,33 @@ public class CropFactorProviderImpl implements CropFactorProvider {
 		dialog.dispose();
 
 		String cropString = cropFactorTextField.getText().trim();
-		if (cropString.length() > 0)
+		if (cropString.length() > 0) {
 			try {
 				return Float.parseFloat(cropString);
 			} catch (NumberFormatException e) {
 			}
+		}
 		return null;
 	}
 
-	private JPanel buildJPanel(String cameraManufacturer, String cameraModel) {
+	private JPanel buildJPanel(JTextField cropFactorTextField, String cameraManufacturer, String cameraModel) {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 
 		JPanel messagePanel = new JPanel();
 		messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
-		messagePanel.add(new JLabel("Could not determine crop factor for " + cameraManufacturer + " " + cameraModel));
+		String description;
+		if (cameraModel.toLowerCase().startsWith(cameraManufacturer.toLowerCase())) {
+			description = cameraModel;
+		} else {
+			description = cameraManufacturer + " " + cameraModel;
+		}
+		messagePanel.add(new JLabel("Could not determine crop factor for " + description));
 		messagePanel.add(Box.createHorizontalGlue());
 		mainPanel.add(messagePanel);
 
-		cropFactorTextField = new JTextField();
+		mainPanel.add(Box.createVerticalStrut(5));
+
 		cropFactorTextField.setInputVerifier(new InputVerifier() {
 			@Override
 			public boolean verify(JComponent input) {

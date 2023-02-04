@@ -8,4 +8,6 @@ public interface CropFactorRepository {
 
 	public void storeCropFactor(String cameraManufacturer, String cameraModel, float cropFactor);
 
+	public void storeTemporaryCropFactor(String cameraManufacturer, String cameraModel, float cropFactor);
+
 }

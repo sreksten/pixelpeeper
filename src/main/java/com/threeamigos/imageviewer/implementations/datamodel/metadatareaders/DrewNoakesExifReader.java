@@ -149,16 +149,6 @@ public class DrewNoakesExifReader implements ExifReader {
 
 		// FIXME Canon does not provide the FOCAL_LENGTH_35MM_EQUIVALENT
 
-		String cameraModel = exifMap.getTagDescriptive(ExifTag.CAMERA_MODEL);
-		if ("Canon EOS RP".equals(cameraModel)) {
-			String focalLengthDescriptive = exifMap.getTagDescriptive(ExifTag.FOCAL_LENGTH);
-			Float object = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH);
-			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLengthDescriptive, object);
-		} else if ("Canon EOS 200D".equals(cameraModel)) {
-			Float focalLength = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH) * 1.6f;
-			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLength + "mm", focalLength);
-		}
-
 		// https://exiftool.org/TagNames/Canon.html#SensorInfo
 	}
 

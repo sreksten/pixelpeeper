@@ -113,6 +113,11 @@ public class Main {
 
 	// TODO highlight function
 
+	// TODO: drag and drop window should accept one or more files to preserve
+	// ordering before loading them
+
+	// TODO: drag and drop window should allow grouping
+
 	// TODO: drag and drop window with an image instead of text (or both)
 
 	// TODO: lens manufacturer
@@ -223,6 +228,15 @@ public class Main {
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
 		edgesDetectorPreferences.addPropertyChangeListener(dataModel);
 
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				dataModel.loadLastFiles();
+			}
+
+		};
+		new Thread(runnable).start();
+
 		// User Interface
 
 		EdgesDetectorPreferencesSelectorFactory edgesDetectorParametersSelectorFactory = new EdgesDetectorPreferencesSelectorFactoryImpl(
@@ -296,8 +310,6 @@ public class Main {
 		cursorManager.addPropertyChangeListener(imageViewerCanvas);
 
 		JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, controlsPanel, mainWindowPreferences);
-
-		dataModel.loadLastFiles();
 
 		jframe.setVisible(true);
 

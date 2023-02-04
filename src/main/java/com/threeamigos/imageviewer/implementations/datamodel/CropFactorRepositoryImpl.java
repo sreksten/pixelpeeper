@@ -10,14 +10,29 @@ public class CropFactorRepositoryImpl implements CropFactorRepository {
 
 	private Map<String, Float> cropFactors = new HashMap<>();
 
+	private transient Map<String, Float> tempCropFactors = new HashMap<>();
+
 	@Override
 	public Optional<Float> loadCropFactor(String cameraManufacturer, String cameraModel) {
-		return Optional.ofNullable(cropFactors.get(buildKey(cameraManufacturer, cameraModel)));
+		Float cropFactor = cropFactors.get(buildKey(cameraManufacturer, cameraModel));
+		if (cropFactor == null) {
+			cropFactor = tempCropFactors.get(buildKey(cameraManufacturer, cameraModel));
+		}
+		return Optional.ofNullable(cropFactor);
 	}
 
 	@Override
 	public void storeCropFactor(String cameraManufacturer, String cameraModel, float cropFactor) {
-		cropFactors.put(buildKey(cameraManufacturer, cameraModel), cropFactor);
+		synchronized (cropFactors) {
+			cropFactors.put(buildKey(cameraManufacturer, cameraModel), cropFactor);
+		}
+	}
+
+	@Override
+	public void storeTemporaryCropFactor(String cameraManufacturer, String cameraModel, float cropFactor) {
+		synchronized (tempCropFactors) {
+			tempCropFactors.put(buildKey(cameraManufacturer, cameraModel), cropFactor);
+		}
 	}
 
 	private final String buildKey(String cameraManufacturer, String cameraModel) {
