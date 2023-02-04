@@ -34,10 +34,6 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	private ImageSlice activeSlice;
 
-	private Float firstFocalLength;
-	private Float firstFocalLength35mmEquivalent;
-	private Float firstCropFactor;
-
 	public ImageSlicesManagerImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
 			FontService fontService) {
@@ -53,8 +49,6 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void clear() {
 		imageSlices.clear();
-		firstFocalLength35mmEquivalent = null;
-		firstCropFactor = null;
 	}
 
 	@Override
@@ -141,15 +135,6 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 				imageHandlingPreferences, edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
-		Float focalLength = imageSlice.getPictureData().getFocalLength();
-		Float focalLength35mmEquivalent = imageSlice.getPictureData().getFocalLength35mmEquivalent();
-		Float cropFactor = imageSlice.getPictureData().getCropFactor();
-		if (focalLength != null && focalLength35mmEquivalent != null && cropFactor != null
-				&& firstFocalLength35mmEquivalent == null) {
-			firstFocalLength = focalLength;
-			firstFocalLength35mmEquivalent = focalLength35mmEquivalent;
-			firstCropFactor = cropFactor;
-		}
 		return imageSlice;
 	}
 
@@ -193,18 +178,39 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void changeZoomLevel() {
 		float baseZoomLevel = imageHandlingPreferences.getZoomLevel();
+
+		Float minCropFactor = null;
+		if (imageHandlingPreferences.isNormalizedForCrop()) {
+			for (ImageSlice imageSlice : imageSlices) {
+				Float cropFactor = imageSlice.getPictureData().getCropFactor();
+				if (minCropFactor == null || cropFactor != null && minCropFactor > cropFactor) {
+					minCropFactor = cropFactor;
+				}
+			}
+		}
+
+		Float minFocalLength = null;
+		if (imageHandlingPreferences.isNormalizedForFocalLength()) {
+			for (ImageSlice imageSlice : imageSlices) {
+				Float focalLength = imageSlice.getPictureData().getFocalLength35mmEquivalent();
+				if (minFocalLength == null || focalLength != null && minFocalLength > focalLength) {
+					minFocalLength = focalLength;
+				}
+			}
+		}
+
 		for (ImageSlice imageSlice : imageSlices) {
 			float zoomLevel = baseZoomLevel;
 			if (imageHandlingPreferences.isNormalizedForCrop()) {
 				Float cropFactor = imageSlice.getPictureData().getCropFactor();
-				if (firstCropFactor != null && cropFactor != null) {
-					zoomLevel = zoomLevel * firstCropFactor / cropFactor;
+				if (minCropFactor != null && cropFactor != null) {
+					zoomLevel = zoomLevel * minCropFactor / cropFactor;
 				}
 			}
 			if (imageHandlingPreferences.isNormalizedForFocalLength()) {
 				Float focalLength = imageSlice.getPictureData().getFocalLength();
-				if (firstFocalLength != null && focalLength != null) {
-					zoomLevel = zoomLevel * firstFocalLength / focalLength;
+				if (minFocalLength != null && focalLength != null) {
+					zoomLevel = zoomLevel * minFocalLength / focalLength;
 				}
 			}
 			imageSlice.changeZoomLevel(zoomLevel);
