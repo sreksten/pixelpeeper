@@ -103,8 +103,6 @@ public class Main {
 
 	// BUGFIX: the big pointer may flicker when changed
 
-	// TODO: improve zoom in / zoom out centering
-
 	// TODO: highlight function
 
 	// TODO: drag and drop window with an image instead of text (or both)
