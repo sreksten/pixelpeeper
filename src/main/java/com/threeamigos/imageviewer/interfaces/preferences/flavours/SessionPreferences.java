@@ -11,7 +11,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
  * @author Stefano Reksten
  *
  */
-public interface PathPreferences extends Preferences {
+public interface SessionPreferences extends Preferences {
 
 	default String getDescription() {
 		return "Path and files preferences";

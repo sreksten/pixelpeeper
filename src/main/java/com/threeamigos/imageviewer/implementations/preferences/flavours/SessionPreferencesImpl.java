@@ -6,9 +6,9 @@ import java.util.List;
 
 import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.SessionPreferences;
 
-public class PathPreferencesImpl extends PropertyChangeAwareImpl implements PathPreferences {
+public class SessionPreferencesImpl extends PropertyChangeAwareImpl implements SessionPreferences {
 
 	private String lastPath;
 	private List<String> lastFilenames;

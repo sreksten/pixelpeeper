@@ -10,14 +10,14 @@ import com.threeamigos.imageviewer.interfaces.persister.Persistable;
 import com.threeamigos.imageviewer.interfaces.persister.PersistableCollector;
 import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 
-public class PreferencesHelper implements PersistableCollector {
+public class PersistablesHelper implements PersistableCollector {
 
 	private final RootPathProvider rootPathProvider;
 	private final MessageHandler messageHandler;
 
 	private List<Persistable> entities = new ArrayList<>();
 
-	public PreferencesHelper(RootPathProvider rootPathProvider, MessageHandler messageHandler) {
+	public PersistablesHelper(RootPathProvider rootPathProvider, MessageHandler messageHandler) {
 		this.rootPathProvider = rootPathProvider;
 		this.messageHandler = messageHandler;
 

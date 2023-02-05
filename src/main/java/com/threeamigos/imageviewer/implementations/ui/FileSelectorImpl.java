@@ -8,15 +8,15 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 
 public class FileSelectorImpl implements FileSelector {
 
-	private final PathPreferences pathPreferences;
+	private final SessionPreferences sessionPreferences;
 
-	public FileSelectorImpl(PathPreferences pathPreferences) {
-		this.pathPreferences = pathPreferences;
+	public FileSelectorImpl(SessionPreferences sessionPreferences) {
+		this.sessionPreferences = sessionPreferences;
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class FileSelectorImpl implements FileSelector {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Select images");
 		fileChooser.setApproveButtonText("Load");
-		fileChooser.setCurrentDirectory(new File(pathPreferences.getLastPath()));
+		fileChooser.setCurrentDirectory(new File(sessionPreferences.getLastPath()));
 		fileChooser.setApproveButtonMnemonic('L');
 		fileChooser.setMultiSelectionEnabled(true);
 
@@ -35,7 +35,7 @@ public class FileSelectorImpl implements FileSelector {
 			List<File> files = Arrays.asList(fileChooser.getSelectedFiles());
 			if (!files.isEmpty()) {
 				File firstFile = files.get(0);
-				pathPreferences.setLastPath(firstFile.getParentFile().getAbsolutePath());
+				sessionPreferences.setLastPath(firstFile.getParentFile().getAbsolutePath());
 			}
 			return files;
 		}
@@ -49,7 +49,7 @@ public class FileSelectorImpl implements FileSelector {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Select directory");
 		fileChooser.setApproveButtonText("Load");
-		fileChooser.setCurrentDirectory(new File(pathPreferences.getLastPath()).getParentFile());
+		fileChooser.setCurrentDirectory(new File(sessionPreferences.getLastPath()).getParentFile());
 		fileChooser.setApproveButtonMnemonic('L');
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

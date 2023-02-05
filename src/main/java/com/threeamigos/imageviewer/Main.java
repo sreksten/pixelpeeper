@@ -29,7 +29,7 @@ import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerI
 import com.threeamigos.imageviewer.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
-import com.threeamigos.imageviewer.implementations.persister.PreferencesHelper;
+import com.threeamigos.imageviewer.implementations.persister.PersistablesHelper;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.DragAndDropWindowPreferencesImpl;
@@ -39,8 +39,8 @@ import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPref
 import com.threeamigos.imageviewer.implementations.preferences.flavours.HintsPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ImageHandlingPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.MainWindowPreferencesImpl;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.PathPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.SessionPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.ui.AboutWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.CropFactorProviderImpl;
@@ -78,8 +78,8 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferenc
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.MainWindowPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CropFactorProvider;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
@@ -125,14 +125,15 @@ public class Main {
 		MessageHandler messageHandler = new CompositeMessageHandler(new SwingMessageHandler(),
 				new ConsoleMessageHandler());
 
-		// Preferences that can be stored and retrieved in a subsequent run
+		// The directory in which we store preferences and other persistables
 
 		RootPathProvider rootPathProvider = new RootPathProviderImpl(this, messageHandler);
 		if (rootPathProvider.shouldAbort()) {
 			System.exit(0);
 		}
+		// Preferences that can be stored and retrieved in a subsequent run
 
-		PreferencesHelper persistablesHelper = new PreferencesHelper(rootPathProvider, messageHandler);
+		PersistablesHelper persistablesHelper = new PersistablesHelper(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
@@ -145,8 +146,8 @@ public class Main {
 		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
 		persistablesHelper.register(imageHandlingPreferences, "image_handling.preferences");
 
-		PathPreferences pathPreferences = new PathPreferencesImpl();
-		persistablesHelper.register(pathPreferences, "path.preferences");
+		SessionPreferences sessionPreferences = new SessionPreferencesImpl();
+		persistablesHelper.register(sessionPreferences, "session.preferences");
 
 		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl();
 		persistablesHelper.register(exifTagPreferences, "exif_tag.preferences");
@@ -177,6 +178,9 @@ public class Main {
 
 		// Data model
 
+		// Since not all cameras provide the 35_mm_equivalent tag, we need a way to
+		// retrieve this.
+		// A simple file database provides the information to the CropFactoryProvider.
 		CropFactorRepository cropFactorRepository = new CropFactorRepositoryImpl();
 		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
 				cropFactorRepository, "crop_factor.repository", "Crop factor repository", rootPathProvider,
@@ -211,18 +215,14 @@ public class Main {
 		HintsCollector hintsCollector = new HintsCollectorImpl();
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
-				pathPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter, messageHandler);
+				sessionPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter,
+				messageHandler);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		hintsCollector.addHints(dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
 		edgesDetectorPreferences.addPropertyChangeListener(dataModel);
 
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				dataModel.loadLastFiles();
-			}
-		}).start();
+		new Thread(() -> dataModel.loadLastFiles()).run();
 
 		// User Interface
 
@@ -230,7 +230,7 @@ public class Main {
 				edgesDetectorPreferences, cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences, dataModel,
 				exifImageReader, messageHandler);
 
-		FileSelector fileSelector = new FileSelectorImpl(pathPreferences);
+		FileSelector fileSelector = new FileSelectorImpl(sessionPreferences);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl();
 		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
@@ -312,9 +312,7 @@ public class Main {
 		jframe.setMinimumSize(new Dimension(800, 600));
 
 		jframe.setJMenuBar(menuBar);
-
 		jframe.add(imageViewerCanvas, BorderLayout.CENTER);
-
 		jframe.add(controlsPanel, BorderLayout.SOUTH);
 
 		jframe.pack();

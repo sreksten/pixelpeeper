@@ -30,7 +30,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.PathPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
@@ -40,7 +40,7 @@ public class DataModelImpl implements DataModel {
 	private final TagsClassifier tagsClassifier;
 	private final ImageSlicesManager imageSlicesManager;
 	private final ImageHandlingPreferences imageHandlingPreferences;
-	private final PathPreferences pathPreferences;
+	private final SessionPreferences sessionPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final ExifImageReader imageReader;
 	private final ExifTagsFilter exifTagsFilter;
@@ -53,14 +53,14 @@ public class DataModelImpl implements DataModel {
 	private GroupedFilesByExifTag groupedFiles;
 
 	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlicesManager imageSlicesManager,
-			ImageHandlingPreferences imageHandlingPreferences, PathPreferences pathPreferences,
+			ImageHandlingPreferences imageHandlingPreferences, SessionPreferences sessionPreferences,
 			EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader,
 			ExifTagsFilter exifTagsFilter, MessageHandler messageHandler) {
 		this.tagsClassifier = commonTagsHelper;
 		this.imageSlicesManager = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
 		this.imageHandlingPreferences = imageHandlingPreferences;
-		this.pathPreferences = pathPreferences;
+		this.sessionPreferences = sessionPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.imageReader = imageReader;
 		this.exifTagsFilter = exifTagsFilter;
@@ -73,17 +73,17 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void loadLastFiles() {
-		if (!pathPreferences.getLastFilenames().isEmpty()) {
+		if (!sessionPreferences.getLastFilenames().isEmpty()) {
 			loadFilesByName();
 		}
 	}
 
 	private void loadFilesByName() {
-		String path = pathPreferences.getLastPath() + File.separator;
-		List<File> files = pathPreferences.getLastFilenames().stream().map(name -> new File(path + name))
+		String path = sessionPreferences.getLastPath() + File.separator;
+		List<File> files = sessionPreferences.getLastFilenames().stream().map(name -> new File(path + name))
 				.collect(Collectors.toList());
-		loadFiles(files, pathPreferences.getTagToGroupBy(), pathPreferences.getTolerance(),
-				pathPreferences.getGroupIndex());
+		loadFiles(files, sessionPreferences.getTagToGroupBy(), sessionPreferences.getTolerance(),
+				sessionPreferences.getGroupIndex());
 	}
 
 	@Override
@@ -93,9 +93,9 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int groupIndex) {
-		pathPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
-		pathPreferences.setTagToGroupBy(tagToGroupBy);
-		pathPreferences.setTolerance(tolerance);
+		sessionPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
+		sessionPreferences.setTagToGroupBy(tagToGroupBy);
+		sessionPreferences.setTolerance(tolerance);
 		groupedFiles.set(files, tagToGroupBy, tolerance, groupIndex);
 		loadFilesImpl();
 	}
@@ -109,8 +109,8 @@ public class DataModelImpl implements DataModel {
 				Collection<File> filesToLoad = exifTagsFilter.filterByTags(component, files);
 
 				if (!filesToLoad.isEmpty()) {
-					pathPreferences.setLastPath(directory.getPath());
-					pathPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
+					sessionPreferences.setLastPath(directory.getPath());
+					sessionPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
 					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(), 0);
 				}
 			} else {
@@ -148,7 +148,7 @@ public class DataModelImpl implements DataModel {
 	public void moveToNextGroup() {
 		if (groupedFiles.getGroupsCount() > 1) {
 			groupedFiles.next();
-			pathPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
+			sessionPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
 			loadFilesImpl();
 		}
 	}
@@ -157,7 +157,7 @@ public class DataModelImpl implements DataModel {
 	public void moveToPreviousGroup() {
 		if (groupedFiles.getGroupsCount() > 1) {
 			groupedFiles.previous();
-			pathPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
+			sessionPreferences.setGroupIndex(groupedFiles.getCurrentGroup());
 			loadFilesImpl();
 		}
 	}
