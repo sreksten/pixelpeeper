@@ -17,7 +17,7 @@ public interface ImageHandlingPreferences extends Preferences {
 	public static final boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;
 	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
 	public static final boolean POSITION_MINIATURE_VISIBLE_DEFAULT = false;
-	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.JAVA;
+	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.APACHE_COMMONS_IMAGING;
 	public static final ExifReaderFlavour METADATA_READER_FLAVOUR_DEFAULT = ExifReaderFlavour.DREW_NOAKES;
 
 	default String getDescription() {
