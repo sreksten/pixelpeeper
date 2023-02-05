@@ -15,7 +15,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -57,6 +61,9 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
 
+	private BufferedImage backgroundImage;
+	private BufferedImage scaledBackgroundImage;
+
 	private ImageConsumer proxifiedObject;
 
 	private List<File> allFiles = new ArrayList<>();
@@ -74,6 +81,16 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		this.exifCache = exifCache;
 		this.fontService = fontService;
 		this.messageHandler = messageHandler;
+
+		try {
+			InputStream inputStream = getClass().getResourceAsStream("/filter-eye.jpg");
+			backgroundImage = ImageIO.read(inputStream);
+		} catch (IOException e) {
+			messageHandler.handleException(e);
+			backgroundImage = null;
+		}
+
+		scaleBackgroundImage();
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -94,6 +111,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			public void componentResized(ComponentEvent e) {
 				dragAndDropWindowPreferences.setWidth(getWidth());
 				dragAndDropWindowPreferences.setHeight(getHeight());
+				scaleBackgroundImage();
 			}
 
 			@Override
@@ -110,6 +128,32 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		setVisible(dragAndDropWindowPreferences.isVisible());
 
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
+	}
+
+	private void scaleBackgroundImage() {
+
+		int backgroundImageWidth = backgroundImage.getWidth();
+		int backgroundImageHeight = backgroundImage.getHeight();
+
+		float panelAspectRatio = (float) dragAndDropWindowPreferences.getWidth()
+				/ dragAndDropWindowPreferences.getHeight();
+
+		int cutWidth = backgroundImageWidth;
+		int cutHeight = (int) (backgroundImageWidth / panelAspectRatio);
+		if (cutHeight > backgroundImageHeight) {
+			cutWidth = (int) (backgroundImageHeight * panelAspectRatio);
+			cutHeight = backgroundImageHeight;
+		}
+		BufferedImage subImage = backgroundImage.getSubimage(Math.abs(backgroundImageWidth - cutWidth) / 2,
+				Math.abs(backgroundImageHeight - cutHeight) / 2, cutWidth, cutHeight);
+
+		BufferedImage scaledImage = new BufferedImage(dragAndDropWindowPreferences.getWidth(),
+				dragAndDropWindowPreferences.getHeight(), backgroundImage.getType());
+		Graphics2D g2d = scaledImage.createGraphics();
+		g2d.drawImage(subImage, 0, 0, dragAndDropWindowPreferences.getWidth(), dragAndDropWindowPreferences.getHeight(),
+				null);
+		g2d.dispose();
+		scaledBackgroundImage = scaledImage;
 	}
 
 	public void setProxyFor(ImageConsumer consumer) {
@@ -247,6 +291,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			g2d.setFont(font);
 
 			final int vertSpacing = fontHeight / 2;
+
+			g2d.drawImage(scaledBackgroundImage, 0, 0, null);
 
 			if (allFiles.isEmpty()) {
 				int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
