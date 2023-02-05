@@ -8,6 +8,6 @@ public interface DragAndDropWindow extends Consumer<List<File>>, HintsProducer {
 
 	public void setVisible(boolean visible);
 
-	public void setProxyFor(Consumer<List<File>> consumer);
+	public void setProxyFor(ImageConsumer consumer);
 
 }

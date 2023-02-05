@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -25,6 +24,7 @@ import javax.swing.JPanel;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
+import com.threeamigos.imageviewer.data.ExifTag;
 import com.threeamigos.imageviewer.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
@@ -38,6 +38,7 @@ import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
 import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
+import com.threeamigos.imageviewer.interfaces.ui.ImageConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
@@ -51,7 +52,7 @@ import com.threeamigos.imageviewer.interfaces.ui.MainWindowPlugin;
  *
  */
 public class ImageViewerCanvas extends JPanel
-		implements Consumer<List<File>>, PropertyChangeListener, HintsProducer, KeyRegistry, MainWindow {
+		implements ImageConsumer, PropertyChangeListener, HintsProducer, KeyRegistry, MainWindow {
 
 	private static final long serialVersionUID = 1L;
 
@@ -160,6 +161,13 @@ public class ImageViewerCanvas extends JPanel
 	public void accept(List<File> selectedFiles) {
 		if (!selectedFiles.isEmpty()) {
 			dataModel.loadFiles(selectedFiles);
+		}
+	}
+
+	@Override
+	public void accept(List<File> selectedFiles, ExifTag tagToGroupBy, int tolerance) {
+		if (!selectedFiles.isEmpty()) {
+			dataModel.loadFiles(selectedFiles, tagToGroupBy, tolerance, 0);
 		}
 	}
 

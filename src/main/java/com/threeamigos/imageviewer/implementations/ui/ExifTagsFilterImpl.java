@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,7 +21,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -50,18 +48,17 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	private final ExifCache exifCache;
 	private final MessageHandler messageHandler;
 
-	private Map<File, ExifMap> filesToTagsMap;
-	private List<ExifTag> selectableTags = new ArrayList<>();
+	private Collection<File> files;
 	private Map<ExifTag, Collection<ExifValue>> tagsToFilterBy;
 	private Map<ExifTag, JList<ExifValue>> tagsToSelectedValues;
-	private Map<ExifValue, Collection<File>> groupedMatchingFiles;
+	private Map<ExifValue, Collection<File>> groupedFiles;
 
+	GroupingPanel groupingPanel;
 	JDialog dialog;
 	JLabel matchingFilesLabel;
 	JButton okButton;
 	JButton cancelButton;
 	boolean selectionSuccessful;
-	ExifTag tagToGroupBy;
 	int matchingFilesCount;
 
 	public ExifTagsFilterImpl(ExifCache exifCache, MessageHandler messageHandler) {
@@ -72,24 +69,21 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	@Override
 	public Collection<File> filterByTags(Component component, Collection<File> files) {
 
-		mapFilesToTags(files);
+		this.files = files;
 
-		if (filesToTagsMap.isEmpty()) {
+		groupingPanel = createGroupingPanel();
+
+		groupingPanel.mapFilesToTags(files);
+
+		if (groupingPanel.isTagsMapEmpty()) {
 			messageHandler.handleWarnMessage("Did not find any image with Exif tags.");
 			return Collections.emptyList();
 		}
 
 		TagsClassifier tagsClassifier = new TagsClassifierImpl();
-		tagsClassifier.classifyTags(filesToTagsMap.values());
+		tagsClassifier.classifyTags(groupingPanel.getMap().values());
 
-		selectableTags = new ArrayList<>();
-		selectableTags.add(ExifTag.CAMERA_MODEL);
-		selectableTags.add(ExifTag.LENS_MODEL);
-		selectableTags.add(ExifTag.APERTURE);
-		selectableTags.add(ExifTag.ISO);
-		selectableTags.add(ExifTag.EXPOSURE_TIME);
-
-		tagsToFilterBy = tagsClassifier.getUncommonTagsToValues(selectableTags);
+		tagsToFilterBy = tagsClassifier.getUncommonTagsToValues(GroupingPanel.getGroupableTags());
 
 		if (tagsToFilterBy.isEmpty()) {
 			messageHandler.handleWarnMessage("Images do not have different tags to filter by.");
@@ -101,24 +95,16 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		if (filteredTags == null) {
 			return Collections.emptyList();
 		} else {
-			return getFilesBySelection(filteredTags);
+			return getMatchingFiles(filteredTags);
 		}
 	}
 
 	public ExifTag getTagToGroupBy() {
-		return tagToGroupBy;
+		return groupingPanel.getSelection();
 	}
 
-	private void mapFilesToTags(Collection<File> files) {
-		filesToTagsMap = new HashMap<>();
-		for (File file : files) {
-			if (file.isFile()) {
-				Optional<ExifMap> exifMapOpt = exifCache.getExifMap(file);
-				if (exifMapOpt.isPresent()) {
-					filesToTagsMap.put(file, exifMapOpt.get());
-				}
-			}
-		}
+	public int getTolerance() {
+		return groupingPanel.getTolerance();
 	}
 
 	private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
@@ -139,7 +125,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
 		tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
-		matchingFilesCount = filesToTagsMap.size();
+		matchingFilesCount = files.size();
 
 		matchingFilesLabel = new JLabel();
 
@@ -150,21 +136,13 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		mainPanel.add(scrollPane);
-
 		mainPanel.add(Box.createVerticalStrut(5));
-
 		mainPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
-
 		mainPanel.add(Box.createVerticalStrut(5));
-
-		mainPanel.add(createGroupingPanel());
-
+		mainPanel.add(groupingPanel);
 		mainPanel.add(Box.createVerticalStrut(5));
-
 		mainPanel.add(createMatchingFilesPanel());
-
 		mainPanel.add(Box.createVerticalStrut(5));
-
 		mainPanel.add(createOkCancelPanel());
 
 		mainPanel.setPreferredSize(new Dimension(480, 400));
@@ -246,29 +224,17 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		return listPanel;
 	}
 
-	private JPanel createGroupingPanel() {
+	private GroupingPanel createGroupingPanel() {
 
-		ExifTag[] listElements = new ExifTag[1 + selectableTags.size()];
-		for (int i = 0; i < selectableTags.size(); i++) {
-			listElements[i + 1] = selectableTags.get(i);
-		}
-
-		JComboBox<ExifTag> comboBox = new JComboBox<>(listElements);
-		comboBox.addActionListener(new ActionListener() {
+		GroupingPanel groupingPanel = new GroupingPanel(exifCache);
+		groupingPanel.addGroupingByActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				tagToGroupBy = (ExifTag) comboBox.getSelectedItem();
 				updateSelectionInformation();
 			}
 		});
 
-		JPanel groupPanel = new JPanel();
-		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.PAGE_AXIS));
-		groupPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
-		groupPanel.add(comboBox);
-		groupPanel.add(Box.createHorizontalGlue());
-
-		return groupPanel;
+		return groupingPanel;
 	}
 
 	private JPanel createMatchingFilesPanel() {
@@ -310,38 +276,33 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	private void updateSelectionInformation() {
 		Map<ExifTag, Collection<ExifValue>> selectionMap = createSelectionMap(tagsToFilterBy);
 		Collection<File> matchingFiles;
-		groupedMatchingFiles = new HashMap<>();
+
 		if (selectionMap.isEmpty()) {
-			matchingFiles = filesToTagsMap.keySet();
-			matchingFilesCount = filesToTagsMap.size();
+			matchingFiles = files;
+			matchingFilesCount = files.size();
 		} else {
-			matchingFiles = getFilesBySelection(selectionMap);
+			matchingFiles = getMatchingFiles(selectionMap);
 			matchingFilesCount = matchingFiles.size();
 		}
-		if (tagToGroupBy != null) {
-			for (File file : matchingFiles) {
-				ExifMap tags = filesToTagsMap.get(file);
-				ExifValue value = tags.getExifValue(tagToGroupBy);
-				groupedMatchingFiles.computeIfAbsent(value, k -> new ArrayList<>()).add(file);
-			}
-		} else {
-			groupedMatchingFiles.put(null, matchingFiles);
-		}
+
+		groupingPanel.clearMap();
+		groupingPanel.mapFilesToTags(matchingFiles);
+
+		groupedFiles = groupingPanel.groupFiles();
 
 		updateMatchingFilesLabel();
 		updateOkButtonStatus();
 	}
 
-	private Collection<File> getFilesBySelection(Map<ExifTag, Collection<ExifValue>> selectionMap) {
-		List<File> filesToLoad = new ArrayList<>();
-		for (Entry<File, ExifMap> entry : filesToTagsMap.entrySet()) {
-			File file = entry.getKey();
-			ExifMap exifMap = entry.getValue();
-			if (exifMap.matches(selectionMap)) {
-				filesToLoad.add(file);
+	private Collection<File> getMatchingFiles(Map<ExifTag, Collection<ExifValue>> selectionMap) {
+		Collection<File> matchingFiles = new ArrayList<>();
+		for (File file : files) {
+			Optional<ExifMap> exifMap = exifCache.getExifMap(file);
+			if (exifMap.isPresent() && exifMap.get().matches(selectionMap)) {
+				matchingFiles.add(file);
 			}
 		}
-		return filesToLoad;
+		return matchingFiles;
 	}
 
 	private void updateMatchingFilesLabel() {
@@ -351,21 +312,22 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		} else if (matchingFilesCount == 1) {
 			newLabel = "One file matches.";
 		} else {
-			int groups = groupedMatchingFiles.entrySet().size();
+			int groups = groupedFiles.entrySet().size();
 			if (groups == 1) {
 				newLabel = String.format("%d files match.", matchingFilesCount);
 			} else {
-				String groupsView = groupedMatchingFiles.values().stream().map(c -> String.valueOf(c.size()))
+				String groupsView = groupedFiles.values().stream().map(c -> String.valueOf(c.size()))
 						.collect(Collectors.joining(", "));
 				newLabel = String.format("%d files match in %d groups of %s files.", matchingFilesCount, groups,
 						groupsView);
 			}
 		}
 
-		for (Map.Entry<ExifValue, Collection<File>> entry : groupedMatchingFiles.entrySet()) {
+		for (Map.Entry<ExifValue, Collection<File>> entry : groupedFiles.entrySet()) {
 			ExifValue tagValue = entry.getKey();
 			Collection<File> files = entry.getValue();
 			if (files.size() > MAX_SELECTABLE_FILES_PER_GROUP) {
+				ExifTag tagToGroupBy = groupingPanel.getSelection();
 				if (tagToGroupBy == null) {
 					newLabel += "Please add some filters or specify how to group files.";
 				} else {
@@ -379,7 +341,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	}
 
 	private void updateOkButtonStatus() {
-		okButton.setEnabled(groupedMatchingFiles == null || groupedMatchingFiles.entrySet().stream()
+		okButton.setEnabled(groupedFiles == null || groupedFiles.entrySet().stream()
 				.noneMatch(e -> e.getValue().size() > MAX_SELECTABLE_FILES_PER_GROUP));
 	}
 

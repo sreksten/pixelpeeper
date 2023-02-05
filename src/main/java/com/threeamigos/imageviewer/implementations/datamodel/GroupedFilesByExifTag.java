@@ -25,19 +25,18 @@ class GroupedFilesByExifTag {
 		this.exifCache = exifCache;
 	}
 
-	public void set(Collection<File> files, ExifTag tagToGroupBy, int preferredGroupIndex) {
+	public void set(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int preferredGroupIndex) {
 		prepareCollection();
 		if (tagToGroupBy == null) {
 			groupedFiles.add(new ExifValueToFilesHolder(null, files));
 		} else {
-			Map<ExifValue, Collection<File>> groupedMatchingFiles = new HashMap<>();
+			Map<File, ExifMap> map = new HashMap<>();
 			for (File file : files) {
-				Optional<ExifMap> tags = exifCache.getExifMap(file);
-				if (tags.isPresent()) {
-					ExifValue value = tags.get().getExifValue(tagToGroupBy);
-					groupedMatchingFiles.computeIfAbsent(value, k -> new ArrayList<>()).add(file);
-				}
+				exifCache.getExifMap(file).ifPresent(exifMap -> map.put(file, exifMap));
 			}
+			Map<ExifValue, Collection<File>> groupedMatchingFiles = FileGrouper.groupFiles(map, tagToGroupBy,
+					tolerance);
+
 			for (Map.Entry<ExifValue, Collection<File>> entry : groupedMatchingFiles.entrySet()) {
 				groupedFiles.add(new ExifValueToFilesHolder(entry.getKey(), entry.getValue()));
 			}

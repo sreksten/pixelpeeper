@@ -105,11 +105,7 @@ public class Main {
 
 	// TODO: improve zoom in / zoom out centering
 
-	// TODO: image grouping - add a tolerance for focal length
-
 	// TODO: highlight function
-
-	// TODO: drag and drop window should allow grouping
 
 	// TODO: drag and drop window with an image instead of text (or both)
 
@@ -240,8 +236,8 @@ public class Main {
 		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
 		mouseTracker.addPropertyChangeListener(dataModel);
 
-		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, fontService,
-				messageHandler);
+		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, exifReaderFactory,
+				exifCache, fontService, messageHandler);
 		hintsCollector.addHints(dragAndDropWindow);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();

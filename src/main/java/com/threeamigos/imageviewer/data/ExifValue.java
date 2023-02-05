@@ -68,6 +68,27 @@ public class ExifValue {
 		}
 	}
 
+	public Float asFloat() {
+		Object object = getValue();
+		if (object instanceof Integer) {
+			return Float.valueOf((Integer) object);
+		} else if (object instanceof Float) {
+			return (Float) object;
+		} else if (object instanceof Double) {
+			return Float.valueOf((float) ((Double) object).doubleValue());
+		} else if (object instanceof BigInteger) {
+			return Float.valueOf((float) ((BigInteger) object).intValue());
+		} else if (object instanceof BigDecimal) {
+			return Float.valueOf((float) ((BigDecimal) object).doubleValue());
+		} else if (object instanceof Rational) {
+			Rational rational = (Rational) object;
+			return Float.valueOf((float) rational.getNumerator() / (float) rational.getDenominator());
+		} else {
+			throw new IllegalArgumentException(
+					"Don't know how to convert to a float an instance of " + object.getClass());
+		}
+	}
+
 	private String format(Float floatValue) {
 		return String.format("%16.6f", floatValue);
 	}

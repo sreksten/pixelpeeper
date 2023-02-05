@@ -19,7 +19,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,29 +37,41 @@ import javax.swing.WindowConstants;
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
+import com.threeamigos.imageviewer.data.ExifMap;
+import com.threeamigos.imageviewer.data.ExifValue;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifReader;
+import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
+import com.threeamigos.imageviewer.interfaces.ui.ImageConsumer;
 
 public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private static final long serialVersionUID = 1L;
 
 	private final DragAndDropWindowPreferences dragAndDropWindowPreferences;
+	private final ExifReaderFactory exifReaderFactory;
+	private final ExifCache exifCache;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
 
-	private Consumer<List<File>> proxifiedObject;
+	private ImageConsumer proxifiedObject;
 
-	private List<File> files = new ArrayList<>();
+	private List<File> allFiles = new ArrayList<>();
 
+	private GroupingPanel groupingPanel;
 	private JCheckBox sendImmediatelyCheckbox;
 	private JButton sendButton;
 
-	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences, FontService fontService,
+	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences,
+			ExifReaderFactory exifReaderFactory, ExifCache exifCache, FontService fontService,
 			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
+		this.exifReaderFactory = exifReaderFactory;
+		this.exifCache = exifCache;
 		this.fontService = fontService;
 		this.messageHandler = messageHandler;
 
@@ -98,31 +112,41 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
 	}
 
-	public void setProxyFor(Consumer<List<File>> consumer) {
+	public void setProxyFor(ImageConsumer consumer) {
 		proxifiedObject = consumer;
 	}
 
 	@Override
-	public void accept(List<File> selectedFiles) {
-		if (!selectedFiles.isEmpty()) {
+	public void accept(List<File> moreFiles) {
+		if (!moreFiles.isEmpty()) {
 			if (dragAndDropWindowPreferences.isOpenImmediately()) {
-				sendFiles(selectedFiles);
+				sendFiles(moreFiles);
 			} else {
-				files.addAll(selectedFiles);
+				ExifReader exifReader = exifReaderFactory.getExifReader();
+				for (File file : moreFiles) {
+					if (file.isFile()) {
+						allFiles.add(file);
+						Optional<ExifMap> exifMap = exifReader.readMetadata(file);
+						if (exifMap.isPresent()) {
+							groupingPanel.mapFileToTags(file);
+						}
+					}
+				}
 				repaint();
 			}
 		}
 	}
 
 	private void sendFiles() {
-		sendFiles(files);
-		files.clear();
+		sendFiles(allFiles);
+		allFiles.clear();
+		groupingPanel.clearMap();
 		repaint();
 	}
 
 	private void sendFiles(List<File> files) {
 		if (proxifiedObject != null) {
-			proxifiedObject.accept(files);
+			proxifiedObject.accept(files, groupingPanel.getSelection(), groupingPanel.getTolerance());
 		} else {
 			messageHandler.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 		}
@@ -139,6 +163,14 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+		groupingPanel = new GroupingPanel(exifCache);
+		groupingPanel.addGroupingByActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				repaint();
+			}
+		});
 
 		sendButton = new JButton("Open");
 		sendButton.setEnabled(!dragAndDropWindowPreferences.isOpenImmediately());
@@ -162,6 +194,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 				}
 			}
 		});
+
 		JLabel label = new JLabel("Open immediately");
 		label.addMouseListener(new MouseAdapter() {
 			@Override
@@ -185,6 +218,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		panel.add(label);
 		panel.add(Box.createHorizontalStrut(5));
 		panel.add(separator);
+		panel.add(Box.createHorizontalStrut(5));
+		panel.add(groupingPanel);
 		panel.add(Box.createHorizontalStrut(5));
 		panel.add(sendButton);
 
@@ -213,7 +248,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 			final int vertSpacing = fontHeight / 2;
 
-			if (files.isEmpty()) {
+			if (allFiles.isEmpty()) {
 				int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
 
 				String word;
@@ -236,10 +271,27 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 				BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
 						Color.LIGHT_GRAY);
 			} else {
-				int startY = (this.getHeight() - ((files.size() + 5 + 2) * fontHeight) / 2) / 2;
-				for (File file : files) {
-					BorderedStringRenderer.drawString(g2d, file.getName(), 5, startY, Color.BLACK, Color.LIGHT_GRAY);
-					startY += 5 + fontHeight;
+				Map<ExifValue, Collection<File>> groupedFiles = groupingPanel.groupFiles();
+
+				int requiredElements = allFiles.size();
+				if (groupedFiles.size() > 1) {
+					requiredElements += groupedFiles.size();
+				}
+				int requiredHeight = (fontHeight + 5 + 2) * requiredElements;
+
+				int startY = (this.getHeight() - requiredHeight / 2) / 2;
+
+				for (Entry<ExifValue, Collection<File>> entry : groupedFiles.entrySet()) {
+					if (groupedFiles.size() > 1) {
+						BorderedStringRenderer.drawString(g2d, entry.getKey().getDescription(), 5, startY, Color.BLACK,
+								Color.DARK_GRAY);
+						startY += 5 + fontHeight;
+					}
+					for (File file : entry.getValue()) {
+						BorderedStringRenderer.drawString(g2d, file.getName(), 5, startY, Color.BLACK,
+								Color.LIGHT_GRAY);
+						startY += 5 + fontHeight;
+					}
 				}
 			}
 		}

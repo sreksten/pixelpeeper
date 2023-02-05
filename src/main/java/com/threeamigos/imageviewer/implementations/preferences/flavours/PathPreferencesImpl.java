@@ -14,6 +14,7 @@ public class PathPreferencesImpl extends PropertyChangeAwareImpl implements Path
 	private List<String> lastFilenames;
 	private ExifTag tagToGroupBy;
 	private int groupIndex;
+	private int tolerance;
 
 	@Override
 	public void setLastPath(String path) {
@@ -59,8 +60,18 @@ public class PathPreferencesImpl extends PropertyChangeAwareImpl implements Path
 	}
 
 	@Override
-	public int getLastGroup() {
+	public int getGroupIndex() {
 		return groupIndex;
+	}
+
+	@Override
+	public void setTolerance(int tolerance) {
+		this.tolerance = tolerance;
+	}
+
+	@Override
+	public int getTolerance() {
+		return tolerance;
 	}
 
 	@Override
@@ -69,6 +80,7 @@ public class PathPreferencesImpl extends PropertyChangeAwareImpl implements Path
 		lastFilenames = Collections.emptyList();
 		tagToGroupBy = null;
 		groupIndex = 0;
+		tolerance = 0;
 	}
 
 	@Override

@@ -14,4 +14,6 @@ public interface ExifTagsFilter {
 
 	public ExifTag getTagToGroupBy();
 
+	public int getTolerance();
+
 }
