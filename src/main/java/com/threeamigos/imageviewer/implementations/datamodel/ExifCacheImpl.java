@@ -45,10 +45,12 @@ public class ExifCacheImpl implements ExifCache {
 		if (exifMap.getExifValue(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT) == null) {
 			float cropFactor = cropFactorProvider.getCropFactor(exifMap.getTagDescriptive(ExifTag.CAMERA_MANUFACTURER),
 					exifMap.getTagDescriptive(ExifTag.CAMERA_MODEL), null);
-			float focalLength = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH);
-			int focalLength35mmEquivalent = (int) (focalLength * cropFactor);
-			exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLength35mmEquivalent + " mm",
-					focalLength35mmEquivalent);
+			if (exifMap.getExifValue(ExifTag.FOCAL_LENGTH) != null) {
+				float focalLength = exifMap.getAsFloat(ExifTag.FOCAL_LENGTH);
+				int focalLength35mmEquivalent = (int) (focalLength * cropFactor);
+				exifMap.setIfAbsent(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT, focalLength35mmEquivalent + " mm",
+						focalLength35mmEquivalent);
+			}
 		}
 	}
 
