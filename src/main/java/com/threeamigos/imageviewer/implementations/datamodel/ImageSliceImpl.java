@@ -61,6 +61,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	@Override
 	public void setLocation(Rectangle location) {
 		this.location = location;
+		screenXOffset = (pictureData.getWidth() - location.width) / 2;
+		screenYOffset = (pictureData.getHeight() - location.height) / 2;
 		checkBoundaries();
 	}
 
@@ -74,16 +76,18 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	private void checkBoundaries() {
 		int pictureWidth = pictureData.getWidth();
-		if (screenXOffset > pictureWidth - location.width) {
+		if (location != null && screenXOffset > pictureWidth - location.width) {
 			screenXOffset = pictureWidth - location.width;
-		} else if (screenXOffset < 0.0d) {
+		}
+		if (screenXOffset < 0.0d) {
 			screenXOffset = 0.0d;
 		}
 
 		int pictureHeight = pictureData.getHeight();
-		if (screenYOffset > pictureHeight - location.height) {
+		if (location != null && screenYOffset > pictureHeight - location.height) {
 			screenYOffset = pictureHeight - location.height;
-		} else if (screenYOffset < 0.0d) {
+		}
+		if (screenYOffset < 0.0d) {
 			screenYOffset = 0.0d;
 		}
 	}
@@ -107,7 +111,39 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	@Override
 	public void changeZoomLevel(float zoomLevel) {
+
+		if (location == null) {
+			return;
+		}
+
+		int futurePictureWidth = (int) (pictureData.getOriginalWidth() * zoomLevel / 100);
+		if (futurePictureWidth < location.width) {
+			screenXOffset = 0;
+		} else {
+			if (pictureData.getWidth() < location.width) {
+				screenXOffset = (futurePictureWidth - location.width) / 2;
+			} else {
+				double centerXPercentage = (screenXOffset + location.width / 2) / pictureData.getWidth();
+				double futureCenterX = centerXPercentage * futurePictureWidth;
+				screenXOffset = futureCenterX - location.width / 2;
+			}
+		}
+		int futurePictureHeight = (int) (pictureData.getOriginalHeight() * zoomLevel / 100);
+		if (futurePictureHeight < location.height) {
+			screenYOffset = 0;
+		} else {
+			if (pictureData.getHeight() < location.height) {
+				screenYOffset = (futurePictureHeight - location.height) / 2;
+			} else {
+				double centerYPercentage = (screenYOffset + location.height / 2) / pictureData.getHeight();
+				double futureCenterY = centerYPercentage * futurePictureHeight;
+				screenYOffset = futureCenterY - location.height / 2;
+			}
+		}
+
 		pictureData.changeZoomLevel(zoomLevel);
+
+		checkBoundaries();
 	}
 
 	@Override
@@ -212,6 +248,12 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
 					Color.BLACK, Color.WHITE);
 		}
+
+//		Font font = fontService.getFont("Arial", 0, 24);
+//		g2d.setFont(font);
+//		BorderedStringRenderer.drawString(g2d,
+//				String.format("XOffset: %d - YOffset: %d", (int) screenXOffset, (int) screenYOffset), locationX + 50,
+//				locationY + 50, Color.BLACK, Color.WHITE);
 
 		g2d.setClip(previousClip);
 	}

@@ -85,6 +85,14 @@ public class PictureData {
 		}
 	}
 
+	public int getOriginalWidth() {
+		return sourceWidth;
+	}
+
+	public int getOriginalHeight() {
+		return sourceHeight;
+	}
+
 	public int getWidth() {
 		return width;
 	}
