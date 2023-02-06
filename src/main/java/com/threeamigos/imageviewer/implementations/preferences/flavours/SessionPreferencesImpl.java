@@ -96,7 +96,7 @@ public class SessionPreferencesImpl extends PropertyChangeAwareImpl implements S
 			throw new IllegalArgumentException("Last directory " + lastPath + " is not readable.");
 		}
 		for (String filename : lastFilenames) {
-			File file = new File(lastPath + File.separator + filename);
+			File file = new File(filename);
 			if (!file.exists()) {
 				throw new IllegalArgumentException("File " + filename + " does not exist.");
 			}

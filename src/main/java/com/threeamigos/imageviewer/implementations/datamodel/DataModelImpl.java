@@ -79,8 +79,7 @@ public class DataModelImpl implements DataModel {
 	}
 
 	private void loadFilesByName() {
-		String path = sessionPreferences.getLastPath() + File.separator;
-		List<File> files = sessionPreferences.getLastFilenames().stream().map(name -> new File(path + name))
+		List<File> files = sessionPreferences.getLastFilenames().stream().map(name -> new File(name))
 				.collect(Collectors.toList());
 		loadFiles(files, sessionPreferences.getTagToGroupBy(), sessionPreferences.getTolerance(),
 				sessionPreferences.getGroupIndex());
@@ -93,7 +92,7 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int groupIndex) {
-		sessionPreferences.setLastFilenames(files.stream().map(File::getName).collect(Collectors.toList()));
+		sessionPreferences.setLastFilenames(files.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
 		sessionPreferences.setTagToGroupBy(tagToGroupBy);
 		sessionPreferences.setTolerance(tolerance);
 		groupedFiles.set(files, tagToGroupBy, tolerance, groupIndex);

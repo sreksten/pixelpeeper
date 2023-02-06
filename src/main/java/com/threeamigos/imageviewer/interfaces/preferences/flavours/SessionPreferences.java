@@ -14,7 +14,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 public interface SessionPreferences extends Preferences {
 
 	default String getDescription() {
-		return "Path and files preferences";
+		return "Session preferences";
 	}
 
 	public void setLastPath(String path);
