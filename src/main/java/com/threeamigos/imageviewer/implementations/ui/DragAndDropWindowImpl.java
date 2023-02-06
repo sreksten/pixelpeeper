@@ -35,7 +35,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
@@ -68,14 +67,19 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private List<File> allFiles = new ArrayList<>();
 
+	private DecorativePanel decorativePanel;
+	private JPanel commandsPanel;
 	private GroupingPanel groupingPanel;
 	private JCheckBox sendImmediatelyCheckbox;
 	private JButton sendButton;
+	private JButton clearButton;
 
 	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ExifReaderFactory exifReaderFactory, ExifCache exifCache, FontService fontService,
 			MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
+		setMinimumSize(new Dimension(250, 350));
+
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
 		this.exifReaderFactory = exifReaderFactory;
 		this.exifCache = exifCache;
@@ -103,8 +107,11 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 		setLayout(new BorderLayout());
 
-		add(new DecorativePanel(), BorderLayout.CENTER);
-		add(buildCommandsPanel(), BorderLayout.SOUTH);
+		decorativePanel = new DecorativePanel();
+		commandsPanel = buildCommandsPanel();
+
+		add(decorativePanel, BorderLayout.CENTER);
+		add(commandsPanel, BorderLayout.SOUTH);
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -131,6 +138,9 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	}
 
 	private void scaleBackgroundImage() {
+		if (backgroundImage == null) {
+			return;
+		}
 
 		int backgroundImageWidth = backgroundImage.getWidth();
 		int backgroundImageHeight = backgroundImage.getHeight();
@@ -183,6 +193,10 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private void sendFiles() {
 		sendFiles(allFiles);
+		clear();
+	}
+
+	private void clear() {
 		allFiles.clear();
 		groupingPanel.clearMap();
 		repaint();
@@ -196,6 +210,16 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		}
 	}
 
+	private void setSendImmediately(boolean sendImmediately) {
+		sendImmediatelyCheckbox.setSelected(sendImmediately);
+		dragAndDropWindowPreferences.setOpenImmediately(sendImmediately);
+		sendButton.setEnabled(!sendImmediately);
+		clearButton.setEnabled(!sendImmediately);
+		if (sendImmediately) {
+			sendFiles();
+		}
+	}
+
 	@Override
 	public Collection<String> getHints() {
 		Collection<String> hints = new ArrayList<>();
@@ -204,9 +228,6 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	}
 
 	private JPanel buildCommandsPanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		groupingPanel = new GroupingPanel(exifCache);
 		groupingPanel.addGroupingByActionListener(new ActionListener() {
@@ -225,47 +246,59 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			}
 		});
 
+		clearButton = new JButton("Clear");
+		clearButton.setEnabled(!dragAndDropWindowPreferences.isOpenImmediately());
+		clearButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				clear();
+			}
+		});
+
 		sendImmediatelyCheckbox = new JCheckBox();
 		sendImmediatelyCheckbox.setSelected(dragAndDropWindowPreferences.isOpenImmediately());
 		sendImmediatelyCheckbox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean sendImmediately = sendImmediatelyCheckbox.isSelected();
-				dragAndDropWindowPreferences.setOpenImmediately(sendImmediately);
-				sendButton.setEnabled(!sendImmediately);
-				if (sendImmediately) {
-					sendFiles();
-				}
+				setSendImmediately(sendImmediatelyCheckbox.isSelected());
 			}
 		});
 
-		JLabel label = new JLabel("Open immediately");
-		label.addMouseListener(new MouseAdapter() {
+		JLabel sendImmediatelyLabel = new JLabel("Open immediately");
+		sendImmediatelyLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				boolean sendImmediately = !dragAndDropWindowPreferences.isOpenImmediately();
-				dragAndDropWindowPreferences.setOpenImmediately(sendImmediately);
-				sendImmediatelyCheckbox.setSelected(sendImmediately);
-				sendButton.setEnabled(!sendImmediately);
-				if (sendImmediately) {
-					sendFiles();
-				}
+				setSendImmediately(!dragAndDropWindowPreferences.isOpenImmediately());
 			}
 		});
 
-		JSeparator separator = new JSeparator(JSeparator.VERTICAL);
-		separator.setMaximumSize(new Dimension(5, 20));
+		JPanel panel = new JPanel() {
+			@Override
+			public void paintComponent(Graphics gfx) {
+				super.paintComponent(gfx);
+				System.out.println(this.getLocation() + " " + this.getSize());
+			}
+		};
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-		panel.add(Box.createHorizontalGlue());
-		panel.add(sendImmediatelyCheckbox);
-		panel.add(Box.createHorizontalStrut(5));
-		panel.add(label);
-		panel.add(Box.createHorizontalStrut(5));
-		panel.add(separator);
-		panel.add(Box.createHorizontalStrut(5));
+		JPanel sendImmediatelyPanel = new JPanel();
+		sendImmediatelyPanel.setLayout(new BoxLayout(sendImmediatelyPanel, BoxLayout.LINE_AXIS));
+		sendImmediatelyPanel.add(sendImmediatelyCheckbox);
+		sendImmediatelyPanel.add(Box.createHorizontalStrut(5));
+		sendImmediatelyPanel.add(sendImmediatelyLabel);
+
+		JPanel openPanel = new JPanel();
+		openPanel.setLayout(new BoxLayout(openPanel, BoxLayout.LINE_AXIS));
+		openPanel.add(clearButton);
+		openPanel.add(Box.createHorizontalStrut(5));
+		openPanel.add(sendButton);
+
+		panel.add(sendImmediatelyPanel);
+		panel.add(Box.createVerticalStrut(5));
 		panel.add(groupingPanel);
-		panel.add(Box.createHorizontalStrut(5));
-		panel.add(sendButton);
+		panel.add(Box.createVerticalStrut(5));
+		panel.add(openPanel);
 
 		return panel;
 	}
@@ -290,12 +323,17 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			Font font = fontService.getFont("Arial", Font.BOLD, fontHeight);
 			g2d.setFont(font);
 
-			final int vertSpacing = fontHeight / 2;
+			if (backgroundImage != null) {
+				g2d.drawImage(scaledBackgroundImage, 0, 0, null);
+			}
 
-			g2d.drawImage(scaledBackgroundImage, 0, 0, null);
+			System.out.println(this.getLocation() + " " + this.getSize());
 
 			if (allFiles.isEmpty()) {
-				int startY = (windowHeight - (3 * fontHeight + 2 * vertSpacing)) / 2;
+
+				final int vertSpacing = fontHeight / 2;
+
+				int startY = ((int) this.getHeight() - (3 * fontHeight + 2 * vertSpacing)) / 2;
 
 				String word;
 				int wordWidth;
@@ -317,26 +355,30 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 				BorderedStringRenderer.drawString(g2d, word, (windowWidth - wordWidth) / 2, startY, Color.BLACK,
 						Color.LIGHT_GRAY);
 			} else {
+
+				final int vertSpacing = 5;
+				final int horSpacing = 5;
+
 				Map<ExifValue, Collection<File>> groupedFiles = groupingPanel.groupFiles();
 
 				int requiredElements = allFiles.size();
 				if (groupedFiles.size() > 1) {
 					requiredElements += groupedFiles.size();
 				}
-				int requiredHeight = (fontHeight + 5 + 2) * requiredElements;
+				int requiredHeight = (fontHeight + vertSpacing) * requiredElements;
 
-				int startY = (this.getHeight() - requiredHeight / 2) / 2;
+				int startY = (int) this.getHeight() - requiredHeight;
 
 				for (Entry<ExifValue, Collection<File>> entry : groupedFiles.entrySet()) {
 					if (groupedFiles.size() > 1) {
-						BorderedStringRenderer.drawString(g2d, entry.getKey().getDescription(), 5, startY, Color.BLACK,
-								Color.DARK_GRAY);
-						startY += 5 + fontHeight;
+						BorderedStringRenderer.drawString(g2d, entry.getKey().getDescription(), horSpacing, startY,
+								Color.BLACK, Color.GRAY);
+						startY += vertSpacing + fontHeight;
 					}
 					for (File file : entry.getValue()) {
-						BorderedStringRenderer.drawString(g2d, file.getName(), 5, startY, Color.BLACK,
+						BorderedStringRenderer.drawString(g2d, file.getName(), horSpacing, startY, Color.BLACK,
 								Color.LIGHT_GRAY);
-						startY += 5 + fontHeight;
+						startY += vertSpacing + fontHeight;
 					}
 				}
 			}
