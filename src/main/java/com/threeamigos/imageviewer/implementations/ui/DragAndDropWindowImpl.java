@@ -74,6 +74,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	private JButton sendButton;
 	private JButton clearButton;
 
+	int upperBorderHeight;
+
 	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ExifReaderFactory exifReaderFactory, ExifCache exifCache, FontService fontService,
 			MessageHandler messageHandler) {
@@ -129,6 +131,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 		});
 
 		pack();
+		upperBorderHeight = getHeight() - getContentPane().getHeight();
 		setResizable(true);
 		setLocation(dragAndDropWindowPreferences.getX(), dragAndDropWindowPreferences.getY());
 		setSize(dragAndDropWindowPreferences.getWidth(), dragAndDropWindowPreferences.getHeight());
@@ -272,13 +275,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			}
 		});
 
-		JPanel panel = new JPanel() {
-			@Override
-			public void paintComponent(Graphics gfx) {
-				super.paintComponent(gfx);
-				System.out.println(this.getLocation() + " " + this.getSize());
-			}
-		};
+		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -327,13 +324,11 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 				g2d.drawImage(scaledBackgroundImage, 0, 0, null);
 			}
 
-			System.out.println(this.getLocation() + " " + this.getSize());
-
 			if (allFiles.isEmpty()) {
 
 				final int vertSpacing = fontHeight / 2;
 
-				int startY = ((int) this.getHeight() - (3 * fontHeight + 2 * vertSpacing)) / 2;
+				int startY = ((int) this.getHeight() - (3 * fontHeight + 2 * vertSpacing)) / 2 + upperBorderHeight;
 
 				String word;
 				int wordWidth;
@@ -365,9 +360,9 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 				if (groupedFiles.size() > 1) {
 					requiredElements += groupedFiles.size();
 				}
-				int requiredHeight = (fontHeight + vertSpacing) * requiredElements;
+				int requiredHeight = fontHeight * requiredElements + vertSpacing * (requiredElements - 1);
 
-				int startY = (int) this.getHeight() - requiredHeight;
+				int startY = (int) this.getHeight() - requiredHeight + upperBorderHeight;
 
 				for (Entry<ExifValue, Collection<File>> entry : groupedFiles.entrySet()) {
 					if (groupedFiles.size() > 1) {
