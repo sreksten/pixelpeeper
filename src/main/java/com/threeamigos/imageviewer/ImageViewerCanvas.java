@@ -73,7 +73,7 @@ public class ImageViewerCanvas extends JPanel
 	public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, DataModel dataModel, CursorManager cursorManager,
-			FileSelector fileSelector, ChainedInputConsumer chainedInputAdapter, Collection<ImageDecorator> decorators,
+			FileSelector fileSelector, ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators,
 			AboutWindow aboutWindow, HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow,
 			MessageHandler messageHandler, List<MainWindowPlugin> plugins) {
 		super();
@@ -98,10 +98,10 @@ public class ImageViewerCanvas extends JPanel
 		setFocusable(true);
 		setDoubleBuffered(true);
 
-		chainedInputAdapter.addConsumer(getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
-		addMouseListener(chainedInputAdapter);
-		addMouseMotionListener(chainedInputAdapter);
-		addKeyListener(chainedInputAdapter);
+		chainedInputConsumer.addConsumer(getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
+		addMouseListener(chainedInputConsumer);
+		addMouseMotionListener(chainedInputConsumer);
+		addKeyListener(chainedInputConsumer);
 
 		updateCursor();
 
