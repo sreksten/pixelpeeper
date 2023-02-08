@@ -118,13 +118,17 @@ public class ImageViewerCanvas extends JPanel
 		addMenuItem(fileMenu, "Browse directory", BROWSE_DIRECTORY_KEY, event -> browseDirectory());
 		addMenuItem(fileMenu, "Open Drag and Drop panel", OPEN_DRAG_AND_DROP_PANEL_KEY,
 				event -> openDragAndDropPanel());
-		addMenuItem(fileMenu, "Show hints", SHOW_HINTS_KEY, event -> showHints());
-		addMenuItem(fileMenu, "About", SHOW_ABOUT_KEY, event -> showAboutWindow());
 		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> quit());
 
 		for (MainWindowPlugin plugin : plugins) {
 			plugin.setMainWindow(this);
 		}
+
+		JMenu aboutMenu = new JMenu("?");
+		menuBar.add(aboutMenu);
+		addMenuItem(aboutMenu, "Show hints", SHOW_HINTS_KEY, event -> showHints());
+		addMenuItem(aboutMenu, "About", SHOW_ABOUT_KEY, event -> showAboutWindow());
+
 	}
 
 	private void openFiles() {
