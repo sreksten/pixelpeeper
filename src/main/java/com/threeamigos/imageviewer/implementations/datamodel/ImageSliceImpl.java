@@ -147,6 +147,11 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	}
 
 	@Override
+	public float getZoomLevel() {
+		return pictureData.getZoomLevel();
+	}
+
+	@Override
 	public Rectangle getLocation() {
 		return location;
 	}

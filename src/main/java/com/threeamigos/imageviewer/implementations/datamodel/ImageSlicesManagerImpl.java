@@ -140,6 +140,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	@Override
 	public void move(int deltaX, int deltaY, boolean movementAppliesToAllImages) {
+		float zoomFactor = 100 / activeSlice.getZoomLevel();
 		if (movementAppliesToAllImages) {
 			if (imageHandlingPreferences.isRelativeMovement()) {
 				if (activeSlice != null) {
@@ -154,7 +155,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 							imageSlice.move(percentageX * imageSliceWidth * imageSliceWidth / (double) activeSliceWidth,
 									percentageY * imageSliceHeight * imageSliceHeight / (double) activeSliceHeight);
 						} else {
-							imageSlice.move(deltaX, deltaY);
+							imageSlice.move(deltaX * zoomFactor, deltaY * zoomFactor);
 						}
 					}
 				}
@@ -165,7 +166,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 			}
 		} else {
 			if (activeSlice != null) {
-				activeSlice.move(deltaX, deltaY);
+				activeSlice.move(deltaX * zoomFactor, deltaY * zoomFactor);
 			}
 		}
 	}
