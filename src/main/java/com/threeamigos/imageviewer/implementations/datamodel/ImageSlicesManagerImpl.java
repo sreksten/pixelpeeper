@@ -14,6 +14,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -24,6 +25,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private final TagsClassifier commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final ImageHandlingPreferences imageHandlingPreferences;
+	private final DrawingPreferences drawingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
@@ -33,13 +35,15 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private List<ImageSlice> imageSlicesCalculatingEdges = new ArrayList<>();
 
 	private ImageSlice activeSlice;
+	private ImageSlice lastActiveSlice;
 
 	public ImageSlicesManagerImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
-			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
-			FontService fontService) {
+			ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
+			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.imageHandlingPreferences = imageHandlingPreferences;
+		this.drawingPreferences = drawingPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
 
@@ -49,6 +53,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void clear() {
 		imageSlices.clear();
+		lastActiveSlice = null;
 	}
 
 	@Override
@@ -132,7 +137,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public ImageSlice createImageSlice(PictureData pictureData) {
 		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
-				imageHandlingPreferences, edgesDetectorPreferences, fontService);
+				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
 		return imageSlice;
@@ -140,7 +145,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 
 	@Override
 	public void move(int deltaX, int deltaY, boolean movementAppliesToAllImages) {
-		float zoomFactor = 100 / activeSlice.getZoomLevel();
+		float zoomFactor = ImageHandlingPreferences.MAX_ZOOM_LEVEL / activeSlice.getZoomLevel();
 		if (movementAppliesToAllImages) {
 			if (imageHandlingPreferences.isRelativeMovement()) {
 				if (activeSlice != null) {
@@ -224,6 +229,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 			if (currentSlice.contains(x, y)) {
 				activeSlice = currentSlice;
 				activeSlice.setSelected(true);
+				lastActiveSlice = activeSlice;
 				break;
 			}
 		}
@@ -235,6 +241,43 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 			activeSlice.setSelected(false);
 		}
 		activeSlice = null;
+	}
+
+	@Override
+	public void startDrawing() {
+		if (activeSlice != null) {
+			activeSlice.startDrawing();
+		}
+	}
+
+	@Override
+	public void addVertex(int x, int y) {
+		if (activeSlice != null) {
+			activeSlice.addVertex(x, y);
+		}
+	}
+
+	@Override
+	public void stopDrawing() {
+		if (activeSlice != null) {
+			activeSlice.stopDrawing();
+		}
+	}
+
+	@Override
+	public void undoLastDrawing() {
+		if (lastActiveSlice != null) {
+			lastActiveSlice.undoLastDrawing();
+			requestRepaint();
+		}
+	}
+
+	@Override
+	public void clearDrawings() {
+		if (lastActiveSlice != null) {
+			lastActiveSlice.clearDrawings();
+			requestRepaint();
+		}
 	}
 
 	@Override
@@ -278,5 +321,9 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 		ImageSlice imageSlice = (ImageSlice) evt.getNewValue();
 		imageSlicesCalculatingEdges.remove(imageSlice);
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+	}
+
+	private void requestRepaint() {
+		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 }

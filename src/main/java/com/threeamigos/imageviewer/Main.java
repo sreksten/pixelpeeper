@@ -33,6 +33,7 @@ import com.threeamigos.imageviewer.implementations.persister.PersistablesHelper;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.DragAndDropWindowPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.DrawingPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.ExifTagPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.GridPreferencesImpl;
@@ -72,6 +73,7 @@ import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPrefere
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.GridPreferences;
@@ -102,10 +104,6 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 public class Main {
 
 	// BUGFIX: the big pointer may flicker when changed
-
-	// TODO: highlight function
-
-	// TODO: drag and drop window with an image instead of text (or both)
 
 	// TODO: lens manufacturer
 
@@ -171,6 +169,9 @@ public class Main {
 
 		// Misc preferences
 
+		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
+		persistablesHelper.register(drawingPreferences, "drawing.preferences");
+
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
 		persistablesHelper.register(hintsPreferences, "hints.preferences");
 
@@ -206,7 +207,7 @@ public class Main {
 		FontService fontService = new FontServiceImpl();
 
 		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
-				imageHandlingPreferences, edgesDetectorPreferences, fontService);
+				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
@@ -287,8 +288,9 @@ public class Main {
 		bigPointerPreferences.addPropertyChangeListener(imageViewerCanvas);
 		gridPreferences.addPropertyChangeListener(imageViewerCanvas);
 		exifTagsPlugin.addPropertyChangeListener(imageViewerCanvas);
+		imageSlicesManager.addPropertyChangeListener(imageViewerCanvas);
 
-		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, dataModel);
+		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, drawingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);
 		dataModel.addPropertyChangeListener(controlsPanel);
 

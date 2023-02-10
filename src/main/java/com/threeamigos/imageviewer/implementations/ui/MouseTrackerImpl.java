@@ -35,6 +35,9 @@ public class MouseTrackerImpl implements MouseTracker {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				if (oldEvent == null) {
+					oldEvent = e;
+				}
 				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_DRAGGED, oldEvent, e);
 				oldEvent = e;
 			}

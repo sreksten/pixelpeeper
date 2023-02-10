@@ -1,13 +1,20 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
 import com.threeamigos.imageviewer.data.PictureData;
@@ -15,6 +22,7 @@ import com.threeamigos.imageviewer.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -26,29 +34,38 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private final TagsClassifier commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
 	private final ImageHandlingPreferences imageHandlingPreferences;
+	private final DrawingPreferences drawingPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
 	private final FontService fontService;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private Rectangle location;
-	private double screenXOffset;
-	private double screenYOffset;
+	private double imageOffsetX;
+	private double imageOffsetY;
 
 	private boolean selected;
+
+	private boolean isDrawing;
+	private Drawing currentDrawing;
+	private List<Drawing> drawings;
 
 	private boolean edgeCalculationInProgress;
 
 	public ImageSliceImpl(PictureData pictureData, TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
-			ImageHandlingPreferences imageHandlingPreferences, EdgesDetectorPreferences edgesDetectorPreferences,
-			FontService fontService) {
+			ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
+			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
 		this.pictureData = pictureData;
 		pictureData.addPropertyChangeListener(this);
 		this.commonTagsHelper = commonTagsHelper;
 		this.tagPreferences = tagPreferences;
 		this.imageHandlingPreferences = imageHandlingPreferences;
+		this.drawingPreferences = drawingPreferences;
 		this.edgesDetectorPreferences = edgesDetectorPreferences;
 		this.fontService = fontService;
+
+		currentDrawing = new Drawing();
+		drawings = new ArrayList<>();
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
@@ -61,51 +78,86 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	@Override
 	public void setLocation(Rectangle location) {
 		this.location = location;
-		screenXOffset = (pictureData.getWidth() - location.width) / 2;
-		screenYOffset = (pictureData.getHeight() - location.height) / 2;
+		imageOffsetX = (pictureData.getWidth() - location.width) / 2;
+		imageOffsetY = (pictureData.getHeight() - location.height) / 2;
 		checkBoundaries();
 	}
 
 	@Override
 	public void move(double deltaX, double deltaY) {
 		float zoomLevel = pictureData.getZoomLevel();
-		screenXOffset += deltaX * zoomLevel / 100.0d;
-		screenYOffset += deltaY * zoomLevel / 100.0d;
+		imageOffsetX += deltaX * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL;
+		imageOffsetY += deltaY * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL;
 		checkBoundaries();
+	}
+
+	@Override
+	public void startDrawing() {
+		isDrawing = true;
+		currentDrawing = new Drawing();
+		drawings.add(currentDrawing);
+	}
+
+	@Override
+	public void addVertex(int x, int y) {
+		currentDrawing.addVertex(x, y);
+	}
+
+	@Override
+	public void stopDrawing() {
+		isDrawing = false;
+	}
+
+	@Override
+	public void undoLastDrawing() {
+		if (!drawings.isEmpty()) {
+			drawings.remove(drawings.size() - 1);
+		}
+		if (isDrawing) {
+			startDrawing();
+		}
+	}
+
+	@Override
+	public void clearDrawings() {
+		drawings.clear();
+		if (isDrawing) {
+			startDrawing();
+		}
 	}
 
 	private void checkBoundaries() {
 		int pictureWidth = pictureData.getWidth();
-		if (location != null && screenXOffset > pictureWidth - location.width) {
-			screenXOffset = pictureWidth - location.width;
+		if (location != null && imageOffsetX > pictureWidth - location.width) {
+			imageOffsetX = pictureWidth - location.width;
 		}
-		if (screenXOffset < 0.0d) {
-			screenXOffset = 0.0d;
+		if (imageOffsetX < 0.0d) {
+			imageOffsetX = 0.0d;
 		}
 
 		int pictureHeight = pictureData.getHeight();
-		if (location != null && screenYOffset > pictureHeight - location.height) {
-			screenYOffset = pictureHeight - location.height;
+		if (location != null && imageOffsetY > pictureHeight - location.height) {
+			imageOffsetY = pictureHeight - location.height;
 		}
-		if (screenYOffset < 0.0d) {
-			screenYOffset = 0.0d;
+		if (imageOffsetY < 0.0d) {
+			imageOffsetY = 0.0d;
 		}
 	}
 
 	@Override
 	public void resetMovement() {
 		if (location != null) {
-			screenXOffset = (pictureData.getWidth() - location.width) / 2;
-			if (screenXOffset < 0.0d) {
-				screenXOffset = 0.0d;
+			imageOffsetX = (pictureData.getWidth() - location.width) / 2;
+			if (imageOffsetX < 0.0d) {
+				imageOffsetX = 0.0d;
 			}
-			screenYOffset = (pictureData.getHeight() - location.height) / 2;
-			if (screenYOffset < 0.0d) {
-				screenYOffset = 0.0d;
+			imageOffsetY = (pictureData.getHeight() - location.height) / 2;
+			if (imageOffsetY < 0.0d) {
+				imageOffsetY = 0.0d;
 			}
 		} else {
-			screenXOffset = 0.0d;
-			screenYOffset = 0.0d;
+			imageOffsetX = 0.0d;
+			imageOffsetY = 0.0d;
 		}
 	}
 
@@ -116,28 +168,30 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			return;
 		}
 
-		int futurePictureWidth = (int) (pictureData.getOriginalWidth() * zoomLevel / 100);
+		int futurePictureWidth = (int) (pictureData.getOriginalWidth() * zoomLevel
+				/ ImageHandlingPreferences.MAX_ZOOM_LEVEL);
 		if (futurePictureWidth < location.width) {
-			screenXOffset = 0;
+			imageOffsetX = 0;
 		} else {
 			if (pictureData.getWidth() < location.width) {
-				screenXOffset = (futurePictureWidth - location.width) / 2;
+				imageOffsetX = (futurePictureWidth - location.width) / 2;
 			} else {
-				double centerXPercentage = (screenXOffset + location.width / 2) / pictureData.getWidth();
+				double centerXPercentage = (imageOffsetX + location.width / 2) / pictureData.getWidth();
 				double futureCenterX = centerXPercentage * futurePictureWidth;
-				screenXOffset = futureCenterX - location.width / 2;
+				imageOffsetX = futureCenterX - location.width / 2;
 			}
 		}
-		int futurePictureHeight = (int) (pictureData.getOriginalHeight() * zoomLevel / 100);
+		int futurePictureHeight = (int) (pictureData.getOriginalHeight() * zoomLevel
+				/ ImageHandlingPreferences.MAX_ZOOM_LEVEL);
 		if (futurePictureHeight < location.height) {
-			screenYOffset = 0;
+			imageOffsetY = 0;
 		} else {
 			if (pictureData.getHeight() < location.height) {
-				screenYOffset = (futurePictureHeight - location.height) / 2;
+				imageOffsetY = (futurePictureHeight - location.height) / 2;
 			} else {
-				double centerYPercentage = (screenYOffset + location.height / 2) / pictureData.getHeight();
+				double centerYPercentage = (imageOffsetY + location.height / 2) / pictureData.getHeight();
 				double futureCenterY = centerYPercentage * futurePictureHeight;
-				screenYOffset = futureCenterY - location.height / 2;
+				imageOffsetY = futureCenterY - location.height / 2;
 			}
 		}
 
@@ -160,6 +214,26 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	public boolean contains(int x, int y) {
 		return location != null && location.x <= x && x < location.x + location.width && location.y <= y
 				&& y < location.y + location.height;
+	}
+
+	private int getScreenCenteringX() {
+		int screenCenteringX = 0;
+		int locationWidth = location.width;
+		int pictureWidth = pictureData.getWidth();
+		if (locationWidth > pictureWidth) {
+			screenCenteringX = (locationWidth - pictureWidth) / 2;
+		}
+		return screenCenteringX;
+	}
+
+	private int getScreenCenteringY() {
+		int screenCenteringY = 0;
+		int locationHeight = location.height;
+		int pictureHeight = pictureData.getHeight();
+		if (locationHeight > pictureHeight) {
+			screenCenteringY = (locationHeight - pictureHeight) / 2;
+		}
+		return screenCenteringY;
 	}
 
 	@Override
@@ -188,14 +262,14 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 		int imageSliceWidth = locationWidth <= pictureWidth ? locationWidth : pictureWidth;
 		int imageSliceHeight = locationHeight <= pictureHeight ? locationHeight : pictureHeight;
-		int imageSliceStartX = (int) screenXOffset;
+		int imageSliceStartX = (int) imageOffsetX;
 		if (imageSliceStartX < 0) {
 			imageSliceStartX = 0;
 		}
 		if (imageSliceStartX + imageSliceWidth > pictureWidth) {
 			imageSliceStartX = pictureWidth - imageSliceWidth;
 		}
-		int imageSliceStartY = (int) screenYOffset;
+		int imageSliceStartY = (int) imageOffsetY;
 		if (imageSliceStartY < 0) {
 			imageSliceStartY = 0;
 		}
@@ -220,12 +294,16 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 		g2d.setClip(locationX, locationY, locationWidth, locationHeight);
 
 		int pictureX = locationX;
+		int zoomOffsetX = 0;
 		if (locationWidth > pictureWidth) {
-			pictureX += (locationWidth - pictureWidth) / 2;
+			zoomOffsetX = (locationWidth - pictureWidth) / 2;
+			pictureX += zoomOffsetX;
 		}
 		int pictureY = locationY;
+		int zoomOffsetY = 0;
 		if (locationHeight > pictureHeight) {
-			pictureY += (locationHeight - pictureHeight) / 2;
+			zoomOffsetY = (locationHeight - pictureHeight) / 2;
+			pictureY += zoomOffsetY;
 		}
 
 		if (!edgesDetectorPreferences.isShowEdges()
@@ -254,11 +332,9 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 					Color.BLACK, Color.WHITE);
 		}
 
-//		Font font = fontService.getFont("Arial", 0, 24);
-//		g2d.setFont(font);
-//		BorderedStringRenderer.drawString(g2d,
-//				String.format("XOffset: %d - YOffset: %d", (int) screenXOffset, (int) screenYOffset), locationX + 50,
-//				locationY + 50, Color.BLACK, Color.WHITE);
+		for (Drawing drawing : drawings) {
+			drawing.paint(g2d, zoomOffsetX, zoomOffsetY);
+		}
 
 		g2d.setClip(previousClip);
 	}
@@ -292,10 +368,10 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			}
 
 			int screenXOffsetScaled = pictureWidth > locationWidth
-					? (int) (screenXOffset * miniatureWidth / pictureWidth)
+					? (int) (imageOffsetX * miniatureWidth / pictureWidth)
 					: 0;
 			int screenYOffsetScaled = pictureHeight > locationHeight
-					? (int) (screenYOffset * miniatureHeight / pictureHeight)
+					? (int) (imageOffsetY * miniatureHeight / pictureHeight)
 					: 0;
 
 			g2d.drawRect(miniatureX + screenXOffsetScaled, miniatureY + screenYOffsetScaled, visibleWidth,
@@ -350,6 +426,57 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 	private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
 		edgeCalculationInProgress = false;
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, this);
+	}
+
+	private class Drawing {
+		private Color color;
+		private int brushSize;
+		private int transparency;
+		private List<Point> points;
+
+		Drawing() {
+			color = drawingPreferences.getColor();
+			brushSize = drawingPreferences.getBrushSize();
+			transparency = drawingPreferences.getTransparency();
+			points = new ArrayList<>();
+		}
+
+		void addVertex(int x, int y) {
+			x = x - getScreenCenteringX();
+			y = y - getScreenCenteringY();
+			int pointX = x - location.x + (int) imageOffsetX;
+			int pointY = y - location.y + (int) imageOffsetY;
+			pointX = (int) (pointX / pictureData.getZoomLevel() * 100);
+			pointY = (int) (pointY / pictureData.getZoomLevel() * 100);
+
+			points.add(new Point(pointX, pointY));
+		}
+
+		public void paint(Graphics2D g2d, int zoomOffsetX, int zoomOffsetY) {
+			Color previousColor = g2d.getColor();
+			Stroke previousStroke = g2d.getStroke();
+			Composite previousComposite = g2d.getComposite();
+			g2d.setColor(color);
+			g2d.setStroke(new BasicStroke(adapt(brushSize)));
+			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (100 - transparency) / 100.0f));
+			Point lastPoint = null;
+			int xOffset = zoomOffsetX - (int) imageOffsetX + location.x;
+			int yOffset = zoomOffsetY - (int) imageOffsetY + location.y;
+			for (Point point : points) {
+				if (lastPoint != null) {
+					g2d.drawLine(adapt(lastPoint.x) + xOffset, adapt(lastPoint.y) + yOffset, adapt(point.x) + xOffset,
+							adapt(point.y) + yOffset);
+				}
+				lastPoint = point;
+			}
+			g2d.setColor(previousColor);
+			g2d.setStroke(previousStroke);
+			g2d.setComposite(previousComposite);
+		}
+
+		private int adapt(int coordinate) {
+			return (int) (coordinate * getZoomLevel() / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+		}
 	}
 
 }

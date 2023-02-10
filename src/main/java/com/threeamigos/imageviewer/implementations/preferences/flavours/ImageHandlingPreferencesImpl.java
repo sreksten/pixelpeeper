@@ -46,9 +46,9 @@ public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implem
 	public void setZoomLevel(int zoomLevel) {
 		int oldZoomLevel = this.zoomLevel;
 		if (zoomLevel < MIN_ZOOM_LEVEL) {
-			zoomLevel = MIN_ZOOM_LEVEL;
+			zoomLevel = (int) MIN_ZOOM_LEVEL;
 		} else if (zoomLevel > MAX_ZOOM_LEVEL) {
-			zoomLevel = MAX_ZOOM_LEVEL;
+			zoomLevel = (int) MAX_ZOOM_LEVEL;
 		}
 		this.zoomLevel = zoomLevel;
 		firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, oldZoomLevel, zoomLevel);
@@ -150,7 +150,7 @@ public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implem
 	public void loadDefaultValues() {
 		autorotation = AUTOROTATION_DEFAULT;
 		disposition = DISPOSITION_DEFAULT;
-		zoomLevel = ZOOM_LEVEL_DEFAULT;
+		zoomLevel = (int) ZOOM_LEVEL_DEFAULT;
 		normalizedForCrop = NORMALIZED_FOR_CROP_DEFAULT;
 		normalizedForFocalLength = NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT;
 		relativeMovement = MOVEMENT_IN_PERCENTAGE_DEFAULT;

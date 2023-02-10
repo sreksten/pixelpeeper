@@ -60,6 +60,16 @@ public interface ImageSlice {
 	 */
 	public void move(double deltaX, double deltaY);
 
+	public void startDrawing();
+
+	public void addVertex(int x, int y);
+
+	public void stopDrawing();
+
+	public void undoLastDrawing();
+
+	public void clearDrawings();
+
 	/**
 	 * To clear the image shifting when loading a new image. Image is centered on
 	 * the screen.

@@ -64,7 +64,7 @@ public class PictureData {
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
-		this.zoomLevel = 100.0f;
+		this.zoomLevel = ImageHandlingPreferences.MAX_ZOOM_LEVEL;
 
 		if (imageHandlingPreferences.isAutorotation()) {
 			correctOrientation();
@@ -242,13 +242,13 @@ public class PictureData {
 	public void changeZoomLevel(float newZoomLevel) {
 		zoomLevel = newZoomLevel;
 		releaseEdges();
-		if (zoomLevel == 100) {
+		if (zoomLevel == ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
 			width = sourceWidth;
 			height = sourceHeight;
 			image = sourceImage;
 		} else {
-			width = (int) (sourceWidth * zoomLevel / 100.0f);
-			height = (int) (sourceHeight * zoomLevel / 100.0f);
+			width = (int) (sourceWidth * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+			height = (int) (sourceHeight * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
 			image = new BufferedImage(width, height, sourceImage.getType());
 			Graphics2D graphics = image.createGraphics();
 			graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);

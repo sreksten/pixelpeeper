@@ -42,6 +42,16 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 
 	public void resetActiveSlice();
 
+	public void startDrawing();
+
+	public void addVertex(int x, int y);
+
+	public void stopDrawing();
+
+	public void undoLastDrawing();
+
+	public void clearDrawings();
+
 	/**
 	 * Asks all slices to recalculate edge images
 	 */

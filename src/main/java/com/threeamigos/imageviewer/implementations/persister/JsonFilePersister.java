@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.persister;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,14 +35,20 @@ public class JsonFilePersister<T> extends FilePersister<T> {
 				return entity;
 			}
 		};
-		Gson gson = new GsonBuilder().registerTypeAdapter(entity.getClass(), creator).create();
+		GsonBuilder builder = new GsonBuilder();
+		builder.registerTypeAdapter(Color.class, new GsonColorAdapter());
+		builder.registerTypeAdapter(entity.getClass(), creator).create();
+		Gson gson = builder.create();
 		gson.fromJson(new InputStreamReader(inputStream, StandardCharsets.UTF_8), entity.getClass());
 	}
 
 	@Override
 	protected void save(OutputStream outputStream, T entity) throws IOException {
 		try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
-			printWriter.println(new Gson().toJson(entity));
+			GsonBuilder builder = new GsonBuilder();
+			builder.registerTypeAdapter(Color.class, new GsonColorAdapter());
+			Gson gson = builder.create();
+			printWriter.println(gson.toJson(entity));
 		}
 	}
 

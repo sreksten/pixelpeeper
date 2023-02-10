@@ -24,6 +24,9 @@ public interface KeyRegistry {
 	public static final int SHOW_TAGS_OVERRIDING_PREFERENCES_KEY = KeyEvent.VK_V;
 
 	public static final int MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED = KeyEvent.VK_CONTROL;
+	public static final int DRAWING_KEY = KeyEvent.VK_SHIFT;
+	public static final int UNDO_KEY = KeyEvent.VK_U;
+	public static final int DELETE_KEY = KeyEvent.VK_DELETE;
 
 	public static final int ENLARGE_KEY = KeyEvent.VK_ADD;
 	public static final int REDUCE_KEY = KeyEvent.VK_SUBTRACT;

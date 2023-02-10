@@ -8,10 +8,10 @@ public interface ImageHandlingPreferences extends Preferences {
 
 	public static final boolean AUTOROTATION_DEFAULT = true;
 	public static final Disposition DISPOSITION_DEFAULT = Disposition.VERTICAL;
-	public static final int MIN_ZOOM_LEVEL = 10;
-	public static final int ZOOM_LEVEL_DEFAULT = 100;
-	public static final int MAX_ZOOM_LEVEL = 100;
-	public static final int ZOOM_LEVEL_STEP = 10;
+	public static final float MIN_ZOOM_LEVEL = 10.0f;
+	public static final float ZOOM_LEVEL_DEFAULT = 100.0f;
+	public static final float MAX_ZOOM_LEVEL = 100.0f;
+	public static final float ZOOM_LEVEL_STEP = 10.0f;
 	public static final boolean NORMALIZED_FOR_CROP_DEFAULT = false;
 	public static final boolean NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT = false;
 	public static final boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;

@@ -48,6 +48,7 @@ public class DataModelImpl implements DataModel {
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
+	private boolean isDrawing;
 	private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
 	private GroupedFilesByExifTag groupedFiles;
@@ -227,11 +228,15 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void move(int deltaX, int deltaY) {
-		boolean isMovementAppliedToAllImages = imageHandlingPreferences.isMovementAppliedToAllImages();
-		if (isMovementAppliedToAllImagesTemporarilyInverted) {
-			isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
+		if (isDrawing) {
+			imageSlicesManager.move(deltaX, deltaY, false);
+		} else {
+			boolean isMovementAppliedToAllImages = imageHandlingPreferences.isMovementAppliedToAllImages();
+			if (isMovementAppliedToAllImagesTemporarilyInverted) {
+				isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
+			}
+			imageSlicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
 		}
-		imageSlicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
@@ -354,12 +359,18 @@ public class DataModelImpl implements DataModel {
 		if (hasLoadedImages()) {
 			MouseEvent e = (MouseEvent) evt.getNewValue();
 			setActiveSlice(e.getX(), e.getY());
+			if (isDrawing) {
+				imageSlicesManager.startDrawing();
+			}
 			requestRepaint();
 		}
 	}
 
 	private void handleMouseReleased(PropertyChangeEvent evt) {
 		if (hasLoadedImages()) {
+			if (isDrawing) {
+				imageSlicesManager.stopDrawing();
+			}
 			resetActiveSlice();
 			requestRepaint();
 		}
@@ -367,11 +378,16 @@ public class DataModelImpl implements DataModel {
 
 	private void handleMouseDragged(PropertyChangeEvent evt) {
 		if (hasLoadedImages()) {
-			MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
-			MouseEvent newEvent = (MouseEvent) evt.getNewValue();
-			int deltaX = oldEvent.getX() - newEvent.getX();
-			int deltaY = oldEvent.getY() - newEvent.getY();
-			move(deltaX, deltaY);
+			if (isDrawing) {
+				MouseEvent newEvent = (MouseEvent) evt.getNewValue();
+				imageSlicesManager.addVertex(newEvent.getX(), newEvent.getY());
+			} else {
+				MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
+				MouseEvent newEvent = (MouseEvent) evt.getNewValue();
+				int deltaX = oldEvent.getX() - newEvent.getX();
+				int deltaY = oldEvent.getY() - newEvent.getY();
+				move(deltaX, deltaY);
+			}
 			requestRepaint();
 		}
 	}
@@ -382,7 +398,13 @@ public class DataModelImpl implements DataModel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
+				if (e.getKeyCode() == KeyRegistry.DRAWING_KEY) {
+					isDrawing = true;
+				} else if (e.getKeyCode() == KeyRegistry.UNDO_KEY) {
+					imageSlicesManager.undoLastDrawing();
+				} else if (e.getKeyCode() == KeyRegistry.DELETE_KEY) {
+					imageSlicesManager.clearDrawings();
+				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
 
 				} else if (e.getKeyCode() == KeyRegistry.SHOW_POSITION_MINIATURE_KEY) {
@@ -395,7 +417,9 @@ public class DataModelImpl implements DataModel {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
+				if (e.getKeyCode() == KeyRegistry.DRAWING_KEY) {
+					isDrawing = false;
+				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
 					isMovementAppliedToAllImagesTemporarilyInverted = false;
 				}
 			}
