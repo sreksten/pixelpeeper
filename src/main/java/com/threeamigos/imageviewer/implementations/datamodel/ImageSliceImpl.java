@@ -85,9 +85,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	@Override
 	public void move(double deltaX, double deltaY) {
-		float zoomLevel = pictureData.getZoomLevel();
-		imageOffsetX += deltaX * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL;
-		imageOffsetY += deltaY * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL;
+		imageOffsetX += deltaX;
+		imageOffsetY += deltaY;
 		checkBoundaries();
 	}
 

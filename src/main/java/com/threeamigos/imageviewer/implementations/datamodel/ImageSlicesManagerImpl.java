@@ -144,24 +144,46 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void move(int deltaX, int deltaY, boolean movementAppliesToAllImages) {
-		float zoomFactor = ImageHandlingPreferences.MAX_ZOOM_LEVEL / activeSlice.getZoomLevel();
+	public void move(final int deltaX, final int deltaY, boolean movementAppliesToAllImages) {
 		if (movementAppliesToAllImages) {
 			if (imageHandlingPreferences.isRelativeMovement()) {
-				if (activeSlice != null) {
-					int activeSliceWidth = activeSlice.getPictureData().getWidth();
-					int activeSliceHeight = activeSlice.getPictureData().getHeight();
-					double percentageX = (double) deltaX / (double) activeSliceWidth;
-					double percentageY = (double) deltaY / (double) activeSliceHeight;
-					for (ImageSlice imageSlice : imageSlices) {
-						if (imageSlice != activeSlice) {
-							double imageSliceWidth = imageSlice.getPictureData().getWidth();
-							double imageSliceHeight = imageSlice.getPictureData().getHeight();
-							imageSlice.move(percentageX * imageSliceWidth * imageSliceWidth / (double) activeSliceWidth,
-									percentageY * imageSliceHeight * imageSliceHeight / (double) activeSliceHeight);
+
+				int notVisibleActiveSliceWidth = activeSlice.getPictureData().getWidth()
+						- activeSlice.getLocation().width;
+				int notVisibleActiveSliceHeight = activeSlice.getPictureData().getHeight()
+						- activeSlice.getLocation().height;
+
+				for (ImageSlice currentSlice : imageSlices) {
+					if (currentSlice == activeSlice) {
+						currentSlice.move(deltaX, deltaY);
+					} else {
+						int notVisibleCurrentSliceWidth = currentSlice.getPictureData().getWidth()
+								- currentSlice.getLocation().width;
+						double offsetX;
+						if (notVisibleCurrentSliceWidth > 0) {
+							if (notVisibleActiveSliceWidth < 0) {
+								offsetX = deltaX;
+							} else {
+								offsetX = (double) deltaX * notVisibleCurrentSliceWidth / notVisibleActiveSliceWidth;
+							}
 						} else {
-							imageSlice.move(deltaX * zoomFactor, deltaY * zoomFactor);
+							offsetX = 0.0d;
 						}
+
+						int notVisibleCurrentSliceHeight = currentSlice.getPictureData().getHeight()
+								- currentSlice.getLocation().height;
+						double offsetY;
+						if (notVisibleCurrentSliceHeight > 0) {
+							if (notVisibleActiveSliceHeight < 0) {
+								offsetY = deltaY;
+							} else {
+								offsetY = (double) deltaY * notVisibleCurrentSliceHeight / notVisibleActiveSliceHeight;
+							}
+						} else {
+							offsetY = 0.0d;
+						}
+
+						currentSlice.move(offsetX, offsetY);
 					}
 				}
 			} else {
@@ -170,9 +192,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 				}
 			}
 		} else {
-			if (activeSlice != null) {
-				activeSlice.move(deltaX * zoomFactor, deltaY * zoomFactor);
-			}
+			activeSlice.move(deltaX, deltaY);
 		}
 	}
 
