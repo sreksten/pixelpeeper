@@ -7,6 +7,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
@@ -69,68 +70,11 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void reframeImageSlices(int panelWidth, int panelHeight) {
 		if (!imageSlices.isEmpty()) {
-			switch (imageHandlingPreferences.getDisposition()) {
-			case HORIZONTAL:
-				sliceHorizontally(panelWidth, panelHeight);
-				break;
-			case VERTICAL:
-				sliceVertically(panelWidth, panelHeight);
-				break;
-			case GRID:
-				sliceGrid(panelWidth, panelHeight);
-				break;
-			default:
-				throw new IllegalArgumentException();
+			Iterator<Rectangle> rectanglesIterator = RectanglesProducer.createRectangles(panelWidth, panelHeight,
+					imageHandlingPreferences.getDisposition(), imageSlices.size()).iterator();
+			for (ImageSlice imageSlice : imageSlices) {
+				imageSlice.setLocation(rectanglesIterator.next());
 			}
-		}
-	}
-
-	private void sliceVertically(int panelWidth, int panelHeight) {
-		int sliceWidth = panelWidth / imageSlices.size();
-		int sliceHeight = panelHeight;
-		int currentScreenOffsetX = 0;
-		for (ImageSlice slice : imageSlices) {
-			Rectangle sliceRectangle = new Rectangle(currentScreenOffsetX, 0, sliceWidth, sliceHeight);
-			slice.setLocation(sliceRectangle);
-			currentScreenOffsetX += sliceWidth;
-		}
-	}
-
-	private void sliceHorizontally(int panelWidth, int panelHeight) {
-		int sliceWidth = panelWidth;
-		int sliceHeight = panelHeight / imageSlices.size();
-		int currentScreenOffsetY = 0;
-		for (ImageSlice slice : imageSlices) {
-			Rectangle sliceRectangle = new Rectangle(0, currentScreenOffsetY, sliceWidth, sliceHeight);
-			slice.setLocation(sliceRectangle);
-			currentScreenOffsetY += sliceHeight;
-		}
-	}
-
-	private void sliceGrid(int panelWidth, int panelHeight) {
-		int images = imageSlices.size();
-		int rows = (int) Math.sqrt((double) images);
-		int columns = (images + rows - 1) / rows;
-		int sliceWidth = panelWidth / columns;
-		int sliceHeight = panelHeight / rows;
-		int currentScreenOffsetX = 0;
-		int currentScreenOffsetY = 0;
-		int currentSlice = 0;
-
-		loop: for (int row = 0; row < rows; row++) {
-			currentScreenOffsetX = 0;
-			for (int column = 0; column < columns; column++) {
-				if (currentSlice == images) {
-					break loop;
-				}
-				ImageSlice slice = imageSlices.get(currentSlice);
-				Rectangle sliceRectangle = new Rectangle(currentScreenOffsetX, currentScreenOffsetY, sliceWidth,
-						sliceHeight);
-				slice.setLocation(sliceRectangle);
-				currentScreenOffsetX += sliceWidth;
-				currentSlice++;
-			}
-			currentScreenOffsetY += sliceHeight;
 		}
 	}
 
