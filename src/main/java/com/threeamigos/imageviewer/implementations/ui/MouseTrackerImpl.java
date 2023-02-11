@@ -23,14 +23,18 @@ public class MouseTrackerImpl implements MouseTracker {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_PRESSED, null, e);
-				oldEvent = e;
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_PRESSED, null, e);
+					oldEvent = e;
+				}
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_RELEASED, null, null);
-				oldEvent = null;
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_RELEASED, null, null);
+					oldEvent = null;
+				}
 			}
 
 			@Override
