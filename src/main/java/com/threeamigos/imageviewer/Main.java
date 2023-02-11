@@ -103,8 +103,6 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
 public class Main {
 
-	// BUGFIX: not all hints of the KeyRegistry work! :)
-
 	// BUGFIX: if the drag and drop window is open focus is switched to that. Well
 	// maybe not quite a but but...
 
