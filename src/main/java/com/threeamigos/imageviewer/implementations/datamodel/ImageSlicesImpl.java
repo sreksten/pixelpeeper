@@ -82,6 +82,9 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
 	@Override
 	public void move(final int deltaX, final int deltaY, boolean movementAppliesToAllImages) {
+		if (activeSlice == null) {
+			return;
+		}
 		if (movementAppliesToAllImages) {
 			if (imageHandlingPreferences.isRelativeMovement()) {
 
