@@ -43,8 +43,6 @@ import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.imageviewer.data.ExifMap;
 import com.threeamigos.imageviewer.data.ExifValue;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
-import com.threeamigos.imageviewer.interfaces.datamodel.ExifReader;
-import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
@@ -55,7 +53,6 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	private static final long serialVersionUID = 1L;
 
 	private final DragAndDropWindowPreferences dragAndDropWindowPreferences;
-	private final ExifReaderFactory exifReaderFactory;
 	private final ExifCache exifCache;
 	private final FontService fontService;
 	private final MessageHandler messageHandler;
@@ -76,14 +73,12 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	int upperBorderHeight;
 
-	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences,
-			ExifReaderFactory exifReaderFactory, ExifCache exifCache, FontService fontService,
-			MessageHandler messageHandler) {
+	public DragAndDropWindowImpl(DragAndDropWindowPreferences dragAndDropWindowPreferences, ExifCache exifCache,
+			FontService fontService, MessageHandler messageHandler) {
 		super("3AM Image Viewer DnD");
 		setMinimumSize(new Dimension(250, 350));
 
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
-		this.exifReaderFactory = exifReaderFactory;
 		this.exifCache = exifCache;
 		this.fontService = fontService;
 		this.messageHandler = messageHandler;
@@ -179,11 +174,10 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 			if (dragAndDropWindowPreferences.isOpenImmediately()) {
 				sendFiles(moreFiles);
 			} else {
-				ExifReader exifReader = exifReaderFactory.getExifReader();
 				for (File file : moreFiles) {
 					if (file.isFile()) {
 						allFiles.add(file);
-						Optional<ExifMap> exifMap = exifReader.readMetadata(file);
+						Optional<ExifMap> exifMap = exifCache.getExifMap(file);
 						if (exifMap.isPresent()) {
 							groupingPanel.mapFileToTags(file);
 						}

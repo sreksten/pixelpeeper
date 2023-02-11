@@ -121,12 +121,13 @@ public class Main {
 		MessageHandler messageHandler = new CompositeMessageHandler(new SwingMessageHandler(),
 				new ConsoleMessageHandler());
 
-		// The directory in which we store preferences and other persistables
+		// The directory in which we store preferences and other files
 
 		RootPathProvider rootPathProvider = new RootPathProviderImpl(this, messageHandler);
 		if (rootPathProvider.shouldAbort()) {
 			System.exit(0);
 		}
+
 		// Preferences that can be stored and retrieved in a subsequent run
 
 		PersistablesHelper persistablesHelper = new PersistablesHelper(rootPathProvider, messageHandler);
@@ -235,8 +236,8 @@ public class Main {
 		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
 		mouseTracker.addPropertyChangeListener(dataModel);
 
-		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, exifReaderFactory,
-				exifCache, fontService, messageHandler);
+		DragAndDropWindow dragAndDropWindow = new DragAndDropWindowImpl(dragAndDropWindowPreferences, exifCache,
+				fontService, messageHandler);
 		hintsCollector.addHints(dragAndDropWindow);
 
 		Collection<ImageDecorator> decorators = new ArrayList<>();
