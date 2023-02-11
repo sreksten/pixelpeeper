@@ -357,7 +357,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			int miniatureY = locationHeight - 1 - miniatureHeight - locationWidth / 20;
 
 			g2d.setColor(Color.DARK_GRAY);
-			drawFilledRectangle(g2d, miniatureX, miniatureY, miniatureWidth - 1, miniatureHeight - 1, 0);
+			drawFilledRectangle(g2d, miniatureX, miniatureY, miniatureWidth, miniatureHeight, 0);
 
 			g2d.setColor(Color.GRAY);
 			int visibleWidth = locationWidth * miniatureWidth / pictureWidth;
