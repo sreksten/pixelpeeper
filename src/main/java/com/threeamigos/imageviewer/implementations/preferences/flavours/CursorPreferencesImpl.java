@@ -1,9 +1,9 @@
 package com.threeamigos.imageviewer.implementations.preferences.flavours;
 
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.CursorPreferences;
 
-public class BigPointerPreferencesImpl extends PropertyChangeAwareImpl implements BigPointerPreferences {
+public class CursorPreferencesImpl extends PropertyChangeAwareImpl implements CursorPreferences {
 
 	private boolean bigPointerVisible;
 	private int bigPointerSize;
@@ -49,9 +49,9 @@ public class BigPointerPreferencesImpl extends PropertyChangeAwareImpl implement
 
 	@Override
 	public void loadDefaultValues() {
-		bigPointerVisible = BigPointerPreferences.BIG_POINTER_VISIBLE_DEFAULT;
-		bigPointerSize = BigPointerPreferences.BIG_POINTER_SIZE_DEFAULT;
-		bigPointerRotation = BigPointerPreferences.POINTER_ROTATION_DEFAULT;
+		bigPointerVisible = CursorPreferences.BIG_POINTER_VISIBLE_DEFAULT;
+		bigPointerSize = CursorPreferences.BIG_POINTER_SIZE_DEFAULT;
+		bigPointerRotation = CursorPreferences.POINTER_ROTATION_DEFAULT;
 	}
 
 	@Override

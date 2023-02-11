@@ -30,8 +30,8 @@ import com.threeamigos.imageviewer.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.persister.PersistablesHelper;
-import com.threeamigos.imageviewer.implementations.preferences.flavours.BigPointerPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
+import com.threeamigos.imageviewer.implementations.preferences.flavours.CursorPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.DragAndDropWindowPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.DrawingPreferencesImpl;
 import com.threeamigos.imageviewer.implementations.preferences.flavours.EdgesDetectorPreferencesImpl;
@@ -54,7 +54,7 @@ import com.threeamigos.imageviewer.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.imageviewer.implementations.ui.HintsWindowImpl;
 import com.threeamigos.imageviewer.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.imageviewer.implementations.ui.imagedecorators.GridDecorator;
-import com.threeamigos.imageviewer.implementations.ui.plugins.BigPointerPlugin;
+import com.threeamigos.imageviewer.implementations.ui.plugins.CursorPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.EdgesDetectorPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.ExifTagsPlugin;
 import com.threeamigos.imageviewer.implementations.ui.plugins.GridPlugin;
@@ -64,14 +64,13 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CropFactorRepositoryMana
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
-import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlices;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.CursorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
@@ -154,8 +153,8 @@ public class Main {
 		GridPreferences gridPreferences = new GridPreferencesImpl();
 		persistablesHelper.register(gridPreferences, "grid.preferences");
 
-		BigPointerPreferences bigPointerPreferences = new BigPointerPreferencesImpl();
-		persistablesHelper.register(bigPointerPreferences, "pointer.preferences");
+		CursorPreferences cursorPreferences = new CursorPreferencesImpl();
+		persistablesHelper.register(cursorPreferences, "cursor.preferences");
 
 		// Edges Detector and implementations preferences
 
@@ -191,9 +190,8 @@ public class Main {
 
 		ImageReaderFactory imageReaderFactory = new ImageReaderFactoryImpl(imageHandlingPreferences);
 
-		ExifReaderFactory exifReaderFactory = new ExifReaderFactoryImpl(imageHandlingPreferences);
-
-		ExifCache exifCache = new ExifCacheImpl(exifReaderFactory, cropFactorProvider);
+		ExifCache exifCache = new ExifCacheImpl(new ExifReaderFactoryImpl(imageHandlingPreferences),
+				cropFactorProvider);
 
 		EdgesDetectorFactory edgesDetectorFactory = new EdgesDetectorFactoryImpl(edgesDetectorPreferences,
 				cannyEdgesDetectorPreferences, romyJonaEdgesDetectorPreferences);
@@ -207,14 +205,14 @@ public class Main {
 
 		FontService fontService = new FontServiceImpl();
 
-		ImageSlices imageSlicesManager = new ImageSlicesImpl(tagsClassifier, exifTagPreferences,
-				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
+		ImageSlices imageSlices = new ImageSlicesImpl(tagsClassifier, exifTagPreferences, imageHandlingPreferences,
+				drawingPreferences, edgesDetectorPreferences, fontService);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
 		HintsCollector hintsCollector = new HintsCollectorImpl();
 
-		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlicesManager, imageHandlingPreferences,
+		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlices, imageHandlingPreferences,
 				sessionPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter,
 				messageHandler);
 		chainedInputConsumer.addConsumer(dataModel.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
@@ -245,9 +243,9 @@ public class Main {
 		GridDecorator gridDecorator = new GridDecorator(mainWindowPreferences, gridPreferences);
 		decorators.add(gridDecorator);
 
-		CursorManager cursorManager = new CursorManagerImpl(bigPointerPreferences);
+		CursorManager cursorManager = new CursorManagerImpl(cursorPreferences);
 		chainedInputConsumer.addConsumer(cursorManager.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
-		bigPointerPreferences.addPropertyChangeListener(cursorManager);
+		cursorPreferences.addPropertyChangeListener(cursorManager);
 		hintsCollector.addHints(cursorManager);
 
 		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
@@ -271,8 +269,8 @@ public class Main {
 		hintsCollector.addHints(gridPlugin);
 		plugins.add(gridPlugin);
 
-		BigPointerPlugin bigPointerPlugin = new BigPointerPlugin(bigPointerPreferences, cursorManager);
-		plugins.add(bigPointerPlugin);
+		CursorPlugin cursorPlugin = new CursorPlugin(cursorPreferences, cursorManager);
+		plugins.add(cursorPlugin);
 
 		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagPreferences);
 		plugins.add(exifTagsPlugin);
@@ -286,10 +284,10 @@ public class Main {
 		hintsCollector.addHints(imageViewerCanvas);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
-		bigPointerPreferences.addPropertyChangeListener(imageViewerCanvas);
+		cursorPreferences.addPropertyChangeListener(imageViewerCanvas);
 		gridPreferences.addPropertyChangeListener(imageViewerCanvas);
 		exifTagsPlugin.addPropertyChangeListener(imageViewerCanvas);
-		imageSlicesManager.addPropertyChangeListener(imageViewerCanvas);
+		imageSlices.addPropertyChangeListener(imageViewerCanvas);
 
 		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, drawingPreferences, dataModel);
 		imageHandlingPreferences.addPropertyChangeListener(controlsPanel);

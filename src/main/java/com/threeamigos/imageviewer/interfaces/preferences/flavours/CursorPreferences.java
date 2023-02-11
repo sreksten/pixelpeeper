@@ -2,7 +2,7 @@ package com.threeamigos.imageviewer.interfaces.preferences.flavours;
 
 import com.threeamigos.imageviewer.interfaces.preferences.Preferences;
 
-public interface BigPointerPreferences extends Preferences {
+public interface CursorPreferences extends Preferences {
 
 	public static final boolean BIG_POINTER_VISIBLE_DEFAULT = false;
 	public static final int BIG_POINTER_MIN_SIZE = 32;

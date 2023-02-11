@@ -18,21 +18,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences;
-import com.threeamigos.imageviewer.interfaces.preferences.flavours.BigPointerPreferences.Rotation;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.CursorPreferences;
+import com.threeamigos.imageviewer.interfaces.preferences.flavours.CursorPreferences.Rotation;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
 
 public class CursorManagerImpl implements CursorManager, PropertyChangeListener {
 
-	private final BigPointerPreferences pointerPreferences;
+	private final CursorPreferences pointerPreferences;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private boolean dragging;
 	private Cursor cursor;
 
-	public CursorManagerImpl(BigPointerPreferences bigPointerPreferences) {
+	public CursorManagerImpl(CursorPreferences bigPointerPreferences) {
 		this.pointerPreferences = bigPointerPreferences;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
