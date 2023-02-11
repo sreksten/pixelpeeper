@@ -1,5 +1,6 @@
 package com.threeamigos.imageviewer.implementations.ui.plugins;
 
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.EnumMap;
 import java.util.Map;
@@ -8,10 +9,13 @@ import java.util.Map.Entry;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.imageviewer.implementations.ui.InputAdapter;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
+import com.threeamigos.imageviewer.interfaces.ui.InputConsumer;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
 public class EdgesDetectorPlugin extends AbstractMainWindowPlugin {
 
@@ -34,23 +38,19 @@ public class EdgesDetectorPlugin extends AbstractMainWindowPlugin {
 
 		JMenu edgesDetectorMenu = mainWindow.getMenu("Edges Detector");
 
-		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", SHOW_EDGES_KEY,
-				edgesDetectorPreferences.isShowEdges(), event -> {
-					edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
-				});
+		showEdgesMenuItem = addCheckboxMenuItem(edgesDetectorMenu, "Show edges", KeyRegistry.SHOW_EDGES_KEY,
+				edgesDetectorPreferences.isShowEdges(), event -> toggleShowEdges());
 		JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
 		edgesDetectorMenu.add(edgesDetectorFlavourMenuItem);
 		for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.values()) {
-			JMenuItem flavourMenuItem = addCheckboxMenuItem(edgesDetectorFlavourMenuItem, flavour.getDescription(), -1,
-					edgesDetectorPreferences.getEdgesDetectorFlavour() == flavour, event -> {
+			JMenuItem flavourMenuItem = addCheckboxMenuItem(edgesDetectorFlavourMenuItem, flavour.getDescription(),
+					KeyRegistry.NO_KEY, edgesDetectorPreferences.getEdgesDetectorFlavour() == flavour, event -> {
 						updateEdgesDetectorFlavour(flavour);
 					});
 			edgesDetectorFlavourMenuItemsByFlavour.put(flavour, flavourMenuItem);
 		}
-		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", SHOW_EDGES_DETETECTOR_PARAMETERS_KEY, event -> {
-			edgesDetectorPreferencesSelectorFactory.createSelector(mainWindow.getComponent())
-					.selectParameters(mainWindow.getComponent());
-		});
+		addMenuItem(edgesDetectorMenu, "Edge Detector parameters", KeyRegistry.SHOW_EDGES_DETETECTOR_PARAMETERS_KEY,
+				event -> showEdgesDetectorParametersWindow());
 	}
 
 	private void updateEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
@@ -61,6 +61,31 @@ public class EdgesDetectorPlugin extends AbstractMainWindowPlugin {
 		if (edgesDetectorPreferences.isShowEdges()) {
 			firePropertyChange(CommunicationMessages.REQUEST_EDGES_CALCULATION, null, null);
 		}
+	}
+
+	private void toggleShowEdges() {
+		edgesDetectorPreferences.setShowEdges(!edgesDetectorPreferences.isShowEdges());
+	}
+
+	private void showEdgesDetectorParametersWindow() {
+		edgesDetectorPreferencesSelectorFactory.createSelector(mainWindow.getComponent())
+				.selectParameters(mainWindow.getComponent());
+	}
+
+	public InputConsumer getInputConsumer() {
+
+		return new InputAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int key = e.getKeyCode();
+				if (key == KeyRegistry.SHOW_EDGES_KEY.getKeyCode()) {
+					toggleShowEdges();
+				} else if (key == KeyRegistry.SHOW_EDGES_DETETECTOR_PARAMETERS_KEY.getKeyCode()) {
+					showEdgesDetectorParametersWindow();
+				}
+			}
+		};
 	}
 
 	@Override

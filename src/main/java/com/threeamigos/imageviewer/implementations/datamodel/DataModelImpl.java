@@ -394,28 +394,24 @@ public class DataModelImpl implements DataModel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyRegistry.DRAWING_KEY) {
+				if (e.getKeyCode() == KeyRegistry.ANNOTATE_KEY.getKeyCode()) {
 					isDrawing = true;
-				} else if (e.getKeyCode() == KeyRegistry.UNDO_KEY) {
+				} else if (e.getKeyCode() == KeyRegistry.UNDO_KEY.getKeyCode()) {
 					imageSlices.undoLastAnnotation();
-				} else if (e.getKeyCode() == KeyRegistry.DELETE_KEY) {
+				} else if (e.getKeyCode() == KeyRegistry.DELETE_KEY.getKeyCode()) {
 					imageSlices.clearAnnotations();
-				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
+				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED
+						.getKeyCode()) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
-
-				} else if (e.getKeyCode() == KeyRegistry.SHOW_POSITION_MINIATURE_KEY) {
-					imageHandlingPreferences
-							.setPositionMiniatureVisible(!imageHandlingPreferences.isPositionMiniatureVisible());
-					propertyChangeSupport.firePropertyChange(
-							CommunicationMessages.POSITION_MINIATURE_VISIBILITY_CHANGED, null, null);
 				}
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyRegistry.DRAWING_KEY) {
+				if (e.getKeyCode() == KeyRegistry.ANNOTATE_KEY.getKeyCode()) {
 					isDrawing = false;
-				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
+				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED
+						.getKeyCode()) {
 					isMovementAppliedToAllImagesTemporarilyInverted = false;
 				}
 			}

@@ -11,6 +11,7 @@ import javax.swing.JMenuItem;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.CursorPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 
 public class CursorPlugin extends AbstractMainWindowPlugin {
 
@@ -31,7 +32,7 @@ public class CursorPlugin extends AbstractMainWindowPlugin {
 
 		JMenu imageHandlingMenu = mainWindow.getMenu("Image handling");
 
-		bigPointerVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Big pointer", SHOW_BIG_POINTER_KEY,
+		bigPointerVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Big pointer", KeyRegistry.NO_KEY,
 				bigPointerPreferences.isBigPointerVisible(), event -> {
 					bigPointerPreferences.setBigPointerVisible(!bigPointerPreferences.isBigPointerVisible());
 				});
@@ -40,8 +41,8 @@ public class CursorPlugin extends AbstractMainWindowPlugin {
 		int maxDimension = cursorManager.getMaxCursorSize();
 		for (int pointerSize = CursorPreferences.BIG_POINTER_MIN_SIZE; pointerSize <= maxDimension; pointerSize += CursorPreferences.BIG_POINTER_SIZE_STEP) {
 			final int currentSize = pointerSize;
-			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize), -1,
-					pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {
+			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize),
+					KeyRegistry.NO_KEY, pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {
 						bigPointerPreferences.setBigPointerSize(currentSize - 1);
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);

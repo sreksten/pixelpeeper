@@ -33,7 +33,7 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
 
 		JMenu imageHandlingMenu = mainWindow.getMenu("Image handling");
 
-		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", SHOW_GRID_KEY,
+		gridVisibleMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Show grid", KeyRegistry.SHOW_GRID_KEY,
 				gridPreferences.isGridVisible(), event -> {
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 				});
@@ -41,8 +41,8 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
 		imageHandlingMenu.add(gridSpacingMenu);
 		for (int gridSpacing = GridPreferences.GRID_SPACING_MIN; gridSpacing <= GridPreferences.GRID_SPACING_MAX; gridSpacing += GridPreferences.GRID_SPACING_STEP) {
 			final int currentSpacing = gridSpacing;
-			JMenuItem gridSpacingItem = addCheckboxMenuItem(gridSpacingMenu, String.valueOf(gridSpacing), -1,
-					gridSpacing == gridPreferences.getGridSpacing(), event -> {
+			JMenuItem gridSpacingItem = addCheckboxMenuItem(gridSpacingMenu, String.valueOf(gridSpacing),
+					KeyRegistry.NO_KEY, gridSpacing == gridPreferences.getGridSpacing(), event -> {
 						gridPreferences.setGridSpacing(currentSpacing);
 					});
 			gridSpacingBySize.put(gridSpacing, gridSpacingItem);
@@ -70,10 +70,10 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
 			@Override
 			public void keyPressed(KeyEvent e) {
 
-				if (e.getKeyCode() == KeyRegistry.SHOW_GRID_KEY) {
+				if (e.getKeyCode() == KeyRegistry.SHOW_GRID_KEY.getKeyCode()) {
 					gridPreferences.setGridVisible(!gridPreferences.isGridVisible());
 					e.consume();
-				} else if (e.getKeyCode() == KeyRegistry.ENLARGE_KEY) {
+				} else if (e.getKeyCode() == KeyRegistry.ENLARGE_KEY.getKeyCode()) {
 					if (gridPreferences.isGridVisible()) {
 						int spacing = gridPreferences.getGridSpacing();
 						if (spacing < GridPreferences.GRID_SPACING_MAX) {
@@ -81,7 +81,7 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
 						}
 						e.consume();
 					}
-				} else if (e.getKeyCode() == KeyRegistry.REDUCE_KEY) {
+				} else if (e.getKeyCode() == KeyRegistry.REDUCE_KEY.getKeyCode()) {
 					if (gridPreferences.isGridVisible()) {
 						int spacing = gridPreferences.getGridSpacing();
 						if (spacing > GridPreferences.GRID_SPACING_MIN) {

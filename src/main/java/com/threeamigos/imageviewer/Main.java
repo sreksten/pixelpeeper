@@ -90,6 +90,7 @@ import com.threeamigos.imageviewer.interfaces.ui.FontService;
 import com.threeamigos.imageviewer.interfaces.ui.HintsCollector;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
+import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 import com.threeamigos.imageviewer.interfaces.ui.MainWindowPlugin;
 import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
 
@@ -101,6 +102,11 @@ import com.threeamigos.imageviewer.interfaces.ui.MouseTracker;
  */
 
 public class Main {
+
+	// BUGFIX: not all hints of the KeyRegistry work! :)
+
+	// BUGFIX: if the drag and drop window is open focus is switched to that. Well
+	// maybe not quite a but but...
 
 	// BUGFIX: the big pointer may flicker when changed
 
@@ -145,8 +151,8 @@ public class Main {
 		SessionPreferences sessionPreferences = new SessionPreferencesImpl();
 		persistablesHelper.register(sessionPreferences, "session.preferences");
 
-		ExifTagPreferences exifTagPreferences = new ExifTagPreferencesImpl();
-		persistablesHelper.register(exifTagPreferences, "exif_tag.preferences");
+		ExifTagPreferences exifTagsPreferences = new ExifTagPreferencesImpl();
+		persistablesHelper.register(exifTagsPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
@@ -205,12 +211,13 @@ public class Main {
 
 		FontService fontService = new FontServiceImpl();
 
-		ImageSlices imageSlices = new ImageSlicesImpl(tagsClassifier, exifTagPreferences, imageHandlingPreferences,
+		ImageSlices imageSlices = new ImageSlicesImpl(tagsClassifier, exifTagsPreferences, imageHandlingPreferences,
 				drawingPreferences, edgesDetectorPreferences, fontService);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
 		HintsCollector hintsCollector = new HintsCollectorImpl();
+		hintsCollector.addHints(KeyRegistry.NO_KEY.getHints());
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlices, imageHandlingPreferences,
 				sessionPreferences, edgesDetectorPreferences, exifCache, exifImageReader, exifTagsFilter,
@@ -255,11 +262,13 @@ public class Main {
 		EdgesDetectorPlugin edgesDetectorPlugin = new EdgesDetectorPlugin(edgesDetectorPreferences,
 				edgesDetectorParametersSelectorFactory);
 		edgesDetectorPlugin.addPropertyChangeListener(dataModel);
+		chainedInputConsumer.addConsumer(edgesDetectorPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		edgesDetectorPreferences.addPropertyChangeListener(edgesDetectorPlugin);
 		plugins.add(edgesDetectorPlugin);
 
 		ImageHandlingPlugin imageHandlingPlugin = new ImageHandlingPlugin(imageHandlingPreferences);
 		imageHandlingPlugin.addPropertyChangeListener(dataModel);
+		chainedInputConsumer.addConsumer(imageHandlingPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		imageHandlingPreferences.addPropertyChangeListener(imageHandlingPlugin);
 		plugins.add(imageHandlingPlugin);
 
@@ -272,8 +281,9 @@ public class Main {
 		CursorPlugin cursorPlugin = new CursorPlugin(cursorPreferences, cursorManager);
 		plugins.add(cursorPlugin);
 
-		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagPreferences);
+		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagsPreferences);
 		plugins.add(exifTagsPlugin);
+		chainedInputConsumer.addConsumer(exifTagsPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 
 		JMenuBar menuBar = new JMenuBar();
 
@@ -281,12 +291,11 @@ public class Main {
 				dragAndDropWindowPreferences, imageHandlingPreferences, dataModel, cursorManager, fileSelector,
 				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
 				plugins);
-		hintsCollector.addHints(imageViewerCanvas);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 		cursorPreferences.addPropertyChangeListener(imageViewerCanvas);
 		gridPreferences.addPropertyChangeListener(imageViewerCanvas);
-		exifTagsPlugin.addPropertyChangeListener(imageViewerCanvas);
+		exifTagsPreferences.addPropertyChangeListener(imageViewerCanvas);
 		imageSlices.addPropertyChangeListener(imageViewerCanvas);
 
 		ControlsPanel controlsPanel = new ControlsPanel(imageHandlingPreferences, drawingPreferences, dataModel);

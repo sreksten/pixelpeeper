@@ -4,11 +4,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 import com.threeamigos.imageviewer.interfaces.ui.MainWindow;
 import com.threeamigos.imageviewer.interfaces.ui.MainWindowPlugin;
 
-public abstract class AbstractMainWindowPlugin implements MainWindowPlugin, KeyRegistry, PropertyChangeListener {
+public abstract class AbstractMainWindowPlugin implements MainWindowPlugin, PropertyChangeListener {
 
 	private final PropertyChangeSupport propertyChangeSupport;
 

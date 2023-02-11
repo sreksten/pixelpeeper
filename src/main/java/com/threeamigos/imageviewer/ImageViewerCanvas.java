@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,6 @@ import com.threeamigos.imageviewer.interfaces.ui.AboutWindow;
 import com.threeamigos.imageviewer.interfaces.ui.CursorManager;
 import com.threeamigos.imageviewer.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.imageviewer.interfaces.ui.FileSelector;
-import com.threeamigos.imageviewer.interfaces.ui.HintsProducer;
 import com.threeamigos.imageviewer.interfaces.ui.HintsWindow;
 import com.threeamigos.imageviewer.interfaces.ui.ImageConsumer;
 import com.threeamigos.imageviewer.interfaces.ui.ImageDecorator;
@@ -51,8 +49,7 @@ import com.threeamigos.imageviewer.interfaces.ui.MainWindowPlugin;
  * @author Stefano Reksten
  *
  */
-public class ImageViewerCanvas extends JPanel
-		implements ImageConsumer, PropertyChangeListener, HintsProducer, KeyRegistry, MainWindow {
+public class ImageViewerCanvas extends JPanel implements ImageConsumer, PropertyChangeListener, MainWindow {
 
 	private static final long serialVersionUID = 1L;
 
@@ -114,11 +111,11 @@ public class ImageViewerCanvas extends JPanel
 
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open Files...", OPEN_FILES_KEY, event -> openFiles());
-		addMenuItem(fileMenu, "Browse directory", BROWSE_DIRECTORY_KEY, event -> browseDirectory());
-		addMenuItem(fileMenu, "Open Drag and Drop panel", OPEN_DRAG_AND_DROP_PANEL_KEY,
+		addMenuItem(fileMenu, "Open Files...", KeyRegistry.OPEN_FILES_KEY, event -> openFiles());
+		addMenuItem(fileMenu, "Browse directory", KeyRegistry.BROWSE_DIRECTORY_KEY, event -> browseDirectory());
+		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyRegistry.OPEN_DRAG_AND_DROP_PANEL_KEY,
 				event -> openDragAndDropPanel());
-		addMenuItem(fileMenu, "Quit", QUIT_KEY, event -> quit());
+		addMenuItem(fileMenu, "Quit", KeyRegistry.QUIT_KEY, event -> quit());
 
 		for (MainWindowPlugin plugin : plugins) {
 			plugin.setMainWindow(this);
@@ -126,8 +123,8 @@ public class ImageViewerCanvas extends JPanel
 
 		JMenu aboutMenu = new JMenu("?");
 		menuBar.add(aboutMenu);
-		addMenuItem(aboutMenu, "Show hints", SHOW_HINTS_KEY, event -> showHints());
-		addMenuItem(aboutMenu, "About", SHOW_ABOUT_KEY, event -> showAboutWindow());
+		addMenuItem(aboutMenu, "Show hints", KeyRegistry.SHOW_HINTS_KEY, event -> showHints());
+		addMenuItem(aboutMenu, "About", KeyRegistry.SHOW_ABOUT_KEY, event -> showAboutWindow());
 
 	}
 
@@ -175,13 +172,13 @@ public class ImageViewerCanvas extends JPanel
 		}
 	}
 
-	private JMenuItem addMenuItem(JMenu menu, String title, int mnemonic, ActionListener actionListener) {
+	private JMenuItem addMenuItem(JMenu menu, String title, KeyRegistry mnemonic, ActionListener actionListener) {
 		JMenuItem menuItem = new JMenuItem(title);
 		if (actionListener != null) {
 			menuItem.addActionListener(actionListener);
 		}
-		if (mnemonic != NO_KEY) {
-			menuItem.setMnemonic(mnemonic);
+		if (mnemonic != KeyRegistry.NO_KEY) {
+			menuItem.setMnemonic(mnemonic.getKeyCode());
 		}
 		menu.add(menuItem);
 		return menuItem;
@@ -222,33 +219,21 @@ public class ImageViewerCanvas extends JPanel
 			@Override
 			public void keyPressed(KeyEvent e) {
 				int key = e.getKeyCode();
-				if (key == OPEN_FILES_KEY) {
+				if (key == KeyRegistry.OPEN_FILES_KEY.getKeyCode()) {
 					openFiles();
-				} else if (key == BROWSE_DIRECTORY_KEY) {
+				} else if (key == KeyRegistry.BROWSE_DIRECTORY_KEY.getKeyCode()) {
 					browseDirectory();
-				} else if (key == OPEN_DRAG_AND_DROP_PANEL_KEY) {
+				} else if (key == KeyRegistry.OPEN_DRAG_AND_DROP_PANEL_KEY.getKeyCode()) {
 					openDragAndDropPanel();
-				} else if (key == SHOW_ABOUT_KEY) {
+				} else if (key == KeyRegistry.SHOW_ABOUT_KEY.getKeyCode()) {
 					showAboutWindow();
-				} else if (key == QUIT_KEY) {
+				} else if (key == KeyRegistry.QUIT_KEY.getKeyCode()) {
 					quit();
-				} else if (key == ENLARGE_KEY) {
-					imageHandlingPreferences.setZoomLevel(
-							imageHandlingPreferences.getZoomLevel() + (int) ImageHandlingPreferences.ZOOM_LEVEL_STEP);
-				} else if (key == REDUCE_KEY) {
-					imageHandlingPreferences.setZoomLevel(
-							imageHandlingPreferences.getZoomLevel() - (int) ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+				} else if (key == KeyRegistry.SHOW_HINTS_KEY.getKeyCode()) {
+					showHints();
 				}
 			}
 		};
-	}
-
-	@Override
-	public Collection<String> getHints() {
-		Collection<String> hints = new ArrayList<>();
-		hints.add(
-				"If no grid is visible you can change the images' zoom level using the plus or minus key on the numeric keypad.");
-		return hints;
 	}
 
 	@Override
