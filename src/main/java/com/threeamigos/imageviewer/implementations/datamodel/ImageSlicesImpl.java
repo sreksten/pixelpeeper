@@ -1,19 +1,18 @@
 package com.threeamigos.imageviewer.implementations.datamodel;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import com.threeamigos.imageviewer.data.PictureData;
 import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlices;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
@@ -21,7 +20,7 @@ import com.threeamigos.imageviewer.interfaces.preferences.flavours.ExifTagPrefer
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.imageviewer.interfaces.ui.FontService;
 
-public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChangeListener {
+public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
 	private final TagsClassifier commonTagsHelper;
 	private final ExifTagPreferences tagPreferences;
@@ -38,7 +37,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	private ImageSlice activeSlice;
 	private ImageSlice lastActiveSlice;
 
-	public ImageSlicesManagerImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
+	public ImageSlicesImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
 			ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
 			EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
 		this.commonTagsHelper = commonTagsHelper;
@@ -58,17 +57,20 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public boolean hasLoadedImages() {
+	public void add(PictureData pictureData) {
+		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
+				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
+		imageSlice.addPropertyChangeListener(this);
+		imageSlices.add(imageSlice);
+	}
+
+	@Override
+	public boolean isNotEmpty() {
 		return !imageSlices.isEmpty();
 	}
 
 	@Override
-	public Collection<ImageSlice> getImageSlices() {
-		return Collections.unmodifiableCollection(imageSlices);
-	}
-
-	@Override
-	public void reframeImageSlices(int panelWidth, int panelHeight) {
+	public void reframe(int panelWidth, int panelHeight) {
 		if (!imageSlices.isEmpty()) {
 			Iterator<Rectangle> rectanglesIterator = RectanglesProducer.createRectangles(panelWidth, panelHeight,
 					imageHandlingPreferences.getDisposition(), imageSlices.size()).iterator();
@@ -76,15 +78,6 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 				imageSlice.setLocation(rectanglesIterator.next());
 			}
 		}
-	}
-
-	@Override
-	public ImageSlice createImageSlice(PictureData pictureData) {
-		ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
-				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
-		imageSlice.addPropertyChangeListener(this);
-		imageSlices.add(imageSlice);
-		return imageSlice;
 	}
 
 	@Override
@@ -146,7 +139,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void changeZoomLevel() {
+	public void updateZoomLevel() {
 		float baseZoomLevel = imageHandlingPreferences.getZoomLevel();
 
 		Float minCropFactor = null;
@@ -200,7 +193,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void resetActiveSlice() {
+	public void setNoActiveSlice() {
 		if (activeSlice != null) {
 			activeSlice.setSelected(false);
 		}
@@ -208,28 +201,28 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void startDrawing() {
+	public void startAnnotating() {
 		if (activeSlice != null) {
 			activeSlice.startDrawing();
 		}
 	}
 
 	@Override
-	public void addVertex(int x, int y) {
+	public void addPoint(int x, int y) {
 		if (activeSlice != null) {
 			activeSlice.addVertex(x, y);
 		}
 	}
 
 	@Override
-	public void stopDrawing() {
+	public void stopAnnotating() {
 		if (activeSlice != null) {
 			activeSlice.stopDrawing();
 		}
 	}
 
 	@Override
-	public void undoLastDrawing() {
+	public void undoLastAnnotation() {
 		if (lastActiveSlice != null) {
 			lastActiveSlice.undoLastDrawing();
 			requestRepaint();
@@ -237,7 +230,7 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	}
 
 	@Override
-	public void clearDrawings() {
+	public void clearAnnotations() {
 		if (lastActiveSlice != null) {
 			lastActiveSlice.clearDrawings();
 			requestRepaint();
@@ -260,6 +253,17 @@ public class ImageSlicesManagerImpl implements ImageSlicesManager, PropertyChang
 	@Override
 	public void releaseEdges() {
 		imageSlices.forEach(ImageSlice::releaseEdges);
+	}
+
+	@Override
+	public void toggleAutorotation() {
+		boolean autorotation = imageHandlingPreferences.isAutorotation();
+		imageSlices.forEach(slice -> slice.adjustRotation(autorotation));
+	}
+
+	@Override
+	public void paint(Graphics2D graphics) {
+		imageSlices.forEach(slice -> slice.paint(graphics));
 	}
 
 	@Override

@@ -25,7 +25,7 @@ import com.threeamigos.imageviewer.implementations.datamodel.ExifCacheImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ExifReaderFactoryImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.ImageReaderFactoryImpl;
-import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesManagerImpl;
+import com.threeamigos.imageviewer.implementations.datamodel.ImageSlicesImpl;
 import com.threeamigos.imageviewer.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.imageviewer.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
@@ -66,7 +66,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifReaderFactory;
 import com.threeamigos.imageviewer.interfaces.datamodel.ImageReaderFactory;
-import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlices;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.imageviewer.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
@@ -206,7 +206,7 @@ public class Main {
 
 		FontService fontService = new FontServiceImpl();
 
-		ImageSlicesManager imageSlicesManager = new ImageSlicesManagerImpl(tagsClassifier, exifTagPreferences,
+		ImageSlices imageSlicesManager = new ImageSlicesImpl(tagsClassifier, exifTagPreferences,
 				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();

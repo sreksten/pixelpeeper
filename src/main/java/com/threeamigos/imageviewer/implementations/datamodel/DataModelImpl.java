@@ -25,8 +25,7 @@ import com.threeamigos.imageviewer.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.imageviewer.interfaces.datamodel.DataModel;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifCache;
 import com.threeamigos.imageviewer.interfaces.datamodel.ExifImageReader;
-import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlice;
-import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlicesManager;
+import com.threeamigos.imageviewer.interfaces.datamodel.ImageSlices;
 import com.threeamigos.imageviewer.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.imageviewer.interfaces.preferences.flavours.ImageHandlingPreferences;
@@ -38,7 +37,7 @@ import com.threeamigos.imageviewer.interfaces.ui.KeyRegistry;
 public class DataModelImpl implements DataModel {
 
 	private final TagsClassifier tagsClassifier;
-	private final ImageSlicesManager imageSlicesManager;
+	private final ImageSlices imageSlices;
 	private final ImageHandlingPreferences imageHandlingPreferences;
 	private final SessionPreferences sessionPreferences;
 	private final EdgesDetectorPreferences edgesDetectorPreferences;
@@ -53,12 +52,12 @@ public class DataModelImpl implements DataModel {
 
 	private GroupedFilesByExifTag groupedFiles;
 
-	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlicesManager imageSlicesManager,
+	public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlices imageSlicesManager,
 			ImageHandlingPreferences imageHandlingPreferences, SessionPreferences sessionPreferences,
 			EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader,
 			ExifTagsFilter exifTagsFilter, MessageHandler messageHandler) {
 		this.tagsClassifier = commonTagsHelper;
-		this.imageSlicesManager = imageSlicesManager;
+		this.imageSlices = imageSlicesManager;
 		imageSlicesManager.addPropertyChangeListener(this);
 		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.sessionPreferences = sessionPreferences;
@@ -170,7 +169,7 @@ public class DataModelImpl implements DataModel {
 				Collection<File> files = groupedFiles.getCurrentFiles();
 
 				if (!files.isEmpty()) {
-					imageSlicesManager.clear();
+					imageSlices.clear();
 					Map<File, PictureData> loadedPictures = new HashMap<>();
 					files.parallelStream().forEach(file -> {
 						PictureData pictureData = imageReader.readImage(file);
@@ -183,13 +182,13 @@ public class DataModelImpl implements DataModel {
 					for (File file : files) {
 						PictureData pictureData = loadedPictures.get(file);
 						if (pictureData != null) {
-							imageSlicesManager.createImageSlice(pictureData);
+							imageSlices.add(pictureData);
 						}
 					}
-					imageSlicesManager.resetMovement();
-					imageSlicesManager.changeZoomLevel();
-					tagsClassifier.classifyTags(imageSlicesManager.getImageSlices().stream()
-							.map(slice -> slice.getPictureData().getExifMap()).collect(Collectors.toList()));
+					imageSlices.resetMovement();
+					imageSlices.updateZoomLevel();
+					tagsClassifier.classifyTags(
+							loadedPictures.values().stream().map(PictureData::getExifMap).collect(Collectors.toList()));
 
 					propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
 				}
@@ -199,12 +198,12 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void reframe(int width, int height) {
-		imageSlicesManager.reframeImageSlices(width, height);
+		imageSlices.reframe(width, height);
 	}
 
 	@Override
 	public void repaint(Graphics2D graphics) {
-		imageSlicesManager.getImageSlices().forEach(slice -> slice.paint(graphics));
+		imageSlices.paint(graphics);
 	}
 
 	@Override
@@ -214,50 +213,47 @@ public class DataModelImpl implements DataModel {
 
 	@Override
 	public void toggleAutorotation() {
-		boolean autorotation = imageHandlingPreferences.isAutorotation();
-		for (ImageSlice slice : imageSlicesManager.getImageSlices()) {
-			slice.adjustRotation(autorotation);
-		}
+		imageSlices.toggleAutorotation();
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
 	@Override
 	public boolean hasLoadedImages() {
-		return imageSlicesManager.hasLoadedImages();
+		return imageSlices.isNotEmpty();
 	}
 
 	@Override
 	public void move(int deltaX, int deltaY) {
 		if (isDrawing) {
-			imageSlicesManager.move(deltaX, deltaY, false);
+			imageSlices.move(deltaX, deltaY, false);
 		} else {
 			boolean isMovementAppliedToAllImages = imageHandlingPreferences.isMovementAppliedToAllImages();
 			if (isMovementAppliedToAllImagesTemporarilyInverted) {
 				isMovementAppliedToAllImages = !isMovementAppliedToAllImages;
 			}
-			imageSlicesManager.move(deltaX, deltaY, isMovementAppliedToAllImages);
+			imageSlices.move(deltaX, deltaY, isMovementAppliedToAllImages);
 		}
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
 	}
 
 	@Override
 	public void resetMovement() {
-		imageSlicesManager.resetMovement();
+		imageSlices.resetMovement();
 	}
 
 	@Override
 	public void changeZoomLevel() {
-		imageSlicesManager.changeZoomLevel();
+		imageSlices.updateZoomLevel();
 	}
 
 	@Override
 	public void setActiveSlice(int x, int y) {
-		imageSlicesManager.setActiveSlice(x, y);
+		imageSlices.setActiveSlice(x, y);
 	}
 
 	@Override
 	public void resetActiveSlice() {
-		imageSlicesManager.resetActiveSlice();
+		imageSlices.setNoActiveSlice();
 	}
 
 	@Override
@@ -291,13 +287,13 @@ public class DataModelImpl implements DataModel {
 		boolean isShowEdges = !edgesDetectorPreferences.isShowEdges();
 		edgesDetectorPreferences.setShowEdges(isShowEdges);
 		if (!isShowEdges) {
-			imageSlicesManager.releaseEdges();
+			imageSlices.releaseEdges();
 		}
 	}
 
 	@Override
 	public void calculateEdges() {
-		imageSlicesManager.calculateEdges();
+		imageSlices.calculateEdges();
 		propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
 	}
 
@@ -360,7 +356,7 @@ public class DataModelImpl implements DataModel {
 			MouseEvent e = (MouseEvent) evt.getNewValue();
 			setActiveSlice(e.getX(), e.getY());
 			if (isDrawing) {
-				imageSlicesManager.startDrawing();
+				imageSlices.startAnnotating();
 			}
 			requestRepaint();
 		}
@@ -369,7 +365,7 @@ public class DataModelImpl implements DataModel {
 	private void handleMouseReleased(PropertyChangeEvent evt) {
 		if (hasLoadedImages()) {
 			if (isDrawing) {
-				imageSlicesManager.stopDrawing();
+				imageSlices.stopAnnotating();
 			}
 			resetActiveSlice();
 			requestRepaint();
@@ -380,7 +376,7 @@ public class DataModelImpl implements DataModel {
 		if (hasLoadedImages()) {
 			if (isDrawing) {
 				MouseEvent newEvent = (MouseEvent) evt.getNewValue();
-				imageSlicesManager.addVertex(newEvent.getX(), newEvent.getY());
+				imageSlices.addPoint(newEvent.getX(), newEvent.getY());
 			} else {
 				MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
 				MouseEvent newEvent = (MouseEvent) evt.getNewValue();
@@ -401,9 +397,9 @@ public class DataModelImpl implements DataModel {
 				if (e.getKeyCode() == KeyRegistry.DRAWING_KEY) {
 					isDrawing = true;
 				} else if (e.getKeyCode() == KeyRegistry.UNDO_KEY) {
-					imageSlicesManager.undoLastDrawing();
+					imageSlices.undoLastAnnotation();
 				} else if (e.getKeyCode() == KeyRegistry.DELETE_KEY) {
-					imageSlicesManager.clearDrawings();
+					imageSlices.clearAnnotations();
 				} else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED) {
 					isMovementAppliedToAllImagesTemporarilyInverted = true;
 

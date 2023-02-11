@@ -1,28 +1,31 @@
 package com.threeamigos.imageviewer.interfaces.datamodel;
 
+import java.awt.Graphics2D;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 
 import com.threeamigos.imageviewer.data.PictureData;
 
 /**
- * Keeps track of the various image slices we see oncreen
+ * Tracks the image slices we see on screen
  *
  * @author Stefano Reksten
  *
  */
-public interface ImageSlicesManager extends PropertyChangeListener {
+public interface ImageSlices extends PropertyChangeListener {
 
 	/**
-	 * Clears all associated slices to load new images
+	 * Prepares to load new images
 	 */
 	public void clear();
 
-	public boolean hasLoadedImages();
+	/**
+	 * Adds a new image
+	 * 
+	 * @param pictureData a picture to be tracked
+	 */
+	public void add(PictureData pictureData);
 
-	public ImageSlice createImageSlice(PictureData pictureData);
-
-	public Collection<ImageSlice> getImageSlices();
+	public boolean isNotEmpty();
 
 	/**
 	 * To be used when the main window is resized
@@ -30,9 +33,9 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 	 * @param panelWidth
 	 * @param panelHeight
 	 */
-	public void reframeImageSlices(int panelWidth, int panelHeight);
+	public void reframe(int panelWidth, int panelHeight);
 
-	public void changeZoomLevel();
+	public void updateZoomLevel();
 
 	public void move(int deltaX, int deltaY, boolean allImages);
 
@@ -40,17 +43,17 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 
 	public void setActiveSlice(int x, int y);
 
-	public void resetActiveSlice();
+	public void setNoActiveSlice();
 
-	public void startDrawing();
+	public void startAnnotating();
 
-	public void addVertex(int x, int y);
+	public void addPoint(int x, int y);
 
-	public void stopDrawing();
+	public void stopAnnotating();
 
-	public void undoLastDrawing();
+	public void undoLastAnnotation();
 
-	public void clearDrawings();
+	public void clearAnnotations();
 
 	/**
 	 * Asks all slices to recalculate edge images
@@ -58,6 +61,10 @@ public interface ImageSlicesManager extends PropertyChangeListener {
 	public void calculateEdges();
 
 	public void releaseEdges();
+
+	public void toggleAutorotation();
+
+	public void paint(Graphics2D graphics);
 
 	// Communication part
 
