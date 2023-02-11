@@ -1,6 +1,7 @@
 package com.threeamigos.imageviewer.implementations.ui.plugins;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.EnumMap;
 import java.util.Map;
@@ -169,6 +170,14 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 				} else if (key == KeyRegistry.ENLARGE_KEY.getKeyCode()) {
 					zoomIn();
 				} else if (key == KeyRegistry.REDUCE_KEY.getKeyCode()) {
+					zoomOut();
+				}
+			}
+
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if (e.getWheelRotation() < 0) {
+					zoomIn();
+				} else {
 					zoomOut();
 				}
 			}

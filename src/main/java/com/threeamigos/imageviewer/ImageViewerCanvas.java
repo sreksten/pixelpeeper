@@ -98,6 +98,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 		chainedInputConsumer.addConsumer(getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 		addMouseListener(chainedInputConsumer);
 		addMouseMotionListener(chainedInputConsumer);
+		addMouseWheelListener(chainedInputConsumer);
 		addKeyListener(chainedInputConsumer);
 
 		updateCursor();
@@ -233,6 +234,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 					showHints();
 				}
 			}
+
 		};
 	}
 
