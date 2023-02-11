@@ -321,6 +321,10 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
 		}
 
+		for (Drawing drawing : drawings) {
+			drawing.paint(g2d, zoomOffsetX, zoomOffsetY);
+		}
+
 		drawMiniatureWithPosition(g2d);
 
 		new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
@@ -329,10 +333,6 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 		if (edgeCalculationInProgress) {
 			BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
 					Color.BLACK, Color.WHITE);
-		}
-
-		for (Drawing drawing : drawings) {
-			drawing.paint(g2d, zoomOffsetX, zoomOffsetY);
 		}
 
 		g2d.setClip(previousClip);
@@ -348,15 +348,18 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 		if (imageHandlingPreferences.isPositionMiniatureVisible()
 				&& (pictureWidth > locationWidth || pictureHeight > locationHeight)) {
 
+			Shape previousClip = g2d.getClip();
+
 			int miniatureWidth = locationWidth / 5;
 			int miniatureHeight = miniatureWidth * pictureHeight / pictureWidth;
 
-			g2d.setColor(Color.RED);
 			int miniatureX = locationX + locationWidth - 1 - miniatureWidth - locationWidth / 20;
 			int miniatureY = locationHeight - 1 - miniatureHeight - locationWidth / 20;
-			g2d.drawRect(miniatureX, miniatureY, miniatureWidth - 1, miniatureHeight - 1);
 
-			g2d.setColor(Color.YELLOW);
+			g2d.setColor(Color.DARK_GRAY);
+			drawFilledRectangle(g2d, miniatureX, miniatureY, miniatureWidth - 1, miniatureHeight - 1, 0);
+
+			g2d.setColor(Color.GRAY);
 			int visibleWidth = locationWidth * miniatureWidth / pictureWidth;
 			if (visibleWidth > miniatureWidth) {
 				visibleWidth = miniatureWidth;
@@ -373,8 +376,24 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 					? (int) (imageOffsetY * miniatureHeight / pictureHeight)
 					: 0;
 
-			g2d.drawRect(miniatureX + screenXOffsetScaled, miniatureY + screenYOffsetScaled, visibleWidth,
-					visibleHeight);
+			drawFilledRectangle(g2d, miniatureX + screenXOffsetScaled, miniatureY + screenYOffsetScaled, visibleWidth,
+					visibleHeight, screenYOffsetScaled);
+
+			g2d.setClip(previousClip);
+		}
+	}
+
+	private void drawFilledRectangle(Graphics2D g2d, int x, int y, int width, int height, int offset) {
+		g2d.setClip(x, y, width + 1, height + 1);
+		g2d.drawRect(x, y, width, height);
+
+		final int limit = x + width + height;
+		final int spacing = 8;
+
+		x = ((x >> 4) << 4) - offset % spacing;
+
+		for (int i = x; i < limit; i += spacing) {
+			g2d.drawLine(i, y, i - height, y + height);
 		}
 	}
 
