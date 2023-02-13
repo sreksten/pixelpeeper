@@ -40,7 +40,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.threeamigos.imageviewer.Main</mainClass>
+							<mainClass>com.threeamigos.pixelpeeper.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
