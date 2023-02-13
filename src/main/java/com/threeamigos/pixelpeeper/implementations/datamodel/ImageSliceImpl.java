@@ -340,6 +340,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
 	private void drawMiniatureWithPosition(Graphics2D g2d) {
 		int locationX = location.x;
+		int locationY = location.y;
 		int locationWidth = location.width;
 		int locationHeight = location.height;
 		int pictureWidth = pictureData.getWidth();
@@ -354,7 +355,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 			int miniatureHeight = miniatureWidth * pictureHeight / pictureWidth;
 
 			int miniatureX = locationX + locationWidth - 1 - miniatureWidth - locationWidth / 20;
-			int miniatureY = locationHeight - 1 - miniatureHeight - locationWidth / 20;
+			int miniatureY = locationY + locationHeight - 1 - miniatureHeight - locationWidth / 20;
 
 			g2d.setColor(Color.DARK_GRAY);
 			drawFilledRectangle(g2d, miniatureX, miniatureY, miniatureWidth, miniatureHeight, 0);
