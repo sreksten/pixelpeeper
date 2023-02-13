@@ -73,8 +73,8 @@ public class HintsWindowImpl implements HintsWindow {
 		hintsBorderPanel.setBorder(BorderFactory.createTitledBorder("Hint"));
 		panel.add(hintsBorderPanel);
 
-		JTextArea hintLabel = new JTextArea(hints.get(hintIndex));
-		hintLabel.setSize(400, 100);
+		JTextArea hintLabel = new JTextArea(getNextHint());
+		hintLabel.setPreferredSize(new Dimension(400, 100));
 		hintLabel.setLineWrap(true);
 		hintLabel.setWrapStyleWord(true);
 		hintLabel.setEditable(false);
@@ -98,10 +98,9 @@ public class HintsWindowImpl implements HintsWindow {
 		panel.add(Box.createVerticalStrut(5));
 
 		Box buttonsBox = Box.createHorizontalBox();
-		Dimension buttonsDimension = new Dimension();
-		buttonsDimension.width = 150;
+		Dimension buttonsDimension = new Dimension(150, 40);
 		JButton previousHintButton = new JButton("Previous hint");
-		previousHintButton.setSize(buttonsDimension);
+		previousHintButton.setPreferredSize(buttonsDimension);
 		previousHintButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -114,7 +113,7 @@ public class HintsWindowImpl implements HintsWindow {
 		buttonsBox.add(hintIndexLabel);
 		buttonsBox.add(Box.createHorizontalStrut(10));
 		JButton nextHintButton = new JButton("Next hint");
-		nextHintButton.setSize(buttonsDimension);
+		nextHintButton.setPreferredSize(buttonsDimension);
 		nextHintButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
