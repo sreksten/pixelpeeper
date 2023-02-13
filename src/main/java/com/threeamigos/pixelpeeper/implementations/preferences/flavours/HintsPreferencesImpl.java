@@ -40,8 +40,8 @@ public class HintsPreferencesImpl extends PropertyChangeAwareImpl implements Hin
 
 	@Override
 	public void loadDefaultValues() {
-		hintsVisibleAtStartup = HintsPreferences.HINTS_PREFERENCES_VISIBLE_DEFAULT;
-		lastHintIndex = 0;
+		hintsVisibleAtStartup = HINTS_PREFERENCES_VISIBLE_DEFAULT;
+		lastHintIndex = HINTS_PREFERENCES_INDEX_DEFAULT;
 	}
 
 	@Override
