@@ -286,7 +286,7 @@ public class Main {
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
-				dragAndDropWindowPreferences, imageHandlingPreferences, dataModel, cursorManager, fileSelector,
+				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector,
 				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
 				plugins);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);

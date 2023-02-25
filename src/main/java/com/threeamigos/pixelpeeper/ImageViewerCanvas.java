@@ -54,7 +54,6 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	private static final long serialVersionUID = 1L;
 
 	private final transient DragAndDropWindowPreferences dragAndDropWindowPreferences;
-	private final transient ImageHandlingPreferences imageHandlingPreferences;
 	private final transient DataModel dataModel;
 	private final transient CursorManager cursorManager;
 	private final transient FileSelector fileSelector;
@@ -69,14 +68,13 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
 	public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
-			ImageHandlingPreferences imageHandlingPreferences, DataModel dataModel, CursorManager cursorManager,
+			DataModel dataModel, CursorManager cursorManager,
 			FileSelector fileSelector, ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators,
 			AboutWindow aboutWindow, HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow,
 			MessageHandler messageHandler, List<MainWindowPlugin> plugins) {
 		super();
 		this.menuBar = menuBar;
 		this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
-		this.imageHandlingPreferences = imageHandlingPreferences;
 		this.dataModel = dataModel;
 		this.cursorManager = cursorManager;
 		this.fileSelector = fileSelector;
