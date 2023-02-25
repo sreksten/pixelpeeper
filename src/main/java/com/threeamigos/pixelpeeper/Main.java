@@ -24,6 +24,7 @@ import com.threeamigos.pixelpeeper.implementations.datamodel.DataModelImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifCacheImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifReaderFactoryImpl;
+import com.threeamigos.pixelpeeper.implementations.datamodel.NamePatternImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ImageReaderFactoryImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ImageSlicesImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.TagsClassifierImpl;
@@ -40,6 +41,7 @@ import com.threeamigos.pixelpeeper.implementations.preferences.flavours.GridPref
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.HintsPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.ImageHandlingPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.MainWindowPreferencesImpl;
+import com.threeamigos.pixelpeeper.implementations.preferences.flavours.NamePatternPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.SessionPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.AboutWindowImpl;
@@ -53,6 +55,7 @@ import com.threeamigos.pixelpeeper.implementations.ui.FontServiceImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.HintsWindowImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.MouseTrackerImpl;
+import com.threeamigos.pixelpeeper.implementations.ui.NamePatternSelectorImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.pixelpeeper.implementations.ui.plugins.CursorPlugin;
 import com.threeamigos.pixelpeeper.implementations.ui.plugins.EdgesDetectorPlugin;
@@ -64,6 +67,7 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryMana
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
@@ -79,6 +83,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.GridPreferenc
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.CropFactorProvider;
@@ -93,6 +98,7 @@ import com.threeamigos.pixelpeeper.interfaces.ui.ImageDecorator;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
 import com.threeamigos.pixelpeeper.interfaces.ui.MouseTracker;
+import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 /**
  * Uses the Metadata Extractor from https://drewnoakes.com/code/exif/
@@ -173,6 +179,9 @@ public class Main {
 
 		// Misc preferences
 
+		NamePatternPreferences namePatternPreferences = new NamePatternPreferencesImpl();
+		persistablesHelper.register(namePatternPreferences, "name_pattern.preferences");
+		
 		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
 		persistablesHelper.register(drawingPreferences, "drawing.preferences");
 
@@ -234,6 +243,10 @@ public class Main {
 				exifImageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(sessionPreferences);
+		
+		NamePatternSelector namePatternSelector = new NamePatternSelectorImpl(namePatternPreferences);
+		
+		NamePattern namePattern = new NamePatternImpl(namePatternPreferences, exifCache);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl();
 		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
@@ -286,7 +299,7 @@ public class Main {
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
-				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector,
+				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, namePattern,
 				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
 				plugins);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);

@@ -20,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import com.threeamigos.common.util.interfaces.MessageHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
@@ -28,8 +29,8 @@ import com.threeamigos.pixelpeeper.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.AboutWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
@@ -42,6 +43,7 @@ import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
+import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 /**
  * The canvas on which we draw the various image slices
@@ -57,10 +59,13 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	private final transient DataModel dataModel;
 	private final transient CursorManager cursorManager;
 	private final transient FileSelector fileSelector;
+	private final transient NamePatternSelector namePatternSelector;
+	private final transient NamePattern namePattern;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
 	private final transient HintsWindow hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
+	private final transient MessageHandler messageHandler;
 	private final transient List<MainWindowPlugin> plugins;
 
 	private final JMenuBar menuBar;
@@ -69,7 +74,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
 			DragAndDropWindowPreferences dragAndDropWindowPreferences,
 			DataModel dataModel, CursorManager cursorManager,
-			FileSelector fileSelector, ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators,
+			FileSelector fileSelector, NamePatternSelector namePatternSelector, NamePattern namePattern, ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators,
 			AboutWindow aboutWindow, HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow,
 			MessageHandler messageHandler, List<MainWindowPlugin> plugins) {
 		super();
@@ -78,11 +83,14 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 		this.dataModel = dataModel;
 		this.cursorManager = cursorManager;
 		this.fileSelector = fileSelector;
+		this.namePatternSelector = namePatternSelector;
+		this.namePattern = namePattern;
 		this.decorators = decorators;
 		this.aboutWindow = aboutWindow;
 		this.hintsWindow = hintsWindow;
 		this.dragAndDropWindow = dragAndDropWindow;
 		dragAndDropWindow.setProxyFor(this);
+		this.messageHandler = messageHandler;
 		this.plugins = plugins;
 
 		setPreferredSize(new Dimension(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight()));
@@ -110,9 +118,13 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		addMenuItem(fileMenu, "Open Files...", KeyRegistry.OPEN_FILES_KEY, event -> openFiles());
+		addMenuItem(fileMenu, "Open files...", KeyRegistry.OPEN_FILES_KEY, event -> openFiles());
+		fileMenu.add(new JSeparator());
+		addMenuItem(fileMenu, "Select name pattern", KeyRegistry.NO_KEY, event -> selectNamePattern());
+		addMenuItem(fileMenu, "Rename files...", KeyRegistry.NO_KEY, event -> renameFiles());
+		fileMenu.add(new JSeparator());
 		addMenuItem(fileMenu, "Browse directory", KeyRegistry.BROWSE_DIRECTORY_KEY, event -> browseDirectory());
-		addMenuItem(fileMenu, "Open Drag and Drop panel", KeyRegistry.OPEN_DRAG_AND_DROP_PANEL_KEY,
+		addMenuItem(fileMenu, "Open drag and drop panel", KeyRegistry.OPEN_DRAG_AND_DROP_PANEL_KEY,
 				event -> openDragAndDropPanel());
 		addMenuItem(fileMenu, "Quit", KeyRegistry.QUIT_KEY, event -> quit());
 
@@ -130,7 +142,21 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	private void openFiles() {
 		accept(fileSelector.getSelectedFiles(this));
 	}
+	
+	private void selectNamePattern( ) {
+		namePatternSelector.selectNamePattern(this);
+	}
 
+	private void renameFiles() {
+		int renamedFiles = 0;
+		for (File file : fileSelector.getSelectedFiles(this)) {
+			if (namePattern.rename(file)) {
+				renamedFiles++;
+			}
+		}
+		messageHandler.handleWarnMessage(String.format("%d files renamed", renamedFiles));
+	}
+	
 	private void browseDirectory() {
 		dataModel.browseDirectory(fileSelector.getSelectedDirectory(this), this);
 	}
