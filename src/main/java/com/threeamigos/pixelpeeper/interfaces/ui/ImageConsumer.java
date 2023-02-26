@@ -8,6 +8,6 @@ import com.threeamigos.pixelpeeper.data.ExifTag;
 
 public interface ImageConsumer extends Consumer<List<File>> {
 
-	public void accept(List<File> files, ExifTag tagToGroupBy, int tolerance);
+	public void accept(List<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy);
 
 }

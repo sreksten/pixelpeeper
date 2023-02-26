@@ -191,9 +191,9 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	}
 
 	@Override
-	public void accept(List<File> selectedFiles, ExifTag tagToGroupBy, int tolerance) {
+	public void accept(List<File> selectedFiles, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy) {
 		if (!selectedFiles.isEmpty()) {
-			dataModel.loadFiles(selectedFiles, tagToGroupBy, tolerance, 0);
+			dataModel.loadFiles(selectedFiles, tagToGroupBy, tolerance, tagToOrderBy, 0);
 		}
 	}
 

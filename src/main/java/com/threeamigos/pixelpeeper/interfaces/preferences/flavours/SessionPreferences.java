@@ -33,6 +33,10 @@ public interface SessionPreferences extends Preferences {
 
 	public int getTolerance();
 
+	public void setTagToOrderBy(ExifTag exifTag);
+
+	public ExifTag getTagToOrderBy();
+
 	public void setGroupIndex(int lastGroup);
 
 	public int getGroupIndex();

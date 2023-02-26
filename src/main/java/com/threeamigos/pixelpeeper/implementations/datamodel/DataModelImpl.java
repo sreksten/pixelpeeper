@@ -82,20 +82,20 @@ public class DataModelImpl implements DataModel {
 		List<File> files = sessionPreferences.getLastFilenames().stream().map(name -> new File(name))
 				.collect(Collectors.toList());
 		loadFiles(files, sessionPreferences.getTagToGroupBy(), sessionPreferences.getTolerance(),
-				sessionPreferences.getGroupIndex());
+				sessionPreferences.getTagToOrderBy(), sessionPreferences.getGroupIndex());
 	}
 
 	@Override
 	public void loadFiles(Collection<File> files) {
-		loadFiles(files, null, 0, 0);
+		loadFiles(files, null, 0, null, 0);
 	}
 
 	@Override
-	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int groupIndex) {
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy, int groupIndex) {
 		sessionPreferences.setLastFilenames(files.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
 		sessionPreferences.setTagToGroupBy(tagToGroupBy);
 		sessionPreferences.setTolerance(tolerance);
-		groupedFiles.set(files, tagToGroupBy, tolerance, groupIndex);
+		groupedFiles.set(files, tagToGroupBy, tolerance, tagToOrderBy, groupIndex);
 		loadFilesImpl();
 	}
 
@@ -110,7 +110,7 @@ public class DataModelImpl implements DataModel {
 				if (!filesToLoad.isEmpty()) {
 					sessionPreferences.setLastPath(directory.getPath());
 					sessionPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
-					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(), 0);
+					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(), exifTagsFilter.getTagToOrderBy(), 0);
 				}
 			} else {
 				messageHandler.handleErrorMessage("Selected file is not a directory.");

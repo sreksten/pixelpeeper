@@ -57,7 +57,8 @@ class GroupingPanel extends JPanel {
 	private final ExifCache exifCache;
 
 	private Map<File, ExifMap> filesToTagsMap;
-	private JComboBox<ExifTag> groupingByComboBox;
+	private JComboBox<ExifTag> groupByComboBox;
+	private JComboBox<ExifTag> orderByComboBox;
 	private JSlider toleranceSlider;
 	private JLabel groupingResultsLabel;
 
@@ -66,7 +67,8 @@ class GroupingPanel extends JPanel {
 		this.exifCache = exifCache;
 
 		filesToTagsMap = new HashMap<>();
-		groupingByComboBox = createGroupingByComboBox();
+		groupByComboBox = createGroupByComboBox();
+		orderByComboBox = createOrderByComboBox();
 		toleranceSlider = createToleranceSlider();
 		groupingResultsLabel = new JLabel();
 
@@ -75,7 +77,7 @@ class GroupingPanel extends JPanel {
 		JPanel groupingPanel = new JPanel();
 		groupingPanel.setLayout(new BoxLayout(groupingPanel, BoxLayout.LINE_AXIS));
 		groupingPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
-		groupingPanel.add(groupingByComboBox);
+		groupingPanel.add(groupByComboBox);
 		groupingPanel.add(Box.createHorizontalGlue());
 
 		add(groupingPanel);
@@ -87,6 +89,14 @@ class GroupingPanel extends JPanel {
 
 		add(tolerancePanel);
 
+		JPanel orderingPanel = new JPanel();
+		orderingPanel.setLayout(new BoxLayout(orderingPanel, BoxLayout.LINE_AXIS));
+		orderingPanel.setBorder(BorderFactory.createTitledBorder("Order by"));
+		orderingPanel.add(orderByComboBox);
+		orderingPanel.add(Box.createHorizontalGlue());
+		
+		add(orderingPanel);
+		
 		JPanel groupingResultsPanel = new JPanel();
 		groupingResultsPanel.setLayout(new BoxLayout(groupingResultsPanel, BoxLayout.LINE_AXIS));
 		groupingResultsPanel.setBorder(BorderFactory.createTitledBorder("Grouping results"));
@@ -96,10 +106,10 @@ class GroupingPanel extends JPanel {
 
 		add(groupingResultsPanel);
 
-		groupingByComboBox.addActionListener(new ActionListener() {
+		groupByComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ExifTag selectedItem = (ExifTag) groupingByComboBox.getSelectedItem();
+				ExifTag selectedItem = (ExifTag) groupByComboBox.getSelectedItem();
 				toleranceSlider.setEnabled(
 						selectedItem == ExifTag.FOCAL_LENGTH || selectedItem == ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
 				updateGroupingResultsLabel(groupFiles());
@@ -136,7 +146,7 @@ class GroupingPanel extends JPanel {
 	}
 
 	public Map<ExifValue, Collection<File>> groupFiles() {
-		return FileGrouper.groupFiles(filesToTagsMap, getSelection(), getTolerance());
+		return FileGrouper.groupFiles(filesToTagsMap, getExifTagToGroupBy(), getTolerance(), getExifTagToOrderBy());
 	}
 
 	boolean isTagsMapEmpty() {
@@ -162,22 +172,34 @@ class GroupingPanel extends JPanel {
 	}
 
 	void addGroupingByActionListener(ActionListener actionListener) {
-		groupingByComboBox.addActionListener(actionListener);
+		groupByComboBox.addActionListener(actionListener);
 	}
 
 	void addToleranceActionListener(ActionListener actionListener) {
-		groupingByComboBox.addActionListener(actionListener);
+		groupByComboBox.addActionListener(actionListener);
 	}
 
-	ExifTag getSelection() {
-		return (ExifTag) groupingByComboBox.getSelectedItem();
+	ExifTag getExifTagToGroupBy() {
+		return (ExifTag) groupByComboBox.getSelectedItem();
+	}
+	
+	ExifTag getExifTagToOrderBy() {
+		return (ExifTag) orderByComboBox.getSelectedItem();
 	}
 
 	int getTolerance() {
 		return toleranceSlider.getValue();
 	}
 
-	private final JComboBox<ExifTag> createGroupingByComboBox() {
+	private final JComboBox<ExifTag> createGroupByComboBox() {
+		ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
+		for (int i = 0; i < groupableTags.size(); i++) {
+			listElements[i + 1] = groupableTags.get(i);
+		}
+		return new JComboBox<>(listElements);
+	}
+
+	private final JComboBox<ExifTag> createOrderByComboBox() {
 		ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
 		for (int i = 0; i < groupableTags.size(); i++) {
 			listElements[i + 1] = groupableTags.get(i);

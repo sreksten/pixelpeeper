@@ -100,7 +100,11 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	}
 
 	public ExifTag getTagToGroupBy() {
-		return groupingPanel.getSelection();
+		return groupingPanel.getExifTagToGroupBy();
+	}
+	
+	public ExifTag getTagToOrderBy() {
+		return groupingPanel.getExifTagToOrderBy();
 	}
 
 	public int getTolerance() {
@@ -327,7 +331,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 			ExifValue tagValue = entry.getKey();
 			Collection<File> files = entry.getValue();
 			if (files.size() > MAX_SELECTABLE_FILES_PER_GROUP) {
-				ExifTag tagToGroupBy = groupingPanel.getSelection();
+				ExifTag tagToGroupBy = groupingPanel.getExifTagToGroupBy();
 				if (tagToGroupBy == null) {
 					newLabel += "Please add some filters or specify how to group files.";
 				} else {

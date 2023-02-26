@@ -15,6 +15,7 @@ public class SessionPreferencesImpl extends PropertyChangeAwareImpl implements S
 	private ExifTag tagToGroupBy;
 	private int groupIndex;
 	private int tolerance;
+	private ExifTag tagToOrderBy;
 
 	@Override
 	public void setLastPath(String path) {
@@ -75,12 +76,25 @@ public class SessionPreferencesImpl extends PropertyChangeAwareImpl implements S
 	}
 
 	@Override
+	public void setTagToOrderBy(ExifTag exifTag) {
+		ExifTag oldTagToOrderBy = this.tagToOrderBy;
+		this.tagToOrderBy = exifTag;
+		firePropertyChange(CommunicationMessages.TAG_TO_ORDER_BY_CHANGED, oldTagToOrderBy, tagToOrderBy);
+	}
+
+	@Override
+	public ExifTag getTagToOrderBy() {
+		return tagToOrderBy;
+	}
+
+	@Override
 	public void loadDefaultValues() {
 		lastPath = System.getProperty("user.home");
 		lastFilenames = Collections.emptyList();
 		tagToGroupBy = null;
-		groupIndex = 0;
 		tolerance = 0;
+		tagToOrderBy = null;
+		groupIndex = 0;
 	}
 
 	@Override

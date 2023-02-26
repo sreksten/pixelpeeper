@@ -25,7 +25,7 @@ class GroupedFilesByExifTag {
 		this.exifCache = exifCache;
 	}
 
-	public void set(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int preferredGroupIndex) {
+	public void set(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy, int preferredGroupIndex) {
 		prepareCollection();
 		if (tagToGroupBy == null) {
 			groupedFiles.add(new ExifValueToFilesHolder(null, files));
@@ -35,7 +35,7 @@ class GroupedFilesByExifTag {
 				exifCache.getExifMap(file).ifPresent(exifMap -> map.put(file, exifMap));
 			}
 			Map<ExifValue, Collection<File>> groupedMatchingFiles = FileGrouper.groupFiles(map, tagToGroupBy,
-					tolerance);
+					tolerance, tagToOrderBy);
 
 			for (Map.Entry<ExifValue, Collection<File>> entry : groupedMatchingFiles.entrySet()) {
 				groupedFiles.add(new ExifValueToFilesHolder(entry.getKey(), entry.getValue()));

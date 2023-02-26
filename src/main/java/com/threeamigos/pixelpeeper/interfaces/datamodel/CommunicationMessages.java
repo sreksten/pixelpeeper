@@ -44,6 +44,7 @@ public interface CommunicationMessages {
 	public static final String LAST_PATH_CHANGED = "LastPathChanged";
 	public static final String LAST_FILES_CHANGED = "LastFilesChanged";
 	public static final String TAG_TO_GROUP_BY_CHANGED = "TagToGroupByChanged";
+	public static final String TAG_TO_ORDER_BY_CHANGED = "TagToOrderByChanged";
 	public static final String GROUP_INDEX_CHANGED = "GroupIndexChanged";
 
 	public static final String REQUEST_EDGES_CALCULATION = "RequestEdgesCalculation";

@@ -58,7 +58,7 @@ public interface DataModel extends PropertyChangeListener, HintsProducer {
 
 	public void loadFiles(Collection<File> files);
 
-	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, int preferredGroupIndex);
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy, int preferredGroupIndex);
 
 	public void browseDirectory(File directory, Component component);
 

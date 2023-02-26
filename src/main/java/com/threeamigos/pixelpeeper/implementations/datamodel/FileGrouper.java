@@ -3,7 +3,9 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.threeamigos.pixelpeeper.data.ExifMap;
@@ -13,7 +15,7 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 public class FileGrouper {
 
 	public static final Map<ExifValue, Collection<File>> groupFiles(Map<File, ExifMap> filesToTagsMap,
-			ExifTag tagToGroupBy, int tolerance) {
+			ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy) {
 		Map<ExifValue, Collection<File>> groupedFiles = new HashMap<>();
 		if (tagToGroupBy != null) {
 			for (File file : filesToTagsMap.keySet()) {
@@ -30,7 +32,31 @@ public class FileGrouper {
 				}
 			}
 		} else {
-			groupedFiles.put(null, filesToTagsMap.keySet());
+			List<File> files = new ArrayList<>();
+			files.addAll(filesToTagsMap.keySet());
+			groupedFiles.put(null, files);
+		}
+		if (tagToOrderBy != null) {
+			for (Collection<File> collection : groupedFiles.values()) {
+				List<File> list = (List<File>) collection;
+				Collections.sort(list, (file1, file2) -> {
+					ExifMap map1 = filesToTagsMap.get(file1);
+					ExifMap map2 = filesToTagsMap.get(file2);
+					if (map1 == null) {
+						return 1;
+					} else if (map2 == null) {
+						return -1;
+					}
+					String value1 = map1.getTagDescriptive(tagToOrderBy);
+					String value2 = map2.getTagDescriptive(tagToOrderBy);
+					if (value1 == null) {
+						return 1;
+					} else if (value2 == null) {
+						return -1;
+					}
+					return value1.compareTo(value2);
+				});
+			}
 		}
 		return groupedFiles;
 	}

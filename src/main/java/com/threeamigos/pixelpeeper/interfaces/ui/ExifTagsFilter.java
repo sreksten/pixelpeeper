@@ -13,6 +13,8 @@ public interface ExifTagsFilter {
 	public Collection<File> filterByTags(Component component, Collection<File> files);
 
 	public ExifTag getTagToGroupBy();
+	
+	public ExifTag getTagToOrderBy();
 
 	public int getTolerance();
 

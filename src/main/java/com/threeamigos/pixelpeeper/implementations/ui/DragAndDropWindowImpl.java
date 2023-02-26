@@ -201,7 +201,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private void sendFiles(List<File> files) {
 		if (proxifiedObject != null) {
-			proxifiedObject.accept(files, groupingPanel.getSelection(), groupingPanel.getTolerance());
+			proxifiedObject.accept(files, groupingPanel.getExifTagToGroupBy(), groupingPanel.getTolerance(), groupingPanel.getExifTagToOrderBy());
 		} else {
 			messageHandler.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 		}
