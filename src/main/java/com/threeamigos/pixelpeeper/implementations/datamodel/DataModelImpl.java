@@ -110,6 +110,8 @@ public class DataModelImpl implements DataModel {
 				if (!filesToLoad.isEmpty()) {
 					sessionPreferences.setLastPath(directory.getPath());
 					sessionPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
+					sessionPreferences.setTolerance(exifTagsFilter.getTolerance());
+					sessionPreferences.setTagToOrderBy(exifTagsFilter.getTagToOrderBy());
 					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(), exifTagsFilter.getTagToOrderBy(), 0);
 				}
 			} else {
