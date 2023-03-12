@@ -21,12 +21,22 @@ public class FileSelectorImpl implements FileSelector {
 
 	@Override
 	public List<File> getSelectedFiles(Component component) {
+		return getSelectedFiles(component, "Load");
+	}
+
+	@Override
+	public List<File> getSelectedFiles(Component component, String acceptText) {
+		return getSelectedFiles(component, acceptText, acceptText.charAt(0));
+	}
+
+	@Override
+	public List<File> getSelectedFiles(Component component, String acceptText, char acceptTextHighlightChar) {
 
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Select images");
-		fileChooser.setApproveButtonText("Load");
+		fileChooser.setApproveButtonText(acceptText);
 		fileChooser.setCurrentDirectory(new File(sessionPreferences.getLastPath()));
-		fileChooser.setApproveButtonMnemonic('L');
+		fileChooser.setApproveButtonMnemonic(acceptTextHighlightChar);
 		fileChooser.setMultiSelectionEnabled(true);
 
 		int returnVal = fileChooser.showOpenDialog(component);
@@ -45,12 +55,22 @@ public class FileSelectorImpl implements FileSelector {
 
 	@Override
 	public File getSelectedDirectory(Component component) {
+		return getSelectedDirectory(component, "Load");
+	}
+
+	@Override
+	public File getSelectedDirectory(Component component, String acceptText) {
+		return getSelectedDirectory(component, acceptText, acceptText.charAt(0));
+	}
+
+	@Override
+	public File getSelectedDirectory(Component component, String acceptText, char acceptTextHighlightChar) {
 
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Select directory");
-		fileChooser.setApproveButtonText("Load");
+		fileChooser.setApproveButtonText(acceptText);
 		fileChooser.setCurrentDirectory(new File(sessionPreferences.getLastPath()).getParentFile());
-		fileChooser.setApproveButtonMnemonic('L');
+		fileChooser.setApproveButtonMnemonic(acceptTextHighlightChar);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 

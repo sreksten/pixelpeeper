@@ -143,13 +143,13 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 		accept(fileSelector.getSelectedFiles(this));
 	}
 	
-	private void selectNamePattern( ) {
+	private void selectNamePattern() {
 		namePatternSelector.selectNamePattern(this);
 	}
 
 	private void renameFiles() {
 		int renamedFiles = 0;
-		for (File file : fileSelector.getSelectedFiles(this)) {
+		for (File file : fileSelector.getSelectedFiles(this, "Rename")) {
 			if (namePattern.rename(file)) {
 				renamedFiles++;
 			}

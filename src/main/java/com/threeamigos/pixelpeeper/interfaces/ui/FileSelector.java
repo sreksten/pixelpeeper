@@ -14,6 +14,14 @@ public interface FileSelector {
 
 	public List<File> getSelectedFiles(Component component);
 
+	public List<File> getSelectedFiles(Component component, String acceptText);
+
+	public List<File> getSelectedFiles(Component component, String acceptText, char acceptTextHighlightChar);
+
 	public File getSelectedDirectory(Component component);
+
+	public File getSelectedDirectory(Component component, String acceptText);
+
+	public File getSelectedDirectory(Component component, String acceptText, char acceptTextHighlightChar);
 
 }
