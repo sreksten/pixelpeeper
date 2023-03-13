@@ -24,9 +24,10 @@ import com.threeamigos.pixelpeeper.implementations.datamodel.DataModelImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifCacheImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifImageReaderImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ExifReaderFactoryImpl;
-import com.threeamigos.pixelpeeper.implementations.datamodel.NamePatternImpl;
+import com.threeamigos.pixelpeeper.implementations.datamodel.FileRenamerImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ImageReaderFactoryImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.ImageSlicesImpl;
+import com.threeamigos.pixelpeeper.implementations.datamodel.NamePatternImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.pixelpeeper.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.pixelpeeper.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
@@ -67,9 +68,10 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryMana
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReaderFactory;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFactory;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
@@ -296,10 +298,12 @@ public class Main {
 		plugins.add(exifTagsPlugin);
 		chainedInputConsumer.addConsumer(exifTagsPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 
+		FileRenamer fileRenamer = new FileRenamerImpl(fileSelector, namePattern, messageHandler);
+		
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
-				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, namePattern,
+				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, namePattern, fileRenamer,
 				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
 				plugins);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
