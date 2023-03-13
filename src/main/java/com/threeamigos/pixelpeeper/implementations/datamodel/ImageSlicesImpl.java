@@ -6,6 +6,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -62,6 +63,12 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 				imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
 		imageSlice.addPropertyChangeListener(this);
 		imageSlices.add(imageSlice);
+	}
+
+	@Override
+	public void sort() {
+		Collections.sort(imageSlices,
+				(i1, i2) -> i1.getPictureData().getFilename().compareTo(i2.getPictureData().getFilename()));
 	}
 
 	@Override

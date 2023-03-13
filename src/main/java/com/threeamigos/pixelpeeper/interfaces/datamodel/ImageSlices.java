@@ -25,6 +25,8 @@ public interface ImageSlices extends PropertyChangeListener {
 	 */
 	public void add(PictureData pictureData);
 
+	public void sort();
+
 	public boolean isNotEmpty();
 
 	/**

@@ -91,7 +91,8 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy, int groupIndex) {
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy,
+			int groupIndex) {
 		sessionPreferences.setLastFilenames(files.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
 		sessionPreferences.setTagToGroupBy(tagToGroupBy);
 		sessionPreferences.setTolerance(tolerance);
@@ -112,7 +113,8 @@ public class DataModelImpl implements DataModel {
 					sessionPreferences.setTagToGroupBy(exifTagsFilter.getTagToGroupBy());
 					sessionPreferences.setTolerance(exifTagsFilter.getTolerance());
 					sessionPreferences.setTagToOrderBy(exifTagsFilter.getTagToOrderBy());
-					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(), exifTagsFilter.getTagToOrderBy(), 0);
+					loadFiles(filesToLoad, exifTagsFilter.getTagToGroupBy(), exifTagsFilter.getTolerance(),
+							exifTagsFilter.getTagToOrderBy(), 0);
 				}
 			} else {
 				messageHandler.handleErrorMessage("Selected file is not a directory.");
@@ -187,6 +189,7 @@ public class DataModelImpl implements DataModel {
 							imageSlices.add(pictureData);
 						}
 					}
+					imageSlices.sort();
 					imageSlices.resetMovement();
 					imageSlices.updateZoomLevel();
 					tagsClassifier.classifyTags(
