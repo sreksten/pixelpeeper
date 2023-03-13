@@ -118,13 +118,6 @@ public class Main {
 
 	// TODO: lens manufacturer
 
-	// FOOD-FOR-THOUGHTS: prepare the image with edges instead of drawing it every
-	// time?
-
-	// FOOD-FOR-THOUGHTS: should ImageReader use also other image libraries?
-
-	// FOOD-FOR-THOUGHTS: set up an unique queue for message processing?
-
 	public Main() {
 
 		// A way to show error/warning messages to the user
@@ -183,7 +176,7 @@ public class Main {
 
 		NamePatternPreferences namePatternPreferences = new NamePatternPreferencesImpl();
 		persistablesHelper.register(namePatternPreferences, "name_pattern.preferences");
-		
+
 		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
 		persistablesHelper.register(drawingPreferences, "drawing.preferences");
 
@@ -245,9 +238,9 @@ public class Main {
 				exifImageReader, messageHandler);
 
 		FileSelector fileSelector = new FileSelectorImpl(sessionPreferences);
-		
+
 		NamePatternSelector namePatternSelector = new NamePatternSelectorImpl(namePatternPreferences);
-		
+
 		NamePattern namePattern = new NamePatternImpl(namePatternPreferences, exifCache);
 
 		MouseTracker mouseTracker = new MouseTrackerImpl();
@@ -299,13 +292,13 @@ public class Main {
 		chainedInputConsumer.addConsumer(exifTagsPlugin.getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
 
 		FileRenamer fileRenamer = new FileRenamerImpl(fileSelector, namePattern, messageHandler);
-		
+
 		JMenuBar menuBar = new JMenuBar();
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
-				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, namePattern, fileRenamer,
-				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
-				plugins);
+				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, namePattern,
+				fileRenamer, chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow,
+				messageHandler, plugins);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 		cursorPreferences.addPropertyChangeListener(imageViewerCanvas);
