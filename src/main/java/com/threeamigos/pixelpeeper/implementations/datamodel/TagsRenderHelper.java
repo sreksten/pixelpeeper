@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
-import com.threeamigos.common.util.ui.draganddrop.BorderedStringRenderer;
+import com.threeamigos.common.util.ui.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.data.PictureData;
