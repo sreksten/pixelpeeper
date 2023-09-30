@@ -12,16 +12,16 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 
-import com.threeamigos.common.util.implementations.filesystem.RootPathProviderImpl;
 import com.threeamigos.common.util.implementations.messagehandler.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
 import com.threeamigos.common.util.implementations.persistence.file.FilePersistablesCollector;
+import com.threeamigos.common.util.implementations.persistence.file.RootPathProviderImpl;
 import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
 import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.common.util.implementations.ui.HintsWindowImpl;
-import com.threeamigos.common.util.interfaces.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.persistence.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.common.util.interfaces.ui.FontService;

@@ -2,11 +2,11 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 
 import com.threeamigos.common.util.implementations.persistence.JsonStatusTracker;
 import com.threeamigos.common.util.implementations.persistence.file.JsonFilePersister;
-import com.threeamigos.common.util.interfaces.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.common.util.interfaces.persistence.PersistResult;
 import com.threeamigos.common.util.interfaces.persistence.Persister;
 import com.threeamigos.common.util.interfaces.persistence.StatusTracker;
+import com.threeamigos.common.util.interfaces.persistence.file.RootPathProvider;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepository;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryManager;
 
