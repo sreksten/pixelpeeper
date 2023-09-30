@@ -4,13 +4,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
+import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
-import com.threeamigos.pixelpeeper.interfaces.ui.FontService;
 
 public class TagsRenderHelper {
 

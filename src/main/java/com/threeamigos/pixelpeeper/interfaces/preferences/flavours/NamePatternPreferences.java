@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
-import com.threeamigos.pixelpeeper.interfaces.preferences.Preferences;
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
 public interface NamePatternPreferences extends Preferences {
 

@@ -38,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.ExifMap;
@@ -45,7 +46,6 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.DragAndDropWindow;
-import com.threeamigos.pixelpeeper.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageConsumer;
 
 public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {

@@ -17,11 +17,11 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences.Rotation;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 
 public class CursorManagerImpl implements CursorManager, PropertyChangeListener {
 

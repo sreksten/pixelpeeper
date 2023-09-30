@@ -7,10 +7,10 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
 
+import com.threeamigos.common.util.interfaces.ui.HintsProducer;
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
-import com.threeamigos.pixelpeeper.interfaces.ui.HintsProducer;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 
 public interface DataModel extends PropertyChangeListener, HintsProducer {
 

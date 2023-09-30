@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
+import com.threeamigos.common.util.interfaces.preferences.flavours.SecondaryWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SecondaryWindowPreferences;
 
 public abstract class AbstractSecondaryWindowPreferencesImpl extends AbstractWindowPreferencesImpl
 		implements SecondaryWindowPreferences {

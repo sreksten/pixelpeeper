@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 
 public class ChainedInputConsumer implements InputConsumer {
 

@@ -3,8 +3,8 @@ package com.threeamigos.pixelpeeper.implementations.ui.imagedecorators;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.GridPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageDecorator;
 
 public class GridDecorator implements ImageDecorator {

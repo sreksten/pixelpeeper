@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import com.threeamigos.pixelpeeper.interfaces.persister.Persistable;
+import com.threeamigos.common.util.interfaces.persistence.Persistable;
 
 public interface CropFactorRepositoryManager extends Persistable {
 

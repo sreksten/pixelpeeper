@@ -2,9 +2,9 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import java.util.Map;
 
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
-import com.threeamigos.pixelpeeper.interfaces.preferences.Preferences;
 
 /**
  * Keeps track of the Exif tags we are interested in

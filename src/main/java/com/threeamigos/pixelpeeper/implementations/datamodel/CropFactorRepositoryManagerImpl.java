@@ -1,14 +1,14 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel;
 
 import com.threeamigos.common.util.implementations.JsonStatusTracker;
+import com.threeamigos.common.util.implementations.persistence.file.JsonFilePersister;
 import com.threeamigos.common.util.interfaces.StatusTracker;
-import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
+import com.threeamigos.common.util.interfaces.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
-import com.threeamigos.pixelpeeper.implementations.persister.JsonFilePersister;
+import com.threeamigos.common.util.interfaces.persistence.PersistResult;
+import com.threeamigos.common.util.interfaces.persistence.Persister;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepository;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryManager;
-import com.threeamigos.pixelpeeper.interfaces.persister.PersistResult;
-import com.threeamigos.pixelpeeper.interfaces.persister.Persister;
 
 public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryManager {
 

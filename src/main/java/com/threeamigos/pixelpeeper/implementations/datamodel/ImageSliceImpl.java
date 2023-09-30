@@ -16,6 +16,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
@@ -26,7 +27,6 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPrefer
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.ui.FontService;
 
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 

@@ -4,8 +4,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.interfaces.preferences.flavours.WindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.WindowPreferences;
 
 public abstract class AbstractWindowPreferencesImpl extends PropertyChangeAwareImpl implements WindowPreferences {
 

@@ -16,8 +16,18 @@ import com.threeamigos.common.util.implementations.filesystem.RootPathProviderIm
 import com.threeamigos.common.util.implementations.messagehandler.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
-import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
+import com.threeamigos.common.util.implementations.persistence.file.FilePersistablesCollector;
+import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
+import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
+import com.threeamigos.common.util.implementations.ui.HintsWindowImpl;
+import com.threeamigos.common.util.interfaces.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
+import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.common.util.interfaces.ui.FontService;
+import com.threeamigos.common.util.interfaces.ui.HintsCollector;
+import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
+import com.threeamigos.common.util.interfaces.ui.MouseTracker;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.DataModelImpl;
@@ -31,7 +41,6 @@ import com.threeamigos.pixelpeeper.implementations.datamodel.NamePatternImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.TagsClassifierImpl;
 import com.threeamigos.pixelpeeper.implementations.edgedetect.EdgesDetectorFactoryImpl;
 import com.threeamigos.pixelpeeper.implementations.edgedetect.ui.EdgesDetectorPreferencesSelectorFactoryImpl;
-import com.threeamigos.pixelpeeper.implementations.persister.PersistablesHelper;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.CannyEdgesDetectorPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.CursorPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.DragAndDropWindowPreferencesImpl;
@@ -52,9 +61,6 @@ import com.threeamigos.pixelpeeper.implementations.ui.CursorManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.FileSelectorImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.FontServiceImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.HintsCollectorImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.HintsWindowImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.NamePatternSelectorImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.imagedecorators.GridDecorator;
@@ -82,9 +88,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPrefer
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.GridPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
@@ -93,13 +97,9 @@ import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
 import com.threeamigos.pixelpeeper.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.pixelpeeper.interfaces.ui.FileSelector;
-import com.threeamigos.pixelpeeper.interfaces.ui.FontService;
-import com.threeamigos.pixelpeeper.interfaces.ui.HintsCollector;
-import com.threeamigos.pixelpeeper.interfaces.ui.HintsWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageDecorator;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
-import com.threeamigos.pixelpeeper.interfaces.ui.MouseTracker;
 import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 /**
@@ -118,6 +118,8 @@ public class Main {
 
 	// TODO: lens manufacturer
 
+	private static final String APPLICATION_NAME = "3AM Pixel Peeper";
+
 	public Main() {
 
 		// A way to show error/warning messages to the user
@@ -134,7 +136,7 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		PersistablesHelper persistablesHelper = new PersistablesHelper(rootPathProvider, messageHandler);
+		FilePersistablesCollector persistablesHelper = new FilePersistablesCollector(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
@@ -261,7 +263,7 @@ public class Main {
 		cursorPreferences.addPropertyChangeListener(cursorManager);
 		hintsCollector.addHints(cursorManager);
 
-		HintsWindow hintsWindow = new HintsWindowImpl(hintsPreferences, hintsCollector);
+		HintsDisplayer hintsWindow = new HintsWindowImpl(APPLICATION_NAME, hintsPreferences, hintsCollector);
 
 		List<MainWindowPlugin> plugins = new ArrayList<>();
 
@@ -324,7 +326,7 @@ public class Main {
 	private JFrame prepareFrame(JMenuBar menuBar, ImageViewerCanvas imageViewerCanvas, ControlsPanel controlsPanel,
 			MainWindowPreferences mainWindowPreferences) {
 
-		JFrame jframe = new JFrame("3AM Pixel Peeper");
+		JFrame jframe = new JFrame(APPLICATION_NAME);
 		jframe.setMinimumSize(new Dimension(800, 600));
 
 		jframe.setJMenuBar(menuBar);

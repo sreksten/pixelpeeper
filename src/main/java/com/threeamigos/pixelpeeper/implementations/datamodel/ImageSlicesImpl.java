@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
@@ -19,7 +20,6 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPrefer
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.ui.FontService;
 
 public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 

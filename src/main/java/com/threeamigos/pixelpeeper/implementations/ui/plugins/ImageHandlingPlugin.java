@@ -10,13 +10,13 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences.Disposition;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 public class ImageHandlingPlugin extends AbstractMainWindowPlugin {

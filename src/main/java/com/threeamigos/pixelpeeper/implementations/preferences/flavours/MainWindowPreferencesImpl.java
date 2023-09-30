@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 
 public class MainWindowPreferencesImpl extends AbstractWindowPreferencesImpl implements MainWindowPreferences {
 

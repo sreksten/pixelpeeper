@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.data.PictureData;
@@ -31,7 +32,6 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetector
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 public class DataModelImpl implements DataModel {

@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelectorFactory;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 public class EdgesDetectorPlugin extends AbstractMainWindowPlugin {

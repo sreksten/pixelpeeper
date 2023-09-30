@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.Preferences;
 
 public interface EdgesDetectorPreferences extends Preferences {
 

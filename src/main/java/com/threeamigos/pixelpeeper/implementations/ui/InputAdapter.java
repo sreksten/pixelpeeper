@@ -4,7 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 
 public class InputAdapter implements InputConsumer {
 

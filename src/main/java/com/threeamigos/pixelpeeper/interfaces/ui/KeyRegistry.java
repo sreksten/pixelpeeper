@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.threeamigos.common.util.interfaces.ui.HintsProducer;
+
 public enum KeyRegistry implements HintsProducer {
 
 	SHOW_ABOUT_KEY(KeyEvent.VK_A, "A", "You can show the About window by pressing the 'A' key."),

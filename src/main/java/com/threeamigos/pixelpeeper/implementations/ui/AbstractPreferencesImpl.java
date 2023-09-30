@@ -1,9 +1,9 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
 import com.threeamigos.common.util.interfaces.messagehandler.ErrorMessageHandler;
-import com.threeamigos.pixelpeeper.interfaces.persister.PersistResult;
-import com.threeamigos.pixelpeeper.interfaces.persister.Persistable;
-import com.threeamigos.pixelpeeper.interfaces.persister.Persister;
+import com.threeamigos.common.util.interfaces.persistence.PersistResult;
+import com.threeamigos.common.util.interfaces.persistence.Persistable;
+import com.threeamigos.common.util.interfaces.persistence.Persister;
 
 public abstract class AbstractPreferencesImpl<T> implements Persistable {
 

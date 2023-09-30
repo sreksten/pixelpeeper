@@ -2,8 +2,8 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import java.util.List;
 
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.pixelpeeper.data.ExifTag;
-import com.threeamigos.pixelpeeper.interfaces.preferences.Preferences;
 
 /**
  * Keeps track of the last directory browsed and the files that were loaded last

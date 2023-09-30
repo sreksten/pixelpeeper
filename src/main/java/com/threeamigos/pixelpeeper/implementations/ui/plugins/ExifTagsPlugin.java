@@ -9,11 +9,11 @@ import java.util.Map;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 public class ExifTagsPlugin extends AbstractMainWindowPlugin {

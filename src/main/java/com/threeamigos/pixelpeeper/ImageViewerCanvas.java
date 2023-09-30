@@ -23,6 +23,9 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
+import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.implementations.ui.ChainedInputConsumer;
@@ -32,15 +35,12 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.AboutWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
 import com.threeamigos.pixelpeeper.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.FileSelector;
-import com.threeamigos.pixelpeeper.interfaces.ui.HintsWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageDecorator;
-import com.threeamigos.pixelpeeper.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
@@ -65,7 +65,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	private final transient FileRenamer fileRenamer;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
-	private final transient HintsWindow hintsWindow;
+	private final transient HintsDisplayer hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
 	private final transient MessageHandler messageHandler;
 	private final transient List<MainWindowPlugin> plugins;
@@ -78,7 +78,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 			DataModel dataModel, CursorManager cursorManager,
 			FileSelector fileSelector, NamePatternSelector namePatternSelector, NamePattern namePattern, FileRenamer fileRenamer,
 			ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators,
-			AboutWindow aboutWindow, HintsWindow hintsWindow, DragAndDropWindow dragAndDropWindow,
+			AboutWindow aboutWindow, HintsDisplayer hintsWindow, DragAndDropWindow dragAndDropWindow,
 			MessageHandler messageHandler, List<MainWindowPlugin> plugins) {
 		super();
 		this.menuBar = menuBar;

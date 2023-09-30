@@ -1,8 +1,8 @@
 package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.Preferences;
 
 public interface ImageHandlingPreferences extends Preferences {
 
