@@ -1,5 +1,7 @@
 package com.threeamigos.pixelpeeper.interfaces.preferences;
 
+import com.threeamigos.common.util.interfaces.PropertyChangeAware;
+
 /**
  * A set of preferences for an application.
  * 

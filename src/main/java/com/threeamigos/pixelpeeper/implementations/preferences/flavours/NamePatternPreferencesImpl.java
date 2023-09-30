@@ -1,5 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
+import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPreferences;
 
 public class NamePatternPreferencesImpl extends PropertyChangeAwareImpl implements NamePatternPreferences {

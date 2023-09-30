@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
+import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;

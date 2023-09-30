@@ -9,7 +9,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.threeamigos.pixelpeeper.implementations.preferences.flavours.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;

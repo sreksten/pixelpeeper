@@ -3,6 +3,7 @@ package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.WindowPreferences;
 

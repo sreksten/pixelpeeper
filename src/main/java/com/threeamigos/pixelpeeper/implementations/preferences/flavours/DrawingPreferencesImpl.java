@@ -2,6 +2,7 @@ package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
 import java.awt.Color;
 
+import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 
 public class DrawingPreferencesImpl extends PropertyChangeAwareImpl implements DrawingPreferences {
