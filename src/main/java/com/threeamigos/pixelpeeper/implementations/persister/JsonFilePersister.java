@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.threeamigos.common.util.implementations.GsonColorAdapter;
 import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
 

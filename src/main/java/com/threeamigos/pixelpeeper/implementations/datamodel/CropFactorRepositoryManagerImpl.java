@@ -1,10 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel;
 
+import com.threeamigos.common.util.implementations.JsonStatusTracker;
+import com.threeamigos.common.util.interfaces.StatusTracker;
 import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.implementations.persister.JsonFilePersister;
-import com.threeamigos.pixelpeeper.implementations.preferences.flavours.JsonStatusTracker;
-import com.threeamigos.pixelpeeper.interfaces.StatusTracker;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepository;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryManager;
 import com.threeamigos.pixelpeeper.interfaces.persister.PersistResult;
