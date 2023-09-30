@@ -2,7 +2,7 @@ package com.threeamigos.pixelpeeper.implementations.edgedetect.ui;
 
 import java.awt.Component;
 
-import com.threeamigos.common.util.interfaces.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.ui.EdgesDetectorPreferencesSelector;

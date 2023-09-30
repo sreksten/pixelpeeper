@@ -9,8 +9,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
-import com.threeamigos.common.util.interfaces.ExceptionHandler;
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
+import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
 
 public abstract class TextFilePersister<T> extends FilePersister<T> {
 

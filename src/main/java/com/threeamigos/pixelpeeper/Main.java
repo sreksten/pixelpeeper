@@ -12,12 +12,12 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 
-import com.threeamigos.common.util.implementations.CompositeMessageHandler;
-import com.threeamigos.common.util.implementations.ConsoleMessageHandler;
-import com.threeamigos.common.util.implementations.SwingMessageHandler;
-import com.threeamigos.common.util.interfaces.MessageHandler;
-import com.threeamigos.common.util.preferences.filebased.implementations.RootPathProviderImpl;
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.implementations.filesystem.RootPathProviderImpl;
+import com.threeamigos.common.util.implementations.messagehandler.CompositeMessageHandler;
+import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
+import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
+import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
+import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.DataModelImpl;

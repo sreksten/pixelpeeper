@@ -3,8 +3,8 @@ package com.threeamigos.pixelpeeper.implementations.persister;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
-import com.threeamigos.common.util.preferences.filebased.interfaces.RootPathProvider;
+import com.threeamigos.common.util.interfaces.filesystem.RootPathProvider;
+import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.implementations.preferences.PreferencesManagerImpl;
 import com.threeamigos.pixelpeeper.interfaces.persister.Persistable;
 import com.threeamigos.pixelpeeper.interfaces.persister.PersistableCollector;

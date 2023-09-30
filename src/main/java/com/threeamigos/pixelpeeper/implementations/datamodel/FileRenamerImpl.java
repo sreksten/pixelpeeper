@@ -9,7 +9,7 @@ import java.util.List;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
-import com.threeamigos.common.util.interfaces.MessageHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
 import com.threeamigos.pixelpeeper.interfaces.ui.FileSelector;

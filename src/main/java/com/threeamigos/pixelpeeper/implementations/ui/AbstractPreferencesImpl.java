@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
-import com.threeamigos.common.util.interfaces.ErrorMessageHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ErrorMessageHandler;
 import com.threeamigos.pixelpeeper.interfaces.persister.PersistResult;
 import com.threeamigos.pixelpeeper.interfaces.persister.Persistable;
 import com.threeamigos.pixelpeeper.interfaces.persister.Persister;
