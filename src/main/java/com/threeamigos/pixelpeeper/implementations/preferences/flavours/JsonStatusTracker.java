@@ -9,13 +9,13 @@ import com.threeamigos.pixelpeeper.interfaces.StatusTracker;
 
 public class JsonStatusTracker<T> implements StatusTracker<T> {
 
-	private final T preferences;
+	private final T entity;
 	private final Gson gson;
 
 	private String initialEntityRepresentationAsString;
 
-	public JsonStatusTracker(T preferences) {
-		this.preferences = preferences;
+	public JsonStatusTracker(T entity) {
+		this.entity = entity;
 
 		GsonBuilder builder = new GsonBuilder();
 		builder.registerTypeAdapter(Color.class, new GsonColorAdapter());
@@ -33,7 +33,7 @@ public class JsonStatusTracker<T> implements StatusTracker<T> {
 	}
 
 	private String getEntityRepresentationAsString() {
-		return gson.toJson(preferences);
+		return gson.toJson(entity);
 	}
 
 }
