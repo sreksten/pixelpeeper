@@ -15,7 +15,7 @@ class FilePersistResultImpl implements FilePersistResult {
 	}
 
 	public static final FilePersistResultImpl pathNotAccessible() {
-		return new FilePersistResultImpl("Preferences directory file cannot be accessed");
+		return new FilePersistResultImpl("Directory cannot be accessed");
 	}
 
 	public static final FilePersistResultImpl fileNotWriteable() {
