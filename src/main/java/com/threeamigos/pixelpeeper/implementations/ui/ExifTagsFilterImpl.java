@@ -102,7 +102,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 	public ExifTag getTagToGroupBy() {
 		return groupingPanel.getExifTagToGroupBy();
 	}
-	
+
 	public ExifTag getTagToOrderBy() {
 		return groupingPanel.getExifTagToOrderBy();
 	}
@@ -209,7 +209,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 		values.addAll(entry.getValue());
 		Collections.sort(values, ExifValue.getComparator());
 
-		JList<ExifValue> list = new JList(values.toArray());
+		JList<ExifValue> list = new JList<ExifValue>((ExifValue[]) values.toArray());
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		list.setFixedCellWidth(400);
 		list.addListSelectionListener(new ListSelectionListener() {

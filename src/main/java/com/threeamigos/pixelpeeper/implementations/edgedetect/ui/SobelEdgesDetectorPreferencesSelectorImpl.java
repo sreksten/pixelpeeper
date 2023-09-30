@@ -13,9 +13,6 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetector
 
 public class SobelEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDetectorPreferencesSelectorImpl {
 
-	private static final String PUPPAMENTO = "Puppamento";
-	private static final String A_NASTRO = "A nastro";
-
 	private Dimension flavourDimension;
 
 	public SobelEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,

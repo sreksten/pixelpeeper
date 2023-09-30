@@ -24,7 +24,7 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
 	private static final String CANCEL_OPTION = "Cancel";
 
 	private final NamePatternPreferences namePatternPreferences;
-	
+
 	private JTextField textField;
 
 	public NamePatternSelectorImpl(NamePatternPreferences namePatternPreferences) {
@@ -51,7 +51,6 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
 		dialog.dispose();
 	}
 
-
 	private final JPanel createPreferencesPanel(Component component) {
 
 		textField = new JTextField();
@@ -62,7 +61,7 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
 		for (int i = 0; i < exifTagValues.length; i++) {
 			comboBoxValues[i + 1] = exifTagValues[i];
 		}
-		JComboBox<ExifTag> comboBox = new JComboBox(comboBoxValues);
+		JComboBox<ExifTag> comboBox = new JComboBox<ExifTag>(comboBoxValues);
 		comboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -72,16 +71,16 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
 				}
 			}
 		});
-		
+
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-		
+
 		mainPanel.add(comboBox);
-		
+
 		mainPanel.add(Box.createVerticalStrut(SPACING));
-		
+
 		mainPanel.add(textField);
-		
+
 		return mainPanel;
 	}
 
