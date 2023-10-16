@@ -116,6 +116,9 @@ public class Main {
 
 	// BUGFIX: the big pointer may flicker when changed
 
+	// BUGFIX: clicking mouse button when keeping CAPS key will still change to hand
+	// cursor even when drawing
+
 	// TODO: lens manufacturer
 
 	private static final String APPLICATION_NAME = "3AM Pixel Peeper";
