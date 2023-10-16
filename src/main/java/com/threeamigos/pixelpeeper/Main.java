@@ -287,6 +287,7 @@ public class Main {
 		plugins.add(gridPlugin);
 
 		CursorPlugin cursorPlugin = new CursorPlugin(cursorPreferences, cursorManager);
+		cursorPreferences.addPropertyChangeListener(cursorPlugin);
 		plugins.add(cursorPlugin);
 
 		ExifTagsPlugin exifTagsPlugin = new ExifTagsPlugin(exifTagsPreferences);

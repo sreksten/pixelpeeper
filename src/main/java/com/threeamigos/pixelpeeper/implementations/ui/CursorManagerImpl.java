@@ -157,8 +157,10 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
 		graphics.dispose();
 
-		int hotspotX = size / 2 + (int) (size / 2 * Math.cos(pointerPreferences.getBigPointerRotation().getRadians()));
-		int hotspotY = size / 2 + (int) (size / 2 * Math.sin(pointerPreferences.getBigPointerRotation().getRadians()));
+		int hotspotX = size / 2 + (int) (size / 2 * Math.cos(pointerPreferences.getBigPointerRotation().getRadians()))
+				- 1;
+		int hotspotY = size / 2 + (int) (size / 2 * Math.sin(pointerPreferences.getBigPointerRotation().getRadians()))
+				- 1;
 
 		return Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(hotspotX, hotspotY), "bigPointer");
 	}
@@ -178,7 +180,7 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
 	private Cursor createHandCursor() {
 
-		int size = pointerPreferences.getBigPointerSize();
+		int size = pointerPreferences.getBigPointerSize() - 1;
 
 		BufferedImage cursorImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics = cursorImage.createGraphics();
@@ -254,7 +256,8 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 				|| CommunicationMessages.BIG_POINTER_SIZE_CHANGED.equals(evt.getPropertyName())
 				|| CommunicationMessages.BIG_POINTER_ROTATION_CHANGED.equals(evt.getPropertyName())) {
 			updateCursor();
-			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null, this);
+			propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null,
+					this);
 		}
 	}
 

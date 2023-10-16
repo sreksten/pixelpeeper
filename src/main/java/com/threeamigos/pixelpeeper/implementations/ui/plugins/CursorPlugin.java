@@ -42,8 +42,8 @@ public class CursorPlugin extends AbstractMainWindowPlugin {
 		for (int pointerSize = CursorPreferences.BIG_POINTER_MIN_SIZE; pointerSize <= maxDimension; pointerSize += CursorPreferences.BIG_POINTER_SIZE_STEP) {
 			final int currentSize = pointerSize;
 			JMenuItem pointerSizeItem = addCheckboxMenuItem(bigPointerSizeMenu, String.valueOf(pointerSize),
-					KeyRegistry.NO_KEY, pointerSize - 1 == bigPointerPreferences.getBigPointerSize(), event -> {
-						bigPointerPreferences.setBigPointerSize(currentSize - 1);
+					KeyRegistry.NO_KEY, pointerSize == bigPointerPreferences.getBigPointerSize(), event -> {
+						bigPointerPreferences.setBigPointerSize(currentSize);
 					});
 			bigPointerBySize.put(pointerSize, pointerSizeItem);
 		}
