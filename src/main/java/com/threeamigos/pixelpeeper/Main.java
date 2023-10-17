@@ -139,54 +139,54 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		FilePersistablesCollector persistablesHelper = new FilePersistablesCollector(rootPathProvider, messageHandler);
+		FilePersistablesCollector filePersistablesCollector = new FilePersistablesCollector(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
 		MainWindowPreferences mainWindowPreferences = new MainWindowPreferencesImpl();
-		persistablesHelper.register(mainWindowPreferences, "main_window.preferences");
+		filePersistablesCollector.register(mainWindowPreferences, "main_window.preferences");
 
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
-		persistablesHelper.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
+		filePersistablesCollector.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
 		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
-		persistablesHelper.register(imageHandlingPreferences, "image_handling.preferences");
+		filePersistablesCollector.register(imageHandlingPreferences, "image_handling.preferences");
 
 		SessionPreferences sessionPreferences = new SessionPreferencesImpl();
-		persistablesHelper.register(sessionPreferences, "session.preferences");
+		filePersistablesCollector.register(sessionPreferences, "session.preferences");
 
 		ExifTagPreferences exifTagsPreferences = new ExifTagPreferencesImpl();
-		persistablesHelper.register(exifTagsPreferences, "exif_tag.preferences");
+		filePersistablesCollector.register(exifTagsPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
 		GridPreferences gridPreferences = new GridPreferencesImpl();
-		persistablesHelper.register(gridPreferences, "grid.preferences");
+		filePersistablesCollector.register(gridPreferences, "grid.preferences");
 
 		CursorPreferences cursorPreferences = new CursorPreferencesImpl();
-		persistablesHelper.register(cursorPreferences, "cursor.preferences");
+		filePersistablesCollector.register(cursorPreferences, "cursor.preferences");
 
 		// Edges Detector and implementations preferences
 
 		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
-		persistablesHelper.register(edgesDetectorPreferences, "edges_detector.preferences");
+		filePersistablesCollector.register(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
-		persistablesHelper.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
+		filePersistablesCollector.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
-		persistablesHelper.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
+		filePersistablesCollector.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
 		// Misc preferences
 
 		NamePatternPreferences namePatternPreferences = new NamePatternPreferencesImpl();
-		persistablesHelper.register(namePatternPreferences, "name_pattern.preferences");
+		filePersistablesCollector.register(namePatternPreferences, "name_pattern.preferences");
 
 		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
-		persistablesHelper.register(drawingPreferences, "drawing.preferences");
+		filePersistablesCollector.register(drawingPreferences, "drawing.preferences");
 
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
-		persistablesHelper.register(hintsPreferences, "hints.preferences");
+		filePersistablesCollector.register(hintsPreferences, "hints.preferences");
 
 		// Data model
 
@@ -197,7 +197,7 @@ public class Main {
 		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
 				cropFactorRepository, "crop_factor.repository", "Crop factor repository", rootPathProvider,
 				messageHandler);
-		persistablesHelper.add(cropFactorRepositoryManager);
+		filePersistablesCollector.add(cropFactorRepositoryManager);
 
 		CropFactorProvider cropFactorProvider = new CropFactorProviderImpl(cropFactorRepository);
 
