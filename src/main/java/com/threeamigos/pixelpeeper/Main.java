@@ -133,7 +133,7 @@ public class Main {
 		// The directory in which we store preferences and other files
 
 		RootPathProvider rootPathProvider = new RootPathProviderImpl(this, messageHandler);
-		if (rootPathProvider.shouldAbort()) {
+		if (rootPathProvider.hasUnrecoverableErrors()) {
 			System.exit(0);
 		}
 
