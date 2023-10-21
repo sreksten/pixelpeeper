@@ -5,16 +5,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
-import com.threeamigos.common.util.interfaces.ui.MouseTracker;
+import com.threeamigos.common.util.interfaces.ui.UserInputTracker;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 
-public class MouseTrackerImpl implements MouseTracker {
+public class UserInputTrackerImpl implements UserInputTracker {
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private MouseEvent oldEvent;
 
-	public MouseTrackerImpl() {
+	public UserInputTrackerImpl() {
 		propertyChangeSupport = new PropertyChangeSupport(this);
 	}
 

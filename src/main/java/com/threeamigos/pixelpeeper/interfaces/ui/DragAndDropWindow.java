@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 
-public interface DragAndDropWindow extends Consumer<List<File>>, HintsProducer {
+public interface DragAndDropWindow extends Consumer<List<File>>, HintsProducer<String> {
 
 	public void setVisible(boolean visible);
 

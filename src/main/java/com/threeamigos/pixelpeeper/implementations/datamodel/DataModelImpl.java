@@ -16,7 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.threeamigos.common.util.implementations.ui.StringHint;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
@@ -424,10 +426,11 @@ public class DataModelImpl implements DataModel {
 	}
 
 	@Override
-	public Collection<String> getHints() {
-		Collection<String> hints = new ArrayList<>();
-		hints.add("You can press P to show the position of the visible part of the image.");
-		hints.add("You can hold the CTRL button to momentarily invert the current behaviour when dragging an image.");
+	public Collection<Hint<String>> getHints() {
+		Collection<Hint<String>> hints = new ArrayList<>();
+		hints.add(new StringHint("You can press P to show the position of the visible part of the image."));
+		hints.add(new StringHint(
+				"You can hold the CTRL button to momentarily invert the current behaviour when dragging an image."));
 		return hints;
 	}
 

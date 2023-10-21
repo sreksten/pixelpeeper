@@ -12,7 +12,7 @@ import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 
-public interface DataModel extends PropertyChangeListener, HintsProducer {
+public interface DataModel extends PropertyChangeListener, HintsProducer<String> {
 
 	// Preferences part
 
@@ -58,7 +58,8 @@ public interface DataModel extends PropertyChangeListener, HintsProducer {
 
 	public void loadFiles(Collection<File> files);
 
-	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy, int preferredGroupIndex);
+	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy,
+			int preferredGroupIndex);
 
 	public void browseDirectory(File directory, Component component);
 

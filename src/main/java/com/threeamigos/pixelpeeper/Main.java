@@ -27,7 +27,7 @@ import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPre
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.interfaces.ui.HintsCollector;
 import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
-import com.threeamigos.common.util.interfaces.ui.MouseTracker;
+import com.threeamigos.common.util.interfaces.ui.UserInputTracker;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.CropFactorRepositoryManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.datamodel.DataModelImpl;
@@ -61,8 +61,8 @@ import com.threeamigos.pixelpeeper.implementations.ui.CursorManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.DragAndDropWindowImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.ExifTagsFilterImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.FileSelectorImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.MouseTrackerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.NamePatternSelectorImpl;
+import com.threeamigos.pixelpeeper.implementations.ui.UserInputTrackerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.imagedecorators.GridDecorator;
 import com.threeamigos.pixelpeeper.implementations.ui.plugins.CursorPlugin;
 import com.threeamigos.pixelpeeper.implementations.ui.plugins.EdgesDetectorPlugin;
@@ -139,7 +139,8 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		FilePersistablesCollector filePersistablesCollector = new FilePersistablesCollector(rootPathProvider, messageHandler);
+		FilePersistablesCollector filePersistablesCollector = new FilePersistablesCollector(rootPathProvider,
+				messageHandler);
 
 		// Main Preferences
 
@@ -223,7 +224,7 @@ public class Main {
 
 		ChainedInputConsumer chainedInputConsumer = new ChainedInputConsumer();
 
-		HintsCollector hintsCollector = new HintsCollectorImpl();
+		HintsCollector<String> hintsCollector = new HintsCollectorImpl<>();
 		hintsCollector.addHints(KeyRegistry.NO_KEY.getHints());
 
 		DataModel dataModel = new DataModelImpl(tagsClassifier, imageSlices, imageHandlingPreferences,
@@ -248,7 +249,7 @@ public class Main {
 
 		NamePattern namePattern = new NamePatternImpl(namePatternPreferences, exifCache);
 
-		MouseTracker mouseTracker = new MouseTrackerImpl();
+		UserInputTracker mouseTracker = new UserInputTrackerImpl();
 		chainedInputConsumer.addConsumer(mouseTracker.getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
 		mouseTracker.addPropertyChangeListener(dataModel);
 
@@ -266,7 +267,7 @@ public class Main {
 		cursorPreferences.addPropertyChangeListener(cursorManager);
 		hintsCollector.addHints(cursorManager);
 
-		HintsDisplayer hintsWindow = new HintsWindowImpl(APPLICATION_NAME, hintsPreferences, hintsCollector);
+		HintsDisplayer<String> hintsWindow = new HintsWindowImpl(APPLICATION_NAME, hintsPreferences, hintsCollector);
 
 		List<MainWindowPlugin> plugins = new ArrayList<>();
 

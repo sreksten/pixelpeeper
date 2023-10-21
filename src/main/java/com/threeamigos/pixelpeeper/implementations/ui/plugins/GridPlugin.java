@@ -10,6 +10,8 @@ import java.util.Map;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.threeamigos.common.util.implementations.ui.StringHint;
+import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
@@ -17,7 +19,7 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.GridPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
-public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer {
+public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer<String> {
 
 	private final GridPreferences gridPreferences;
 	private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
@@ -95,10 +97,11 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
 	}
 
 	@Override
-	public Collection<String> getHints() {
-		Collection<String> hints = new ArrayList<>();
-		hints.add("Press G to hide or show a grid.");
-		hints.add("If the grid is visible you can change its size using the plus or minus key on the numeric keypad.");
+	public Collection<Hint<String>> getHints() {
+		Collection<Hint<String>> hints = new ArrayList<>();
+		hints.add(new StringHint("Press G to hide or show a grid."));
+		hints.add(new StringHint(
+				"If the grid is visible you can change its size using the plus or minus key on the numeric keypad."));
 		return hints;
 	}
 

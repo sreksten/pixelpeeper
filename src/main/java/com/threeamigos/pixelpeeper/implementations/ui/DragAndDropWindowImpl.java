@@ -37,8 +37,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import com.threeamigos.common.util.implementations.ui.StringHint;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.common.util.interfaces.ui.FontService;
+import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.ui.BorderedStringRenderer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.ExifMap;
@@ -201,7 +203,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
 	private void sendFiles(List<File> files) {
 		if (proxifiedObject != null) {
-			proxifiedObject.accept(files, groupingPanel.getExifTagToGroupBy(), groupingPanel.getTolerance(), groupingPanel.getExifTagToOrderBy());
+			proxifiedObject.accept(files, groupingPanel.getExifTagToGroupBy(), groupingPanel.getTolerance(),
+					groupingPanel.getExifTagToOrderBy());
 		} else {
 			messageHandler.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
 		}
@@ -218,9 +221,10 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 	}
 
 	@Override
-	public Collection<String> getHints() {
-		Collection<String> hints = new ArrayList<>();
-		hints.add("You can open the Drag and Drop window and keep it in a secondary screen to open images with ease.");
+	public Collection<Hint<String>> getHints() {
+		Collection<Hint<String>> hints = new ArrayList<>();
+		hints.add(new StringHint(
+				"You can open the Drag and Drop window and keep it in a secondary screen to open images with ease."));
 		return hints;
 	}
 
