@@ -15,7 +15,7 @@ import javax.swing.SwingUtilities;
 import com.threeamigos.common.util.implementations.messagehandler.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
-import com.threeamigos.common.util.implementations.persistence.file.FilePersistablesCollector;
+import com.threeamigos.common.util.implementations.persistence.file.FilePreferencesCollector;
 import com.threeamigos.common.util.implementations.persistence.file.RootPathProviderImpl;
 import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
 import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
@@ -139,55 +139,54 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		FilePersistablesCollector filePersistablesCollector = new FilePersistablesCollector(rootPathProvider,
-				messageHandler);
+		FilePreferencesCollector preferencesCollector = new FilePreferencesCollector(rootPathProvider, messageHandler);
 
 		// Main Preferences
 
 		MainWindowPreferences mainWindowPreferences = new MainWindowPreferencesImpl();
-		filePersistablesCollector.register(mainWindowPreferences, "main_window.preferences");
+		preferencesCollector.register(mainWindowPreferences, "main_window.preferences");
 
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
-		filePersistablesCollector.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
+		preferencesCollector.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
 		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
-		filePersistablesCollector.register(imageHandlingPreferences, "image_handling.preferences");
+		preferencesCollector.register(imageHandlingPreferences, "image_handling.preferences");
 
 		SessionPreferences sessionPreferences = new SessionPreferencesImpl();
-		filePersistablesCollector.register(sessionPreferences, "session.preferences");
+		preferencesCollector.register(sessionPreferences, "session.preferences");
 
 		ExifTagPreferences exifTagsPreferences = new ExifTagPreferencesImpl();
-		filePersistablesCollector.register(exifTagsPreferences, "exif_tag.preferences");
+		preferencesCollector.register(exifTagsPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
 		GridPreferences gridPreferences = new GridPreferencesImpl();
-		filePersistablesCollector.register(gridPreferences, "grid.preferences");
+		preferencesCollector.register(gridPreferences, "grid.preferences");
 
 		CursorPreferences cursorPreferences = new CursorPreferencesImpl();
-		filePersistablesCollector.register(cursorPreferences, "cursor.preferences");
+		preferencesCollector.register(cursorPreferences, "cursor.preferences");
 
 		// Edges Detector and implementations preferences
 
 		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
-		filePersistablesCollector.register(edgesDetectorPreferences, "edges_detector.preferences");
+		preferencesCollector.register(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
-		filePersistablesCollector.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
+		preferencesCollector.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
-		filePersistablesCollector.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
+		preferencesCollector.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
 		// Misc preferences
 
 		NamePatternPreferences namePatternPreferences = new NamePatternPreferencesImpl();
-		filePersistablesCollector.register(namePatternPreferences, "name_pattern.preferences");
+		preferencesCollector.register(namePatternPreferences, "name_pattern.preferences");
 
 		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
-		filePersistablesCollector.register(drawingPreferences, "drawing.preferences");
+		preferencesCollector.register(drawingPreferences, "drawing.preferences");
 
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
-		filePersistablesCollector.register(hintsPreferences, "hints.preferences");
+		preferencesCollector.register(hintsPreferences, "hints.preferences");
 
 		// Data model
 
@@ -198,7 +197,7 @@ public class Main {
 		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
 				cropFactorRepository, "crop_factor.repository", "Crop factor repository", rootPathProvider,
 				messageHandler);
-		filePersistablesCollector.add(cropFactorRepositoryManager);
+		preferencesCollector.add(cropFactorRepositoryManager);
 
 		CropFactorProvider cropFactorProvider = new CropFactorProviderImpl(cropFactorRepository);
 
