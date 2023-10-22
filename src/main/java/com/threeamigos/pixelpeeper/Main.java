@@ -103,7 +103,7 @@ import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
 import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 /**
- * Uses the Metadata Extractor from https://drewnoakes.com/code/exif/
+ * Makes use of Drew Noakes' <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.
  *
  * @author Stefano Reksten
  *
@@ -144,49 +144,49 @@ public class Main {
 		// Main Preferences
 
 		MainWindowPreferences mainWindowPreferences = new MainWindowPreferencesImpl();
-		preferencesCollector.register(mainWindowPreferences, "main_window.preferences");
+		preferencesCollector.add(mainWindowPreferences, "main_window.preferences");
 
 		DragAndDropWindowPreferences dragAndDropWindowPreferences = new DragAndDropWindowPreferencesImpl();
-		preferencesCollector.register(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
+		preferencesCollector.add(dragAndDropWindowPreferences, "drag_and_drop_window.preferences");
 
 		ImageHandlingPreferences imageHandlingPreferences = new ImageHandlingPreferencesImpl();
-		preferencesCollector.register(imageHandlingPreferences, "image_handling.preferences");
+		preferencesCollector.add(imageHandlingPreferences, "image_handling.preferences");
 
 		SessionPreferences sessionPreferences = new SessionPreferencesImpl();
-		preferencesCollector.register(sessionPreferences, "session.preferences");
+		preferencesCollector.add(sessionPreferences, "session.preferences");
 
 		ExifTagPreferences exifTagsPreferences = new ExifTagPreferencesImpl();
-		preferencesCollector.register(exifTagsPreferences, "exif_tag.preferences");
+		preferencesCollector.add(exifTagsPreferences, "exif_tag.preferences");
 
 		// Decorators preferences
 
 		GridPreferences gridPreferences = new GridPreferencesImpl();
-		preferencesCollector.register(gridPreferences, "grid.preferences");
+		preferencesCollector.add(gridPreferences, "grid.preferences");
 
 		CursorPreferences cursorPreferences = new CursorPreferencesImpl();
-		preferencesCollector.register(cursorPreferences, "cursor.preferences");
+		preferencesCollector.add(cursorPreferences, "cursor.preferences");
 
 		// Edges Detector and implementations preferences
 
 		EdgesDetectorPreferences edgesDetectorPreferences = new EdgesDetectorPreferencesImpl();
-		preferencesCollector.register(edgesDetectorPreferences, "edges_detector.preferences");
+		preferencesCollector.add(edgesDetectorPreferences, "edges_detector.preferences");
 
 		CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences = new CannyEdgesDetectorPreferencesImpl();
-		preferencesCollector.register(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
+		preferencesCollector.add(cannyEdgesDetectorPreferences, "canny_edges_detector.preferences");
 
 		RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences = new RomyJonaEdgesDetectorPreferencesImpl();
-		preferencesCollector.register(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
+		preferencesCollector.add(romyJonaEdgesDetectorPreferences, "romy_jona_edge_detector.preferences");
 
 		// Misc preferences
 
 		NamePatternPreferences namePatternPreferences = new NamePatternPreferencesImpl();
-		preferencesCollector.register(namePatternPreferences, "name_pattern.preferences");
+		preferencesCollector.add(namePatternPreferences, "name_pattern.preferences");
 
 		DrawingPreferences drawingPreferences = new DrawingPreferencesImpl();
-		preferencesCollector.register(drawingPreferences, "drawing.preferences");
+		preferencesCollector.add(drawingPreferences, "drawing.preferences");
 
 		HintsPreferences hintsPreferences = new HintsPreferencesImpl();
-		preferencesCollector.register(hintsPreferences, "hints.preferences");
+		preferencesCollector.add(hintsPreferences, "hints.preferences");
 
 		// Data model
 
@@ -234,7 +234,7 @@ public class Main {
 		imageHandlingPreferences.addPropertyChangeListener(dataModel);
 		edgesDetectorPreferences.addPropertyChangeListener(dataModel);
 
-		new Thread(() -> dataModel.loadLastFiles()).run();
+		new Thread(dataModel::loadLastFiles).start();
 
 		// User Interface
 
@@ -360,7 +360,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> new Main());
+		SwingUtilities.invokeLater(Main::new);
 	}
 
 }
