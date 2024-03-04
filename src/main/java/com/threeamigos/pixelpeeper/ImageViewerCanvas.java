@@ -22,13 +22,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
+import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.ExifTag;
-import com.threeamigos.pixelpeeper.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
@@ -256,7 +256,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
 	@Override
 	public JMenu getMenu(String menuTitle) {
-		JMenu menu = menues.computeIfAbsent(menuTitle, title -> new JMenu(title));
+		JMenu menu = menues.computeIfAbsent(menuTitle, JMenu::new);
 		menuBar.add(menu);
 		return menu;
 	}

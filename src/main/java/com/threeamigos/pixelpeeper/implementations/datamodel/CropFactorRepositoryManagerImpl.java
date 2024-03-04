@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel;
 
-import com.threeamigos.common.util.implementations.persistence.JsonStatusTracker;
 import com.threeamigos.common.util.implementations.persistence.file.JsonFilePersister;
+import com.threeamigos.common.util.interfaces.json.Json;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.common.util.interfaces.persistence.PersistResult;
 import com.threeamigos.common.util.interfaces.persistence.Persister;
@@ -18,11 +18,13 @@ public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryMana
 	private final MessageHandler messageHandler;
 	private boolean invalidAtLoad;
 
-	public CropFactorRepositoryManagerImpl(CropFactorRepository cropFactorRepository, String filename,
-			String entityDescription, RootPathProvider rootPathProvider, MessageHandler messageHandler) {
+	public CropFactorRepositoryManagerImpl(CropFactorRepository cropFactorRepository,
+			StatusTracker<CropFactorRepository> statusTracker, String filename, String entityDescription,
+			RootPathProvider rootPathProvider, MessageHandler messageHandler, Json<CropFactorRepository> json) {
 		this.cropFactorRepository = cropFactorRepository;
-		this.statusTracker = new JsonStatusTracker<>(cropFactorRepository);
-		this.persister = new JsonFilePersister<>(filename, entityDescription, rootPathProvider, messageHandler);
+		this.statusTracker = statusTracker;
+		this.persister = new JsonFilePersister<CropFactorRepository>(filename, entityDescription, rootPathProvider,
+				messageHandler, json);
 		this.messageHandler = messageHandler;
 
 		PersistResult persistResult = persister.load(cropFactorRepository);

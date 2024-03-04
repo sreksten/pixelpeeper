@@ -5,7 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import com.threeamigos.common.util.ui.BorderedStringRenderer;
+import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.flavours.RomyJonaEdgesDetector;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 

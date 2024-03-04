@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
-import com.threeamigos.common.util.ui.BorderedStringRenderer;
+import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;

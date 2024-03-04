@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -12,16 +13,24 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 
+import com.threeamigos.common.util.implementations.json.JsonBuilderImpl;
+import com.threeamigos.common.util.implementations.json.JsonColorAdapter;
 import com.threeamigos.common.util.implementations.messagehandler.CompositeMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
+import com.threeamigos.common.util.implementations.persistence.JsonStatusTrackerFactory;
 import com.threeamigos.common.util.implementations.persistence.file.FilePreferencesCollector;
 import com.threeamigos.common.util.implementations.persistence.file.RootPathProviderImpl;
+import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
 import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
 import com.threeamigos.common.util.implementations.ui.HintsWindowImpl;
+import com.threeamigos.common.util.interfaces.json.Json;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.common.util.interfaces.persistence.StatusTracker;
+import com.threeamigos.common.util.interfaces.persistence.StatusTrackerFactory;
 import com.threeamigos.common.util.interfaces.persistence.file.RootPathProvider;
+import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.common.util.interfaces.ui.FontService;
@@ -55,7 +64,6 @@ import com.threeamigos.pixelpeeper.implementations.preferences.flavours.NamePatt
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.SessionPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.AboutWindowImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.CropFactorProviderImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.CursorManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.DragAndDropWindowImpl;
@@ -103,7 +111,8 @@ import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
 import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 /**
- * Makes use of Drew Noakes' <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.
+ * Makes use of Drew Noakes'
+ * <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.
  *
  * @author Stefano Reksten
  *
@@ -139,7 +148,12 @@ public class Main {
 
 		// Preferences that can be stored and retrieved in a subsequent run
 
-		FilePreferencesCollector preferencesCollector = new FilePreferencesCollector(rootPathProvider, messageHandler);
+		Json<Preferences> preferencesJson = new JsonBuilderImpl().registerAdapter(Color.class, new JsonColorAdapter())
+				.build(Preferences.class);
+		StatusTrackerFactory<Preferences> preferencesStatusTrackerFactory = new JsonStatusTrackerFactory<>(
+				preferencesJson);
+		FilePreferencesCollector<Preferences> preferencesCollector = new FilePreferencesCollector<>(rootPathProvider,
+				messageHandler, preferencesStatusTrackerFactory, preferencesJson);
 
 		// Main Preferences
 
@@ -194,9 +208,12 @@ public class Main {
 		// retrieve this.
 		// A simple file database provides the information to the CropFactoryProvider.
 		CropFactorRepository cropFactorRepository = new CropFactorRepositoryImpl();
+		Json<CropFactorRepository> cropFactorRepositoryJson = new JsonBuilderImpl().build(CropFactorRepository.class);
+		StatusTracker<CropFactorRepository> cropFactorRepositoryStatusTracker = new JsonStatusTrackerFactory<CropFactorRepository>(
+				cropFactorRepositoryJson).buildStatusTracker(cropFactorRepository);
 		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
-				cropFactorRepository, "crop_factor.repository", "Crop factor repository", rootPathProvider,
-				messageHandler);
+				cropFactorRepository, cropFactorRepositoryStatusTracker, "crop_factor.repository",
+				"Crop factor repository", rootPathProvider, messageHandler, cropFactorRepositoryJson);
 		preferencesCollector.add(cropFactorRepositoryManager);
 
 		CropFactorProvider cropFactorProvider = new CropFactorProviderImpl(cropFactorRepository);
