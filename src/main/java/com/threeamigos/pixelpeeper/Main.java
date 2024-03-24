@@ -21,6 +21,7 @@ import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHa
 import com.threeamigos.common.util.implementations.persistence.JsonStatusTrackerFactory;
 import com.threeamigos.common.util.implementations.persistence.file.JsonFilePreferencesCollector;
 import com.threeamigos.common.util.implementations.persistence.file.rootpathprovider.RootPathProviderImpl;
+import com.threeamigos.common.util.implementations.ui.AboutWindowImpl;
 import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
 import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
@@ -34,6 +35,7 @@ import com.threeamigos.common.util.interfaces.persistence.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
+import com.threeamigos.common.util.interfaces.ui.AboutWindow;
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.interfaces.ui.HintsCollector;
 import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
@@ -64,7 +66,6 @@ import com.threeamigos.pixelpeeper.implementations.preferences.flavours.MainWind
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.NamePatternPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.RomyJonaEdgesDetectorPreferencesImpl;
 import com.threeamigos.pixelpeeper.implementations.preferences.flavours.SessionPreferencesImpl;
-import com.threeamigos.pixelpeeper.implementations.ui.AboutWindowImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.CropFactorProviderImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.CursorManagerImpl;
 import com.threeamigos.pixelpeeper.implementations.ui.DragAndDropWindowImpl;
@@ -321,10 +322,12 @@ public class Main {
 
 		JMenuBar menuBar = new JMenuBar();
 
+		AboutWindow aboutWindow = new AboutWindowImpl("3AM Pixel Peeper",
+				"by Stefano Reksten - stefano.reksten@gmail.com", "Released under the GNU General Public License");
+
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
 				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, fileRenamer,
-				chainedInputConsumer, decorators, new AboutWindowImpl(), hintsWindow, dragAndDropWindow, messageHandler,
-				plugins);
+				chainedInputConsumer, decorators, aboutWindow, hintsWindow, dragAndDropWindow, messageHandler, plugins);
 		dataModel.addPropertyChangeListener(imageViewerCanvas);
 		imageHandlingPreferences.addPropertyChangeListener(imageViewerCanvas);
 		cursorPreferences.addPropertyChangeListener(imageViewerCanvas);
