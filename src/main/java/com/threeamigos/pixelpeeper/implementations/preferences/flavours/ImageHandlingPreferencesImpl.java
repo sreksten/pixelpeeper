@@ -1,12 +1,12 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 
-public class ImageHandlingPreferencesImpl extends PropertyChangeAwareImpl implements ImageHandlingPreferences {
+public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware implements ImageHandlingPreferences {
 
 	private boolean autorotation;
 	private Disposition disposition;

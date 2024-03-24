@@ -2,10 +2,10 @@ package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
 import java.awt.Color;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 
-public class DrawingPreferencesImpl extends PropertyChangeAwareImpl implements DrawingPreferences {
+public class DrawingPreferencesImpl extends BasicPropertyChangeAware implements DrawingPreferences {
 
 	private int transparency;
 	private Color color;

@@ -63,7 +63,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 	private final transient FileRenamer fileRenamer;
 	private final transient Collection<ImageDecorator> decorators;
 	private final transient AboutWindow aboutWindow;
-	private final transient HintsDisplayer<String> hintsWindow;
+	private final transient HintsDisplayer hintsWindow;
 	private final transient DragAndDropWindow dragAndDropWindow;
 	private final transient List<MainWindowPlugin> plugins;
 
@@ -74,7 +74,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 			DragAndDropWindowPreferences dragAndDropWindowPreferences, DataModel dataModel, CursorManager cursorManager,
 			FileSelector fileSelector, NamePatternSelector namePatternSelector, FileRenamer fileRenamer,
 			ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
-			HintsDisplayer<String> hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler,
+			HintsDisplayer hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler,
 			List<MainWindowPlugin> plugins) {
 		super();
 		this.menuBar = menuBar;

@@ -1,9 +1,9 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.RomyJonaEdgesDetectorPreferences;
 
-public class RomyJonaEdgesDetectorPreferencesImpl extends PropertyChangeAwareImpl
+public class RomyJonaEdgesDetectorPreferencesImpl extends BasicPropertyChangeAware
 		implements RomyJonaEdgesDetectorPreferences {
 
 	private int puppamento;

@@ -1,10 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.GridPreferences;
 
-public class GridPreferencesImpl extends PropertyChangeAwareImpl implements GridPreferences {
+public class GridPreferencesImpl extends BasicPropertyChangeAware implements GridPreferences {
 
 	private boolean gridVisible;
 	private int gridSpacing;

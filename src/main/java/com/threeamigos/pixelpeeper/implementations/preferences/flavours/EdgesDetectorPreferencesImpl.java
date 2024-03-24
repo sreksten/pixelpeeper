@@ -1,11 +1,11 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 
-public class EdgesDetectorPreferencesImpl extends PropertyChangeAwareImpl implements EdgesDetectorPreferences {
+public class EdgesDetectorPreferencesImpl extends BasicPropertyChangeAware implements EdgesDetectorPreferences {
 
 	private boolean showEdges;
 	private int edgesTransparency;

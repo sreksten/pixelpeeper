@@ -9,13 +9,13 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 
-abstract class AbstractEdgesDetectorPreferencesSelectorDataModel extends PropertyChangeAwareImpl
+abstract class AbstractEdgesDetectorPreferencesSelectorDataModel extends BasicPropertyChangeAware
 		implements EdgesDetectorPreferences, ChangeListener {
 
 	protected final DataModel dataModel;

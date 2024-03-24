@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
 
-public class ExifTagPreferencesImpl extends PropertyChangeAwareImpl implements ExifTagPreferences {
+public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements ExifTagPreferences {
 
 	private boolean tagsVisible = TAGS_VISIBLE_DEFAULT;
 	private boolean overridingTagsVisibility = OVERRIDING_TAGS_VISIBILITY_DEFAULT;

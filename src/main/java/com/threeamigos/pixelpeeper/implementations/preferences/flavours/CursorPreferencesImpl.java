@@ -1,10 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences;
 
-public class CursorPreferencesImpl extends PropertyChangeAwareImpl implements CursorPreferences {
+public class CursorPreferencesImpl extends BasicPropertyChangeAware implements CursorPreferences {
 
 	private boolean bigPointerVisible;
 	private int bigPointerSize;

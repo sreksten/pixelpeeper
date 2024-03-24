@@ -1,10 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CannyEdgesDetectorPreferences;
 
-public class CannyEdgesDetectorPreferencesImpl extends PropertyChangeAwareImpl
+public class CannyEdgesDetectorPreferencesImpl extends BasicPropertyChangeAware
 		implements CannyEdgesDetectorPreferences {
 
 	private float lowThreshold;

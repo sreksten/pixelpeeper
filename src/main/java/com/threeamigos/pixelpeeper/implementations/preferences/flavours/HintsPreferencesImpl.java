@@ -1,10 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavours;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 
-public class HintsPreferencesImpl extends PropertyChangeAwareImpl implements HintsPreferences {
+public class HintsPreferencesImpl extends BasicPropertyChangeAware implements HintsPreferences {
 
 	private boolean hintsVisibleAtStartup;
 	private int lastHintIndex;

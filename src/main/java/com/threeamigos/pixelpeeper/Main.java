@@ -19,11 +19,12 @@ import com.threeamigos.common.util.implementations.messagehandler.CompositeMessa
 import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
 import com.threeamigos.common.util.implementations.messagehandler.SwingMessageHandler;
 import com.threeamigos.common.util.implementations.persistence.JsonStatusTrackerFactory;
-import com.threeamigos.common.util.implementations.persistence.file.FilePreferencesCollector;
-import com.threeamigos.common.util.implementations.persistence.file.RootPathProviderImpl;
+import com.threeamigos.common.util.implementations.persistence.file.JsonFilePreferencesCollector;
+import com.threeamigos.common.util.implementations.persistence.file.rootpathprovider.RootPathProviderImpl;
 import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
 import com.threeamigos.common.util.implementations.ui.FontServiceImpl;
 import com.threeamigos.common.util.implementations.ui.HintsCollectorImpl;
+import com.threeamigos.common.util.implementations.ui.HintsSupport;
 import com.threeamigos.common.util.implementations.ui.HintsWindowImpl;
 import com.threeamigos.common.util.interfaces.json.Json;
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
@@ -152,8 +153,8 @@ public class Main {
 				.build(Preferences.class);
 		StatusTrackerFactory<Preferences> preferencesStatusTrackerFactory = new JsonStatusTrackerFactory<>(
 				preferencesJson);
-		FilePreferencesCollector<Preferences> preferencesCollector = new FilePreferencesCollector<>(rootPathProvider,
-				messageHandler, preferencesStatusTrackerFactory, preferencesJson);
+		JsonFilePreferencesCollector<Preferences> preferencesCollector = new JsonFilePreferencesCollector<>(
+				rootPathProvider, messageHandler, preferencesStatusTrackerFactory, preferencesJson);
 
 		// Main Preferences
 
@@ -283,7 +284,9 @@ public class Main {
 		cursorPreferences.addPropertyChangeListener(cursorManager);
 		hintsCollector.addHints(cursorManager);
 
-		HintsDisplayer<String> hintsWindow = new HintsWindowImpl(APPLICATION_NAME, hintsPreferences, hintsCollector);
+		HintsSupport hintsSupport = new HintsSupport(hintsPreferences, hintsCollector);
+
+		HintsDisplayer hintsWindow = new HintsWindowImpl(APPLICATION_NAME, hintsSupport);
 
 		List<MainWindowPlugin> plugins = new ArrayList<>();
 

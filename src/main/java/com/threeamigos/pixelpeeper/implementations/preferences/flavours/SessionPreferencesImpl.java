@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import com.threeamigos.common.util.implementations.PropertyChangeAwareImpl;
+import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 
-public class SessionPreferencesImpl extends PropertyChangeAwareImpl implements SessionPreferences {
+public class SessionPreferencesImpl extends BasicPropertyChangeAware implements SessionPreferences {
 
 	private String lastPath;
 	private List<String> lastFilenames;
