@@ -123,7 +123,7 @@ import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 public class Main {
 
 	// BUGFIX: if the drag and drop window is open focus is switched to that. Well
-	// maybe not quite a but but...
+	// maybe not quite a bug but...
 
 	// BUGFIX: the big pointer may flicker when changed
 
@@ -211,7 +211,7 @@ public class Main {
 		// A simple file database provides the information to the CropFactoryProvider.
 		CropFactorRepository cropFactorRepository = new CropFactorRepositoryImpl();
 		Json<CropFactorRepository> cropFactorRepositoryJson = new JsonBuilderImpl().build(CropFactorRepository.class);
-		StatusTracker<CropFactorRepository> cropFactorRepositoryStatusTracker = new JsonStatusTrackerFactory<CropFactorRepository>(
+		StatusTracker<CropFactorRepository> cropFactorRepositoryStatusTracker = new JsonStatusTrackerFactory<>(
 				cropFactorRepositoryJson).buildStatusTracker(cropFactorRepository);
 		CropFactorRepositoryManager cropFactorRepositoryManager = new CropFactorRepositoryManagerImpl(
 				cropFactorRepository, cropFactorRepositoryStatusTracker, "crop_factor.repository",
@@ -322,8 +322,8 @@ public class Main {
 
 		JMenuBar menuBar = new JMenuBar();
 
-		AboutWindow aboutWindow = new AboutWindowImpl("3AM Pixel Peeper",
-				"by Stefano Reksten - stefano.reksten@gmail.com", "Released under the GNU General Public License");
+		AboutWindow aboutWindow = new AboutWindowImpl(APPLICATION_NAME,
+				"by Stefano Reksten - stefano.reksten@gmail.com", "Released under the Apache License v2.0");
 
 		ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, mainWindowPreferences,
 				dragAndDropWindowPreferences, dataModel, cursorManager, fileSelector, namePatternSelector, fileRenamer,
