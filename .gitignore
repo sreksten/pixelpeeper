@@ -3,9 +3,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-#SonarLint
-.common-utils.iml
-
 ### IntelliJ IDEA ###
 .idea/
 *.iws
