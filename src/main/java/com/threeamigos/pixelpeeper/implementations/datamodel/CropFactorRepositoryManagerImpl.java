@@ -12,44 +12,44 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepositoryMana
 
 public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryManager {
 
-	private final CropFactorRepository cropFactorRepository;
-	private final StatusTracker<CropFactorRepository> statusTracker;
-	private final Persister<CropFactorRepository> persister;
-	private final MessageHandler messageHandler;
-	private boolean invalidAtLoad;
+    private final CropFactorRepository cropFactorRepository;
+    private final StatusTracker<CropFactorRepository> statusTracker;
+    private final Persister<CropFactorRepository> persister;
+    private final MessageHandler messageHandler;
+    private boolean invalidAtLoad;
 
-	public CropFactorRepositoryManagerImpl(CropFactorRepository cropFactorRepository,
-			StatusTracker<CropFactorRepository> statusTracker, String filename, String entityDescription,
-			RootPathProvider rootPathProvider, MessageHandler messageHandler, Json<CropFactorRepository> json) {
-		this.cropFactorRepository = cropFactorRepository;
-		this.statusTracker = statusTracker;
-		this.persister = new JsonFilePersister<CropFactorRepository>(filename, entityDescription, rootPathProvider,
-				messageHandler, json);
-		this.messageHandler = messageHandler;
+    public CropFactorRepositoryManagerImpl(CropFactorRepository cropFactorRepository,
+                                           StatusTracker<CropFactorRepository> statusTracker, String filename, String entityDescription,
+                                           RootPathProvider rootPathProvider, MessageHandler messageHandler, Json<CropFactorRepository> json) {
+        this.cropFactorRepository = cropFactorRepository;
+        this.statusTracker = statusTracker;
+        this.persister = new JsonFilePersister<>(filename, entityDescription, rootPathProvider,
+                messageHandler, json);
+        this.messageHandler = messageHandler;
 
-		PersistResult persistResult = persister.load(cropFactorRepository);
-		if (!persistResult.isSuccessful()) {
-			if (!persistResult.isNotFound()) {
-				handleError(persistResult.getError());
-				invalidAtLoad = true;
-			}
-		}
-		statusTracker.loadInitialValues();
-	}
+        PersistResult persistResult = persister.load(cropFactorRepository);
+        if (!persistResult.isSuccessful()) {
+            if (!persistResult.isNotFound()) {
+                handleError(persistResult.getError());
+                invalidAtLoad = true;
+            }
+        }
+        statusTracker.loadInitialValues();
+    }
 
-	private void handleError(String error) {
-		messageHandler
-				.handleErrorMessage("Crop factor repository was invalid and has been cleared. Error was: " + error);
-	}
+    private void handleError(String error) {
+        messageHandler
+                .handleErrorMessage("Crop factor repository was invalid and has been cleared. Error was: " + error);
+    }
 
-	@Override
-	public void persist() {
-		if (invalidAtLoad || statusTracker.hasChanged()) {
-			PersistResult persistResult = persister.save(cropFactorRepository);
-			if (!persistResult.isSuccessful()) {
-				messageHandler.handleErrorMessage(persistResult.getError());
-			}
-		}
-	}
+    @Override
+    public void persist() {
+        if (invalidAtLoad || statusTracker.hasChanged()) {
+            PersistResult persistResult = persister.save(cropFactorRepository);
+            if (!persistResult.isSuccessful()) {
+                messageHandler.handleErrorMessage(persistResult.getError());
+            }
+        }
+    }
 
 }

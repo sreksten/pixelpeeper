@@ -147,13 +147,11 @@ public class PictureData implements PropertyChangeAware {
     }
 
     public void correctOrientation() {
-        if (orientation != ExifOrientationHelper.AS_IS) {
-            if (!orientationAdjusted) {
-                sourceImage = ExifOrientationHelper.correctOrientation(sourceImage, orientation);
-                swapDimensionsIfNeeded();
-                changeZoomLevel(zoomLevel);
-                orientationAdjusted = true;
-            }
+        if (orientation != ExifOrientationHelper.AS_IS && !orientationAdjusted) {
+            sourceImage = ExifOrientationHelper.correctOrientation(sourceImage, orientation);
+            swapDimensionsIfNeeded();
+            changeZoomLevel(zoomLevel);
+            orientationAdjusted = true;
         }
     }
 

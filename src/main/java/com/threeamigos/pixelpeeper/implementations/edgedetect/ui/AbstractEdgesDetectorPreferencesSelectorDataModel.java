@@ -1,165 +1,159 @@
 package com.threeamigos.pixelpeeper.implementations.edgedetect.ui;
 
-import java.awt.Component;
-import java.awt.image.BufferedImage;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
 abstract class AbstractEdgesDetectorPreferencesSelectorDataModel extends BasicPropertyChangeAware
-		implements EdgesDetectorPreferences, ChangeListener {
+        implements EdgesDetectorPreferences, ChangeListener {
 
-	protected final DataModel dataModel;
-	protected final EdgesDetectorPreferences edgesDetectorPreferences;
-	protected final Component component;
+    protected final DataModel dataModel;
+    protected final EdgesDetectorPreferences edgesDetectorPreferences;
+    protected final Component component;
 
-	private BufferedImage sourceImage;
-	private BufferedImage edgesImage;
+    private BufferedImage sourceImage;
+    private BufferedImage edgesImage;
 
-	private int transparencyBackup;
+    private final int transparencyBackup;
 
-	final JLabel transparencyText;
+    final JLabel transparencyText;
 
-	final JSlider transparencySlider;
+    final JSlider transparencySlider;
 
-	AbstractEdgesDetectorPreferencesSelectorDataModel(DataModel dataModel,
-			EdgesDetectorPreferences edgesDetectorPreferences, Component component) {
-		this.dataModel = dataModel;
-		this.edgesDetectorPreferences = edgesDetectorPreferences;
-		this.component = component;
+    AbstractEdgesDetectorPreferencesSelectorDataModel(DataModel dataModel,
+                                                      EdgesDetectorPreferences edgesDetectorPreferences, Component component) {
+        this.dataModel = dataModel;
+        this.edgesDetectorPreferences = edgesDetectorPreferences;
+        this.component = component;
 
-		transparencyBackup = edgesDetectorPreferences.getEdgesTransparency();
-		transparencyText = new JLabel(String.valueOf(transparencyBackup));
-		transparencySlider = createSlider(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY,
-				EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY, transparencyBackup);
-	}
+        transparencyBackup = edgesDetectorPreferences.getEdgesTransparency();
+        transparencyText = new JLabel(String.valueOf(transparencyBackup));
+        transparencySlider = createSlider(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY,
+                EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY, transparencyBackup);
+    }
 
-	final void abstractCancelSelection() {
-		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
-		cancelSelection();
-	}
+    final void abstractCancelSelection() {
+        edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
+        cancelSelection();
+    }
 
-	abstract void cancelSelection();
+    abstract void cancelSelection();
 
-	final void abstractAcceptSelection() {
-		edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
-		acceptSelection();
-	}
+    final void abstractAcceptSelection() {
+        edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
+        acceptSelection();
+    }
 
-	abstract void acceptSelection();
+    abstract void acceptSelection();
 
-	abstract boolean isAnyCalculationParameterModified();
+    abstract boolean isAnyCalculationParameterModified();
 
-	final void abstractReset() {
-		edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
+    final void abstractReset() {
+        edgesDetectorPreferences.setEdgesTransparency(transparencyBackup);
 
-		reset();
-		transparencySlider.setValue(transparencyBackup);
+        reset();
+        transparencySlider.setValue(transparencyBackup);
 
-		component.repaint();
-	}
+        component.repaint();
+    }
 
-	abstract void reset();
+    abstract void reset();
 
-	final void abstractResetToDefault() {
-		edgesDetectorPreferences.setEdgesTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
-		transparencySlider.setValue(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
-		resetToDefault();
-		component.repaint();
-	}
+    final void abstractResetToDefault() {
+        edgesDetectorPreferences.setEdgesTransparency(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
+        transparencySlider.setValue(EdgesDetectorPreferences.EDGES_TRANSPARENCY_DEFAULT);
+        resetToDefault();
+        component.repaint();
+    }
 
-	abstract void resetToDefault();
+    abstract void resetToDefault();
 
-	protected final JSlider createSlider(int minValue, int maxValue, int currentValue) {
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, currentValue);
-		slider.addChangeListener(this);
-		return slider;
-	}
+    protected final JSlider createSlider(int minValue, int maxValue, int currentValue) {
+        JSlider slider = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, currentValue);
+        slider.addChangeListener(this);
+        return slider;
+    }
 
-	protected final JCheckBox createCheckbox(boolean currentValue) {
-		JCheckBox checkbox = new JCheckBox();
-		checkbox.setSelected(currentValue);
-		checkbox.addChangeListener(this);
-		return checkbox;
-	}
+    protected final JCheckBox createCheckbox(boolean currentValue) {
+        JCheckBox checkbox = new JCheckBox();
+        checkbox.setSelected(currentValue);
+        checkbox.addChangeListener(this);
+        return checkbox;
+    }
 
-	public final void stateChanged(ChangeEvent e) {
-		Object object = e.getSource();
+    public final void stateChanged(ChangeEvent e) {
+        Object object = e.getSource();
 
-		if (object == transparencySlider) {
-			transparencyText.setText(String.valueOf(transparencySlider.getValue()));
-			edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
-		} else {
-			handleStateChanged(e);
-		}
+        if (object == transparencySlider) {
+            transparencyText.setText(String.valueOf(transparencySlider.getValue()));
+            edgesDetectorPreferences.setEdgesTransparency(transparencySlider.getValue());
+        } else {
+            handleStateChanged(e);
+        }
 
-		startEdgesCalculation();
-		component.repaint();
-	}
+        startEdgesCalculation();
+        component.repaint();
+    }
 
-	protected abstract void handleStateChanged(ChangeEvent e);
+    protected abstract void handleStateChanged(ChangeEvent e);
 
-	public final void startEdgesCalculation() {
-		if (sourceImage != null) {
-			EdgesDetector edgesDetector = getEdgesDetectorImplementation();
-			edgesDetector.setSourceImage(sourceImage);
-			edgesDetector.process();
-			edgesImage = edgesDetector.getEdgesImage();
-		}
-	}
+    public final void startEdgesCalculation() {
+        if (sourceImage != null) {
+            EdgesDetector edgesDetector = getEdgesDetectorImplementation();
+            edgesDetector.setSourceImage(sourceImage);
+            edgesDetector.process();
+            edgesImage = edgesDetector.getEdgesImage();
+        }
+    }
 
-	protected abstract EdgesDetector getEdgesDetectorImplementation();
+    protected abstract EdgesDetector getEdgesDetectorImplementation();
 
-	final void setSourceImage(BufferedImage sourceImage) {
-		this.sourceImage = sourceImage;
-	}
+    final void setSourceImage(BufferedImage sourceImage) {
+        this.sourceImage = sourceImage;
+    }
 
-	final BufferedImage getSourceImage() {
-		return sourceImage;
-	}
+    final BufferedImage getSourceImage() {
+        return sourceImage;
+    }
 
-	final BufferedImage getEdgesImage() {
-		return edgesImage;
-	}
+    final BufferedImage getEdgesImage() {
+        return edgesImage;
+    }
 
-	// EdgesDetectorPreferences
+    // EdgesDetectorPreferences
 
-	@Override
-	public final void setShowEdges(boolean showEdges) {
-	}
+    @Override
+    public final void setShowEdges(boolean showEdges) {
+    }
 
-	@Override
-	public final boolean isShowEdges() {
-		return true;
-	}
+    @Override
+    public final boolean isShowEdges() {
+        return true;
+    }
 
-	public final void setEdgesTransparency(int transparency) {
-		transparencySlider.setValue(transparency);
-	}
+    public final void setEdgesTransparency(int transparency) {
+        transparencySlider.setValue(transparency);
+    }
 
-	public final int getEdgesTransparency() {
-		return transparencySlider.getValue();
-	}
+    public final int getEdgesTransparency() {
+        return transparencySlider.getValue();
+    }
 
-	@Override
-	public final void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
-	}
+    @Override
+    public final void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour) {
+    }
 
-	@Override
-	public abstract EdgesDetectorFlavour getEdgesDetectorFlavour();
-
-	@Override
-	public void loadDefaultValues() {
-		resetToDefault();
-	}
+    @Override
+    public void loadDefaultValues() {
+        resetToDefault();
+    }
 
 }

@@ -1,227 +1,203 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.threeamigos.pixelpeeper.data.ExifMap;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.implementations.datamodel.FileGrouper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 
+import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
 class GroupingPanel extends JPanel {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private static final int MIN_TOLERANCE = 0;
-	private static final int MAX_TOLERANCE = 50;
-	private static final int HALF_TOLERANCE = (MAX_TOLERANCE - MIN_TOLERANCE) / 2;
+    private static final int MIN_TOLERANCE = 0;
+    private static final int MAX_TOLERANCE = 50;
+    private static final int HALF_TOLERANCE = (MAX_TOLERANCE - MIN_TOLERANCE) / 2;
 
-	private static final List<ExifTag> groupableTags;
-	static {
-		List<ExifTag> tags = new ArrayList<>();
-		tags.add(ExifTag.CAMERA_MODEL);
-		tags.add(ExifTag.LENS_MODEL);
-		tags.add(ExifTag.APERTURE);
-		tags.add(ExifTag.ISO);
-		tags.add(ExifTag.EXPOSURE_TIME);
-		tags.add(ExifTag.FOCAL_LENGTH);
-		tags.add(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
-		groupableTags = Collections.unmodifiableList(tags);
-	}
+    private static final List<ExifTag> groupableTags;
 
-	public static final List<ExifTag> getGroupableTags() {
-		return groupableTags;
-	}
+    static {
+        List<ExifTag> tags = new ArrayList<>();
+        tags.add(ExifTag.CAMERA_MODEL);
+        tags.add(ExifTag.LENS_MODEL);
+        tags.add(ExifTag.APERTURE);
+        tags.add(ExifTag.ISO);
+        tags.add(ExifTag.EXPOSURE_TIME);
+        tags.add(ExifTag.FOCAL_LENGTH);
+        tags.add(ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
+        groupableTags = Collections.unmodifiableList(tags);
+    }
 
-	private final ExifCache exifCache;
+    public static List<ExifTag> getGroupableTags() {
+        return groupableTags;
+    }
 
-	private Map<File, ExifMap> filesToTagsMap;
-	private JComboBox<ExifTag> groupByComboBox;
-	private JComboBox<ExifTag> orderByComboBox;
-	private JSlider toleranceSlider;
-	private JLabel groupingResultsLabel;
+    private final transient ExifCache exifCache;
 
-	GroupingPanel(ExifCache exifCache) {
+    private final transient Map<File, ExifMap> filesToTagsMap;
+    private final JComboBox<ExifTag> groupByComboBox;
+    private final JComboBox<ExifTag> orderByComboBox;
+    private final JSlider toleranceSlider;
+    private final JLabel groupingResultsLabel;
 
-		this.exifCache = exifCache;
+    GroupingPanel(ExifCache exifCache) {
 
-		filesToTagsMap = new HashMap<>();
-		groupByComboBox = createGroupByComboBox();
-		orderByComboBox = createOrderByComboBox();
-		toleranceSlider = createToleranceSlider();
-		groupingResultsLabel = new JLabel();
+        this.exifCache = exifCache;
 
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        filesToTagsMap = new HashMap<>();
+        groupByComboBox = createGroupByComboBox();
+        orderByComboBox = createOrderByComboBox();
+        toleranceSlider = createToleranceSlider();
+        groupingResultsLabel = new JLabel();
 
-		JPanel groupingPanel = new JPanel();
-		groupingPanel.setLayout(new BoxLayout(groupingPanel, BoxLayout.LINE_AXIS));
-		groupingPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
-		groupingPanel.add(groupByComboBox);
-		groupingPanel.add(Box.createHorizontalGlue());
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-		add(groupingPanel);
+        JPanel groupingPanel = new JPanel();
+        groupingPanel.setLayout(new BoxLayout(groupingPanel, BoxLayout.LINE_AXIS));
+        groupingPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
+        groupingPanel.add(groupByComboBox);
+        groupingPanel.add(Box.createHorizontalGlue());
 
-		JPanel tolerancePanel = new JPanel();
-		tolerancePanel.setLayout(new BoxLayout(tolerancePanel, BoxLayout.LINE_AXIS));
-		tolerancePanel.setBorder(BorderFactory.createTitledBorder("Focal Length tolerance"));
-		tolerancePanel.add(toleranceSlider);
+        add(groupingPanel);
 
-		add(tolerancePanel);
+        JPanel tolerancePanel = new JPanel();
+        tolerancePanel.setLayout(new BoxLayout(tolerancePanel, BoxLayout.LINE_AXIS));
+        tolerancePanel.setBorder(BorderFactory.createTitledBorder("Focal Length tolerance"));
+        tolerancePanel.add(toleranceSlider);
 
-		JPanel orderingPanel = new JPanel();
-		orderingPanel.setLayout(new BoxLayout(orderingPanel, BoxLayout.LINE_AXIS));
-		orderingPanel.setBorder(BorderFactory.createTitledBorder("Order by"));
-		orderingPanel.add(orderByComboBox);
-		orderingPanel.add(Box.createHorizontalGlue());
-		
-		add(orderingPanel);
-		
-		JPanel groupingResultsPanel = new JPanel();
-		groupingResultsPanel.setLayout(new BoxLayout(groupingResultsPanel, BoxLayout.LINE_AXIS));
-		groupingResultsPanel.setBorder(BorderFactory.createTitledBorder("Grouping results"));
-		groupingResultsLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		groupingResultsPanel.add(groupingResultsLabel);
-		groupingResultsPanel.add(Box.createHorizontalGlue());
+        add(tolerancePanel);
 
-		add(groupingResultsPanel);
+        JPanel orderingPanel = new JPanel();
+        orderingPanel.setLayout(new BoxLayout(orderingPanel, BoxLayout.LINE_AXIS));
+        orderingPanel.setBorder(BorderFactory.createTitledBorder("Order by"));
+        orderingPanel.add(orderByComboBox);
+        orderingPanel.add(Box.createHorizontalGlue());
 
-		groupByComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ExifTag selectedItem = (ExifTag) groupByComboBox.getSelectedItem();
-				toleranceSlider.setEnabled(
-						selectedItem == ExifTag.FOCAL_LENGTH || selectedItem == ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
-				updateGroupingResultsLabel(groupFiles());
-			}
-		});
+        add(orderingPanel);
 
-		toleranceSlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				updateGroupingResultsLabel(groupFiles());
-			}
-		});
-	}
+        JPanel groupingResultsPanel = new JPanel();
+        groupingResultsPanel.setLayout(new BoxLayout(groupingResultsPanel, BoxLayout.LINE_AXIS));
+        groupingResultsPanel.setBorder(BorderFactory.createTitledBorder("Grouping results"));
+        groupingResultsLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        groupingResultsPanel.add(groupingResultsLabel);
+        groupingResultsPanel.add(Box.createHorizontalGlue());
 
-	void clearMap() {
-		filesToTagsMap.clear();
-		updateGroupingResultsLabel(Collections.emptyMap());
-	}
+        add(groupingResultsPanel);
 
-	void mapFilesToTags(Collection<File> files) {
-		for (File file : files) {
-			mapFileToTags(file);
-		}
-	}
+        groupByComboBox.addActionListener(e -> {
+            ExifTag selectedItem = (ExifTag) groupByComboBox.getSelectedItem();
+            toleranceSlider.setEnabled(
+                    selectedItem == ExifTag.FOCAL_LENGTH || selectedItem == ExifTag.FOCAL_LENGTH_35MM_EQUIVALENT);
+            updateGroupingResultsLabel(groupFiles());
+        });
 
-	void mapFileToTags(File file) {
-		if (file.isFile()) {
-			Optional<ExifMap> exifMapOpt = exifCache.getExifMap(file);
-			if (exifMapOpt.isPresent()) {
-				filesToTagsMap.put(file, exifMapOpt.get());
-				updateGroupingResultsLabel(groupFiles());
-			}
-		}
-	}
+        toleranceSlider.addChangeListener(e -> updateGroupingResultsLabel(groupFiles()));
+    }
 
-	public Map<ExifValue, Collection<File>> groupFiles() {
-		return FileGrouper.groupFiles(filesToTagsMap, getExifTagToGroupBy(), getTolerance(), getExifTagToOrderBy());
-	}
+    void clearMap() {
+        filesToTagsMap.clear();
+        updateGroupingResultsLabel(Collections.emptyMap());
+    }
 
-	boolean isTagsMapEmpty() {
-		return filesToTagsMap.isEmpty();
-	}
+    void mapFilesToTags(Collection<File> files) {
+        for (File file : files) {
+            mapFileToTags(file);
+        }
+    }
 
-	Map<File, ExifMap> getMap() {
-		return filesToTagsMap;
-	}
+    void mapFileToTags(File file) {
+        if (file.isFile()) {
+            Optional<ExifMap> exifMapOpt = exifCache.getExifMap(file);
+            if (exifMapOpt.isPresent()) {
+                filesToTagsMap.put(file, exifMapOpt.get());
+                updateGroupingResultsLabel(groupFiles());
+            }
+        }
+    }
 
-	void updateGroupingResultsLabel(Map<ExifValue, Collection<File>> groupedFiles) {
-		int groups = groupedFiles.entrySet().size();
-		int totalFiles = groupedFiles.values().stream().mapToInt(Collection::size).sum();
-		String newLabel;
-		if (groups == 1) {
-			newLabel = String.format("%d files in a single group.", totalFiles);
-		} else {
-			String groupsView = groupedFiles.values().stream().map(c -> String.valueOf(c.size()))
-					.collect(Collectors.joining(", "));
-			newLabel = String.format("%d files in %d groups of %s files.", totalFiles, groups, groupsView);
-		}
-		groupingResultsLabel.setText(newLabel);
-	}
+    public Map<ExifValue, Collection<File>> groupFiles() {
+        return FileGrouper.groupFiles(filesToTagsMap, getExifTagToGroupBy(), getTolerance(), getExifTagToOrderBy());
+    }
 
-	void addGroupingByActionListener(ActionListener actionListener) {
-		groupByComboBox.addActionListener(actionListener);
-	}
+    boolean isTagsMapEmpty() {
+        return filesToTagsMap.isEmpty();
+    }
 
-	void addToleranceActionListener(ActionListener actionListener) {
-		groupByComboBox.addActionListener(actionListener);
-	}
+    Map<File, ExifMap> getMap() {
+        return filesToTagsMap;
+    }
 
-	ExifTag getExifTagToGroupBy() {
-		return (ExifTag) groupByComboBox.getSelectedItem();
-	}
-	
-	ExifTag getExifTagToOrderBy() {
-		return (ExifTag) orderByComboBox.getSelectedItem();
-	}
+    void updateGroupingResultsLabel(Map<ExifValue, Collection<File>> groupedFiles) {
+        int groups = groupedFiles.entrySet().size();
+        int totalFiles = groupedFiles.values().stream().mapToInt(Collection::size).sum();
+        String newLabel;
+        if (groups == 1) {
+            newLabel = String.format("%d files in a single group.", totalFiles);
+        } else {
+            String groupsView = groupedFiles.values().stream().map(c -> String.valueOf(c.size()))
+                    .collect(Collectors.joining(", "));
+            newLabel = String.format("%d files in %d groups of %s files.", totalFiles, groups, groupsView);
+        }
+        groupingResultsLabel.setText(newLabel);
+    }
 
-	int getTolerance() {
-		return toleranceSlider.getValue();
-	}
+    void addGroupingByActionListener(ActionListener actionListener) {
+        groupByComboBox.addActionListener(actionListener);
+    }
 
-	private final JComboBox<ExifTag> createGroupByComboBox() {
-		ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
-		for (int i = 0; i < groupableTags.size(); i++) {
-			listElements[i + 1] = groupableTags.get(i);
-		}
-		return new JComboBox<>(listElements);
-	}
+    void addToleranceActionListener(ActionListener actionListener) {
+        groupByComboBox.addActionListener(actionListener);
+    }
 
-	private final JComboBox<ExifTag> createOrderByComboBox() {
-		ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
-		for (int i = 0; i < groupableTags.size(); i++) {
-			listElements[i + 1] = groupableTags.get(i);
-		}
-		return new JComboBox<>(listElements);
-	}
+    ExifTag getExifTagToGroupBy() {
+        return (ExifTag) groupByComboBox.getSelectedItem();
+    }
 
-	private final JSlider createToleranceSlider() {
-		Hashtable<Integer, JLabel> toleranceSliderLabelTable = new Hashtable<>();
-		toleranceSliderLabelTable.put(MIN_TOLERANCE, new JLabel(MIN_TOLERANCE + "mm"));
-		toleranceSliderLabelTable.put(HALF_TOLERANCE, new JLabel(HALF_TOLERANCE + "mm"));
-		toleranceSliderLabelTable.put(MAX_TOLERANCE, new JLabel(MAX_TOLERANCE + "mm"));
+    ExifTag getExifTagToOrderBy() {
+        return (ExifTag) orderByComboBox.getSelectedItem();
+    }
 
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 50, 0);
-		slider.setMajorTickSpacing(10);
-		slider.setMinorTickSpacing(5);
-		slider.setPaintTicks(true);
-		slider.setLabelTable(toleranceSliderLabelTable);
-		slider.setPaintLabels(true);
-		slider.setEnabled(false);
+    int getTolerance() {
+        return toleranceSlider.getValue();
+    }
 
-		return slider;
-	}
+    private JComboBox<ExifTag> createGroupByComboBox() {
+        ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
+        for (int i = 0; i < groupableTags.size(); i++) {
+            listElements[i + 1] = groupableTags.get(i);
+        }
+        return new JComboBox<>(listElements);
+    }
+
+    private JComboBox<ExifTag> createOrderByComboBox() {
+        ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
+        for (int i = 0; i < groupableTags.size(); i++) {
+            listElements[i + 1] = groupableTags.get(i);
+        }
+        return new JComboBox<>(listElements);
+    }
+
+    private JSlider createToleranceSlider() {
+        Hashtable<Integer, JLabel> toleranceSliderLabelTable = new Hashtable<>();
+        toleranceSliderLabelTable.put(MIN_TOLERANCE, new JLabel(MIN_TOLERANCE + "mm"));
+        toleranceSliderLabelTable.put(HALF_TOLERANCE, new JLabel(HALF_TOLERANCE + "mm"));
+        toleranceSliderLabelTable.put(MAX_TOLERANCE, new JLabel(MAX_TOLERANCE + "mm"));
+
+        JSlider slider = new JSlider(SwingConstants.HORIZONTAL, 0, 50, 0);
+        slider.setMajorTickSpacing(10);
+        slider.setMinorTickSpacing(5);
+        slider.setPaintTicks(true);
+        slider.setLabelTable(toleranceSliderLabelTable);
+        slider.setPaintLabels(true);
+        slider.setEnabled(false);
+
+        return slider;
+    }
 
 }
