@@ -1,77 +1,76 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import java.awt.Graphics2D;
-import java.beans.PropertyChangeListener;
-
 import com.threeamigos.pixelpeeper.data.PictureData;
+
+import java.awt.*;
+import java.beans.PropertyChangeListener;
 
 /**
  * Tracks the image slices we see on screen
  *
  * @author Stefano Reksten
- *
  */
 public interface ImageSlices extends PropertyChangeListener {
 
-	/**
-	 * Prepares to load new images
-	 */
-	public void clear();
+    /**
+     * Prepares to load new images
+     */
+    void clear();
 
-	/**
-	 * Adds a new image
-	 * 
-	 * @param pictureData a picture to be tracked
-	 */
-	public void add(PictureData pictureData);
+    /**
+     * Adds a new image
+     *
+     * @param pictureData a picture to be tracked
+     */
+    void add(PictureData pictureData);
 
-	public void sort();
+    void sort();
 
-	public boolean isNotEmpty();
+    boolean isNotEmpty();
 
-	/**
-	 * To be used when the main window is resized
-	 *
-	 * @param panelWidth
-	 * @param panelHeight
-	 */
-	public void reframe(int panelWidth, int panelHeight);
+    /**
+     * To be used when the main window is resized
+     *
+     * @param panelWidth
+     * @param panelHeight
+     */
+    void reframe(int panelWidth, int panelHeight);
 
-	public void updateZoomLevel();
+    void updateZoomLevel();
 
-	public void move(int deltaX, int deltaY, boolean allImages);
+    void move(int deltaX, int deltaY, boolean allImages);
 
-	public void resetMovement();
+    void resetMovement();
 
-	public void setActiveSlice(int x, int y);
+    void setActiveSlice(int x, int y);
 
-	public void setNoActiveSlice();
+    void setNoActiveSlice();
 
-	public void startAnnotating();
+    void startAnnotating();
 
-	public void addPoint(int x, int y);
+    void addPoint(int x, int y);
 
-	public void stopAnnotating();
+    void stopAnnotating();
 
-	public void undoLastAnnotation();
+    void undoLastAnnotation();
 
-	public void clearAnnotations();
+    void clearAnnotations();
 
-	/**
-	 * Asks all slices to recalculate edge images
-	 */
-	public void calculateEdges();
+    /**
+     * Asks all slices to recalculate edge images
+     */
+    void calculateEdges();
 
-	public void releaseEdges();
+    void releaseEdges();
 
-	public void toggleAutorotation();
+    void toggleAutorotation();
 
-	public void paint(Graphics2D graphics);
+    void paint(Graphics2D graphics);
 
-	// Communication part
+    // Communication part
 
-	public void addPropertyChangeListener(PropertyChangeListener listener);
+    void addPropertyChangeListener(PropertyChangeListener listener);
 
-	public void removePropertyChangeListener(PropertyChangeListener listener);
+    void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

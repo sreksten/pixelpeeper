@@ -1,11 +1,11 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import java.io.File;
-
 import com.threeamigos.pixelpeeper.data.PictureData;
+
+import java.io.File;
 
 public interface ExifImageReader {
 
-	public PictureData readImage(File file);
+    PictureData readImage(File file);
 
 }

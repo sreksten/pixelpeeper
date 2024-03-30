@@ -1,12 +1,12 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
+import com.threeamigos.pixelpeeper.data.ExifMap;
+
 import java.io.File;
 import java.util.Optional;
 
-import com.threeamigos.pixelpeeper.data.ExifMap;
-
 public interface ExifReader {
 
-	public Optional<ExifMap> readMetadata(File file);
+    Optional<ExifMap> readMetadata(File file);
 
 }

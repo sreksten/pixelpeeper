@@ -1,14 +1,14 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
+import com.threeamigos.pixelpeeper.data.ExifMap;
+
 import java.io.File;
 import java.util.Optional;
 
-import com.threeamigos.pixelpeeper.data.ExifMap;
-
 public interface ExifCache {
 
-	public void clear();
+    void clear();
 
-	public Optional<ExifMap> getExifMap(File file);
+    Optional<ExifMap> getExifMap(File file);
 
 }

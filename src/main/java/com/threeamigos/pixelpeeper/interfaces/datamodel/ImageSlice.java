@@ -1,109 +1,107 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.beans.PropertyChangeListener;
-
 import com.threeamigos.pixelpeeper.data.PictureData;
+
+import java.awt.*;
+import java.beans.PropertyChangeListener;
 
 /**
  * A portion of the screen that depicts part of an image
  *
  * @author Stefano Reksten
- *
  */
 public interface ImageSlice {
 
-	/**
-	 * The onscreen location of this slice
-	 *
-	 * @param location
-	 */
-	public void setLocation(Rectangle location);
+    /**
+     * The onscreen location of this slice
+     *
+     * @param location
+     */
+    void setLocation(Rectangle location);
 
-	/**
-	 * The onscreen location of this slice
-	 */
-	public Rectangle getLocation();
+    /**
+     * The onscreen location of this slice
+     */
+    Rectangle getLocation();
 
-	/**
-	 * Used to unserstand if the mouse is hovering over this slice
-	 *
-	 * @param x mouse coordinate
-	 * @param y mouse coordinate
-	 * @return trhe if the mouse is over this slice
-	 */
-	public boolean contains(int x, int y);
+    /**
+     * Used to unserstand if the mouse is hovering over this slice
+     *
+     * @param x mouse coordinate
+     * @param y mouse coordinate
+     * @return trhe if the mouse is over this slice
+     */
+    boolean contains(int x, int y);
 
-	/**
-	 * Used when the user is dragging the mouse, to keep track of the slice where
-	 * the mouse was clicked
-	 *
-	 * @param selected
-	 */
-	public void setSelected(boolean selected);
+    /**
+     * Used when the user is dragging the mouse, to keep track of the slice where
+     * the mouse was clicked
+     *
+     * @param selected
+     */
+    void setSelected(boolean selected);
 
-	/**
-	 * The image along with the Exif tags
-	 *
-	 * @return
-	 */
-	public PictureData getPictureData();
+    /**
+     * The image along with the Exif tags
+     *
+     * @return
+     */
+    PictureData getPictureData();
 
-	/**
-	 * Move the image around the slice
-	 *
-	 * @param deltaX pixels to shift the upper X coordinate of the viewable part of
-	 *               the picture
-	 * @param deltaY pixels to shift the upper X coordinate of the viewable part of
-	 *               the picture
-	 */
-	public void move(double deltaX, double deltaY);
+    /**
+     * Move the image around the slice
+     *
+     * @param deltaX pixels to shift the upper X coordinate of the viewable part of
+     *               the picture
+     * @param deltaY pixels to shift the upper X coordinate of the viewable part of
+     *               the picture
+     */
+    void move(double deltaX, double deltaY);
 
-	public void startDrawing();
+    void startDrawing();
 
-	public void addVertex(int x, int y);
+    void addVertex(int x, int y);
 
-	public void stopDrawing();
+    void stopDrawing();
 
-	public void undoLastDrawing();
+    void undoLastDrawing();
 
-	public void clearDrawings();
+    void clearDrawings();
 
-	/**
-	 * To clear the image shifting when loading a new image. Image is centered on
-	 * the screen.
-	 */
-	public void resetMovement();
+    /**
+     * To clear the image shifting when loading a new image. Image is centered on
+     * the screen.
+     */
+    void resetMovement();
 
-	/**
-	 * To adjust for zoom level
-	 */
-	public void changeZoomLevel(float zoomLevel);
+    /**
+     * To adjust for zoom level
+     */
+    void changeZoomLevel(float zoomLevel);
 
-	public float getZoomLevel();
+    float getZoomLevel();
 
-	public void paint(Graphics2D g2d);
+    void paint(Graphics2D g2d);
 
-	/**
-	 * Rotates the image if needed
-	 */
-	public void adjustRotation(boolean autorotation);
+    /**
+     * Rotates the image if needed
+     */
+    void adjustRotation(boolean autorotation);
 
-	/**
-	 * Asks to recalculate the edge images
-	 */
-	public void startEdgesCalculation();
+    /**
+     * Asks to recalculate the edge images
+     */
+    void startEdgesCalculation();
 
-	/**
-	 * Asks to clear the edges image and release the memory
-	 */
-	public void releaseEdges();
+    /**
+     * Asks to clear the edges image and release the memory
+     */
+    void releaseEdges();
 
-	// Communication part
+    // Communication part
 
-	public void addPropertyChangeListener(PropertyChangeListener listener);
+    void addPropertyChangeListener(PropertyChangeListener listener);
 
-	public void removePropertyChangeListener(PropertyChangeListener listener);
+    void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

@@ -1,9 +1,9 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import java.awt.Component;
+import java.awt.*;
 
 public interface FileRenamer {
 
-	public void selectAndRename(Component component);
-	
+    void selectAndRename(Component component);
+
 }

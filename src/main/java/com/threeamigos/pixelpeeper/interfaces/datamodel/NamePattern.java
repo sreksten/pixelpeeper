@@ -4,10 +4,10 @@ import java.io.File;
 
 public interface NamePattern {
 
-	public static final String LEFT_BRACKET = "{";
-	
-	public static final String RIGHT_BRACKET = "}";
-	
-	public boolean rename(File file);
-	
+    String LEFT_BRACKET = "{";
+
+    String RIGHT_BRACKET = "}";
+
+    boolean rename(File file);
+
 }

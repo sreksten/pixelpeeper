@@ -5,6 +5,6 @@ import java.io.File;
 
 public interface ImageReader {
 
-	public BufferedImage readImage(File file) throws Exception;
+    BufferedImage readImage(File file) throws Exception;
 
 }

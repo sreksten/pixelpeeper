@@ -1,86 +1,82 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.util.Collection;
-import java.util.Optional;
-
+import com.threeamigos.common.util.interfaces.PropertyChangeAware;
 import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 
-public interface DataModel extends PropertyChangeListener, HintsProducer<String> {
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.Collection;
+import java.util.Optional;
 
-	// Preferences part
+public interface DataModel extends PropertyChangeListener, PropertyChangeAware, HintsProducer<String> {
 
-	public boolean isAutorotation();
+    // Preferences part
 
-	public void toggleAutorotation();
+    boolean isAutorotation();
 
-	public boolean isMovementAppliedToAllImages();
+    void toggleAutorotation();
 
-	public void toggleMovementAppliedToAllImages();
+    boolean isMovementAppliedToAllImages();
 
-	public boolean isMovementAppliedToAllImagesTemporarilyInverted();
+    void toggleMovementAppliedToAllImages();
 
-	public boolean isShowEdges();
+    boolean isMovementAppliedToAllImagesTemporarilyInverted();
 
-	public void toggleShowingEdges();
+    boolean isShowEdges();
 
-	public void calculateEdges();
+    void toggleShowingEdges();
 
-	// Graphics part
+    void calculateEdges();
 
-	public void reframe(int width, int height);
+    // Graphics part
 
-	public void repaint(Graphics2D graphics);
+    void reframe(int width, int height);
 
-	public void requestRepaint();
+    void repaint(Graphics2D graphics);
 
-	public void setMovementAppliedToAllImages(boolean movementAppliesToAllFrames);
+    void requestRepaint();
 
-	public void move(int deltaX, int deltaY);
+    void setMovementAppliedToAllImages(boolean movementAppliesToAllFrames);
 
-	public void resetMovement();
+    void move(int deltaX, int deltaY);
 
-	public void changeZoomLevel();
+    void resetMovement();
 
-	public void setActiveSlice(int x, int y);
+    void changeZoomLevel();
 
-	public void resetActiveSlice();
+    void setActiveSlice(int x, int y);
 
-	// Data part
+    void resetActiveSlice();
 
-	public void loadLastFiles();
+    // Data part
 
-	public void loadFiles(Collection<File> files);
+    void loadLastFiles();
 
-	public void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy,
-			int preferredGroupIndex);
+    void loadFiles(Collection<File> files);
 
-	public void browseDirectory(File directory, Component component);
+    void loadFiles(Collection<File> files, ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy,
+                   int preferredGroupIndex);
 
-	public int getGroupsCount();
+    void browseDirectory(File directory, Component component);
 
-	public int getCurrentGroup();
+    int getGroupsCount();
 
-	public Optional<ExifValue> getCurrentExifValue();
+    int getCurrentGroup();
 
-	public void moveToNextGroup();
+    Optional<ExifValue> getCurrentExifValue();
 
-	public void moveToPreviousGroup();
+    void moveToNextGroup();
 
-	public boolean hasLoadedImages();
+    void moveToPreviousGroup();
 
-	// Communication part
+    boolean hasLoadedImages();
 
-	public void addPropertyChangeListener(PropertyChangeListener listener);
+    // Communication part
 
-	public void removePropertyChangeListener(PropertyChangeListener listener);
-
-	public InputConsumer getInputConsumer();
+    InputConsumer getInputConsumer();
 
 }
