@@ -33,7 +33,7 @@ public class Main {
     // BUGFIX: clicking mouse button when keeping CAPS key will still change to hand
     // cursor even when drawing
 
-    // TODO: lens manufacturer
+    // BUGFIX: lens manufacturer still missing
 
     public static final String APPLICATION_NAME = "3AM Pixel Peeper";
 
@@ -133,6 +133,8 @@ public class Main {
                 Preferences.MAIN_WINDOW.setY(jframe.getY());
             }
         });
+
+        jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         return jframe;
     }
