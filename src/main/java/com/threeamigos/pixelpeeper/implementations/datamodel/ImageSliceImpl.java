@@ -7,6 +7,7 @@ import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsRenderer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
@@ -31,6 +32,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private final FontService fontService;
 
     private final PropertyChangeSupport propertyChangeSupport;
+    private TagsRenderer tagsRenderer;
 
     private Rectangle location;
     private double imageOffsetX;
@@ -60,6 +62,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         drawings = new ArrayList<>();
 
         propertyChangeSupport = new PropertyChangeSupport(this);
+
+        tagsRenderer = new TagsRenderShadowHelper(fontService, pictureData, tagPreferences, commonTagsHelper);
     }
 
     @Override
@@ -319,10 +323,11 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         drawMiniatureWithPosition(g2d);
 
-        new TagsRenderHelper(g2d, locationX, locationY + locationHeight - 1, fontService, pictureData, tagPreferences,
-                commonTagsHelper).render();
+        tagsRenderer.render(g2d, locationX, locationY + locationHeight - 1);
 
         if (edgeCalculationInProgress) {
+            Font font = fontService.getFont("Arial", Font.BOLD, 24);
+            g2d.setFont(font);
             BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
                     Color.BLACK, Color.WHITE);
         }
@@ -423,18 +428,22 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationStarted(evt);
+            handleEdgeCalculationStarted();
         } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationCompleted(evt);
+            handleEdgeCalculationCompleted();
+        } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
+                CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
+                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
+            tagsRenderer.reset();
         }
     }
 
-    private void handleEdgeCalculationStarted(PropertyChangeEvent evt) {
+    private void handleEdgeCalculationStarted() {
         edgeCalculationInProgress = true;
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
     }
 
-    private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
+    private void handleEdgeCalculationCompleted() {
         edgeCalculationInProgress = false;
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, this);
     }

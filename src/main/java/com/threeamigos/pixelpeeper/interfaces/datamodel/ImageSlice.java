@@ -10,12 +10,10 @@ import java.beans.PropertyChangeListener;
  *
  * @author Stefano Reksten
  */
-public interface ImageSlice {
+public interface ImageSlice extends PropertyChangeListener {
 
     /**
      * The onscreen location of this slice
-     *
-     * @param location
      */
     void setLocation(Rectangle location);
 
@@ -29,22 +27,18 @@ public interface ImageSlice {
      *
      * @param x mouse coordinate
      * @param y mouse coordinate
-     * @return trhe if the mouse is over this slice
+     * @return true if the mouse is over this slice
      */
     boolean contains(int x, int y);
 
     /**
      * Used when the user is dragging the mouse, to keep track of the slice where
      * the mouse was clicked
-     *
-     * @param selected
      */
     void setSelected(boolean selected);
 
     /**
      * The image along with the Exif tags
-     *
-     * @return
      */
     PictureData getPictureData();
 

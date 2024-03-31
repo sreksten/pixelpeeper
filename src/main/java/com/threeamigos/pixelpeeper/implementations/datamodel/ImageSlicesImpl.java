@@ -42,6 +42,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
                            EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.commonTagsHelper = commonTagsHelper;
         this.tagPreferences = tagPreferences;
+        tagPreferences.addPropertyChangeListener(this);
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
         this.edgesDetectorPreferences = edgesDetectorPreferences;
@@ -290,6 +291,10 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
             // We don't care about this
         } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
             handleEdgeCalculationCompleted(evt);
+        } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
+                CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
+                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
+            handleTagsPreferencesChanged(evt);
         }
     }
 
@@ -297,6 +302,12 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         ImageSlice imageSlice = (ImageSlice) evt.getNewValue();
         imageSlicesCalculatingEdges.remove(imageSlice);
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+    }
+
+    private void handleTagsPreferencesChanged(PropertyChangeEvent evt) {
+        for (ImageSlice slice : imageSlices) {
+            slice.propertyChange(evt);
+        }
     }
 
     private void requestRepaint() {
