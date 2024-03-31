@@ -10,7 +10,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPrefer
 
 import java.awt.*;
 
-public class TagsRenderHelper extends AbstractTagsRenderer implements TagsRenderer {
+public class TagsRendererSimpleBorder extends AbstractTagsRenderer implements TagsRenderer {
 
     private static final int HSPACING = 5;
     private static final int VSPACING = 5;
@@ -20,8 +20,8 @@ public class TagsRenderHelper extends AbstractTagsRenderer implements TagsRender
     private final FontService fontService;
     private final PictureData pictureData;
 
-    TagsRenderHelper(FontService fontService, PictureData pictureData,
-                     ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
+    TagsRendererSimpleBorder(FontService fontService, PictureData pictureData,
+                             ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
         super(tagPreferences, commonTagsHelper);
         this.fontService = fontService;
         this.pictureData = pictureData;

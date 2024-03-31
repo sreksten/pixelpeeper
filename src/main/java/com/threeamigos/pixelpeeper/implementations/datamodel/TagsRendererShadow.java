@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class TagsRenderShadowHelper extends AbstractTagsRenderer implements TagsRenderer {
+public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRenderer {
 
     private static final int MULTIPLIER = 2;
     private static final int HSPACING = 5;
@@ -31,8 +31,8 @@ public class TagsRenderShadowHelper extends AbstractTagsRenderer implements Tags
     private int x;
     private int y;
 
-    TagsRenderShadowHelper(FontService fontService, PictureData pictureData,
-                           ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
+    TagsRendererShadow(FontService fontService, PictureData pictureData,
+                       ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
         super(tagPreferences, commonTagsHelper);
         this.fontService = fontService;
         this.pictureData = pictureData;

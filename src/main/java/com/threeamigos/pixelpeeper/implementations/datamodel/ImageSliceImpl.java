@@ -63,7 +63,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         propertyChangeSupport = new PropertyChangeSupport(this);
 
-        tagsRenderer = new TagsRenderShadowHelper(fontService, pictureData, tagPreferences, commonTagsHelper);
+        tagsRenderer = new TagsRendererShadow(fontService, pictureData, tagPreferences, commonTagsHelper);
     }
 
     @Override
