@@ -8,7 +8,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.RomyJonaEdges
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Hashtable;
+import java.util.Properties;
 
 public class RomyJonaEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDetectorPreferencesSelectorImpl {
 
@@ -19,8 +19,8 @@ public class RomyJonaEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesD
 
     public RomyJonaEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,
                                                         RomyJonaEdgesDetectorPreferences romyJonaEdgesDetectorPreferences, DataModel dataModel,
-                                                        ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
-        super(edgesDetectorPreferences, dataModel, exifImageReader, parentComponent, exceptionHandler);
+                                                        ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
+        super(edgesDetectorPreferences, dataModel, exifImageReader, exceptionHandler);
 
         preferencesSelectorDataModel = new RomyJonaEdgesDetectorPreferencesSelectorDataModel(dataModel,
                 edgesDetectorPreferences, romyJonaEdgesDetectorPreferences, testImageCanvas);
@@ -36,7 +36,7 @@ public class RomyJonaEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesD
 
         RomyJonaEdgesDetectorPreferencesSelectorDataModel downcastDatamodel = (RomyJonaEdgesDetectorPreferencesSelectorDataModel) preferencesSelectorDataModel;
 
-        Hashtable<Integer, JLabel> puppamentoSliderLabelTable = new Hashtable<>();
+        Properties puppamentoSliderLabelTable = new Properties();
         puppamentoSliderLabelTable.put(1, new JLabel("1"));
         puppamentoSliderLabelTable.put(2, new JLabel("2"));
         puppamentoSliderLabelTable.put(3, new JLabel("3"));

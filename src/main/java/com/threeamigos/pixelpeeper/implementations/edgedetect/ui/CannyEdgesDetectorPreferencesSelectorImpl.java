@@ -8,7 +8,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetector
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Hashtable;
+import java.util.Properties;
 
 public class CannyEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDetectorPreferencesSelectorImpl {
 
@@ -22,8 +22,8 @@ public class CannyEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDete
 
     public CannyEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,
                                                      CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences, DataModel dataModel,
-                                                     ExifImageReader exifImageReader, Component parentComponent, ExceptionHandler exceptionHandler) {
-        super(edgesDetectorPreferences, dataModel, exifImageReader, parentComponent, exceptionHandler);
+                                                     ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
+        super(edgesDetectorPreferences, dataModel, exifImageReader, exceptionHandler);
 
         preferencesSelectorDataModel = new CannyEdgesDetectorPreferencesSelectorDataModel(dataModel,
                 edgesDetectorPreferences, cannyEdgesDetectorPreferences, testImageCanvas);
@@ -39,17 +39,17 @@ public class CannyEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDete
 
         CannyEdgesDetectorPreferencesSelectorDataModel downcastDatamodel = (CannyEdgesDetectorPreferencesSelectorDataModel) preferencesSelectorDataModel;
 
-        Hashtable<Integer, JLabel> thresholdSliderLabelTable = new Hashtable<>();
+        Properties thresholdSliderLabelTable = new Properties();
         thresholdSliderLabelTable.put(1, new JLabel("0.1"));
         thresholdSliderLabelTable.put(50, new JLabel("5"));
         thresholdSliderLabelTable.put(100, new JLabel("10"));
 
-        Hashtable<Integer, JLabel> gaussianKernelRadiusSliderLabelTable = new Hashtable<>();
+        Properties gaussianKernelRadiusSliderLabelTable = new Properties();
         gaussianKernelRadiusSliderLabelTable.put(1, new JLabel("0.1"));
         gaussianKernelRadiusSliderLabelTable.put(50, new JLabel("5"));
         gaussianKernelRadiusSliderLabelTable.put(100, new JLabel("10"));
 
-        Hashtable<Integer, JLabel> gaussianKernelWidthSliderLabelTable = new Hashtable<>();
+        Properties gaussianKernelWidthSliderLabelTable = new Properties();
         gaussianKernelWidthSliderLabelTable.put(2, new JLabel("2"));
         gaussianKernelWidthSliderLabelTable.put(16, new JLabel("16"));
         gaussianKernelWidthSliderLabelTable.put(32, new JLabel("32"));

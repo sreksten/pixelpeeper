@@ -180,7 +180,7 @@ class GroupingPanel extends JPanel {
     }
 
     private JSlider createToleranceSlider() {
-        Hashtable<Integer, JLabel> toleranceSliderLabelTable = new Hashtable<>();
+        Properties toleranceSliderLabelTable = new Properties();
         toleranceSliderLabelTable.put(MIN_TOLERANCE, new JLabel(MIN_TOLERANCE + "mm"));
         toleranceSliderLabelTable.put(HALF_TOLERANCE, new JLabel(HALF_TOLERANCE + "mm"));
         toleranceSliderLabelTable.put(MAX_TOLERANCE, new JLabel(MAX_TOLERANCE + "mm"));

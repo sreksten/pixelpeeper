@@ -20,10 +20,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDetectorPreferencesSelector {
@@ -49,9 +49,9 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
     protected AbstractEdgesDetectorPreferencesSelectorDataModel preferencesSelectorDataModel;
 
-    public AbstractEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,
-                                                        DataModel dataModel, ExifImageReader exifImageReader, Component parentComponent,
-                                                        ExceptionHandler exceptionHandler) {
+    protected AbstractEdgesDetectorPreferencesSelectorImpl(EdgesDetectorPreferences edgesDetectorPreferences,
+                                                           DataModel dataModel, ExifImageReader exifImageReader,
+                                                           ExceptionHandler exceptionHandler) {
         this.edgesDetectorPreferences = edgesDetectorPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
@@ -135,7 +135,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
     private JPanel createSlidersPanel(Component component) {
 
-        Hashtable<Integer, JLabel> transparencySliderLabelTable = new Hashtable<>();
+        Properties transparencySliderLabelTable = new Properties();
         transparencySliderLabelTable.put(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY,
                 new JLabel(String.valueOf(EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY)));
         transparencySliderLabelTable.put(50, new JLabel("50"));
@@ -201,7 +201,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
     }
 
     protected void createSliderPanel(JPanel parent, Dimension labelDimension, String sliderLabel, JSlider slider,
-                                     Hashtable<Integer, JLabel> labelTable, JLabel valueLabel) {
+                                     Properties labelTable, JLabel valueLabel) {
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.LINE_AXIS));
