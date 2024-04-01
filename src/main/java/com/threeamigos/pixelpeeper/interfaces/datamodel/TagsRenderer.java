@@ -4,8 +4,14 @@ import java.awt.*;
 
 public interface TagsRenderer {
 
-    public void reset();
+    int HSPACING = 5;
+    int VSPACING = 5;
 
-    public void render(Graphics g, int x, int y);
+    int FILENAME_FONT_HEIGHT = 32;
+    int TAG_FONT_HEIGHT = 16;
+
+    void reset();
+
+    void render(Graphics g, int x, int y);
 
 }

@@ -24,7 +24,7 @@ import java.util.List;
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     private final PictureData pictureData;
-    private final TagsClassifier commonTagsHelper;
+    private final TagsClassifier tagsClassifier;
     private final ExifTagPreferences tagPreferences;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DrawingPreferences drawingPreferences;
@@ -46,12 +46,12 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     private boolean edgeCalculationInProgress;
 
-    public ImageSliceImpl(PictureData pictureData, TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
+    public ImageSliceImpl(PictureData pictureData, TagsClassifier tagsClassifier, ExifTagPreferences tagPreferences,
                           ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
                           EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.pictureData = pictureData;
         pictureData.addPropertyChangeListener(this);
-        this.commonTagsHelper = commonTagsHelper;
+        this.tagsClassifier = tagsClassifier;
         this.tagPreferences = tagPreferences;
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
@@ -63,7 +63,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         propertyChangeSupport = new PropertyChangeSupport(this);
 
-        tagsRenderer = new TagsRendererShadow(fontService, pictureData, tagPreferences, commonTagsHelper);
+        tagsRenderer = new TagsRendererSimpleBorder(fontService, pictureData, tagPreferences, tagsClassifier);
     }
 
     @Override

@@ -14,30 +14,13 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRenderer {
 
-    private static final int MULTIPLIER = 2;
-    private static final int HSPACING = 5;
-    private static final int VSPACING = 5;
-
-    private static final int FONT_HEIGHT = 16;
-
-    private final FontService fontService;
-    private final PictureData pictureData;
-    private final ExifTagPreferences tagPreferences;
-    private final TagsClassifier commonTagsHelper;
-
     private Image image;
     private int realY;
     private Graphics2D g2d;
-    private int x;
-    private int y;
 
     TagsRendererShadow(FontService fontService, PictureData pictureData,
                        ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
-        super(tagPreferences, commonTagsHelper);
-        this.fontService = fontService;
-        this.pictureData = pictureData;
-        this.tagPreferences = tagPreferences;
-        this.commonTagsHelper = commonTagsHelper;
+        super(tagPreferences, commonTagsHelper, fontService, pictureData);
     }
 
     public void reset() {
@@ -46,16 +29,12 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
 
     public void render(Graphics g2d, int x, int y) {
         this.g2d = (Graphics2D) g2d;
-        this.x = x + HSPACING;
-        this.y = y - VSPACING - FONT_HEIGHT;
 
-        if (tagPreferences.isTagsVisible()) {
-            if (image == null) {
-                image = buildImage();
-                realY = y - image.getHeight(null);
-            }
-            g2d.drawImage(image, x, realY, null);
+        if (image == null) {
+            image = buildImage();
+            realY = y - image.getHeight(null);
         }
+        g2d.drawImage(image, x, realY, null);
     }
 
     private Image buildImage() {
@@ -80,21 +59,16 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
     private BufferedImage createTextsImage(int width, int height) {
         BufferedImage textsImage = new BufferedImage(width, height, TYPE_INT_ARGB);
         Graphics2D graphics = textsImage.createGraphics();
-        graphics.setColor(Color.WHITE);
-        int y = FONT_HEIGHT * MULTIPLIER;
-        graphics.setFont(getImageNameFont());
+        graphics.setColor(getFilenameColor());
+        int y = FILENAME_FONT_HEIGHT;
+        graphics.setFont(getFilenameFont());
         graphics.drawString(pictureData.getFilename(), 0, y);
         graphics.setFont(getTagFont());
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                y += FONT_HEIGHT + VSPACING;
-                String tagDescription = exifTag.getDescription();
-                String tagValue = pictureData.getTagDescriptive(exifTag);
-                Color color = commonTagsHelper.getTotalMappedPictures() == 1 || commonTagsHelper.isCommonTag(exifTag)
-                        ? Color.GREEN
-                        : Color.YELLOW;
-                graphics.setColor(color);
-                graphics.drawString(String.format("%s: %s", tagDescription, tagValue), 0, y);
+                y += TAG_FONT_HEIGHT + VSPACING;
+                graphics.setColor(getTagColor(exifTag));
+                graphics.drawString(getCompleteTag(exifTag), 0, y);
             }
         }
         graphics.dispose();
@@ -168,10 +142,10 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
     }
 
     private int calculateWidth(Graphics g) {
-        int width = g.getFontMetrics(getImageNameFont()).stringWidth(pictureData.getFilename());
+        int width = g.getFontMetrics(getFilenameFont()).stringWidth(pictureData.getFilename());
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                int tagWidth = g.getFontMetrics(getTagFont()).stringWidth(pictureData.getFilename());
+                int tagWidth = g.getFontMetrics(getTagFont()).stringWidth(getCompleteTag(exifTag));
                 width = Math.max(width, tagWidth);
             }
         }
@@ -179,26 +153,13 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
     }
 
     private int calculateHeight() {
-        int height = FONT_HEIGHT * MULTIPLIER;
-        height += (VSPACING + FONT_HEIGHT) * getVisibleTagsCount();
-        return height;
-    }
-
-    private int getVisibleTagsCount() {
-        int visibleTags = 0;
+        float height = getFilenameFont().getLineMetrics(pictureData.getFilename(),
+                g2d.getFontRenderContext()).getHeight();
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                visibleTags++;
+                height += VSPACING + TAG_FONT_HEIGHT;
             }
         }
-        return visibleTags;
-    }
-
-    private Font getImageNameFont() {
-        return fontService.getFont("Arial", Font.BOLD, FONT_HEIGHT * MULTIPLIER);
-    }
-
-    private Font getTagFont() {
-        return fontService.getFont("Arial", Font.BOLD, FONT_HEIGHT);
+        return (int) height;
     }
 }
