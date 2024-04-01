@@ -51,7 +51,7 @@ public class RomyJonaEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesD
 
         flavourPanel.add(Box.createVerticalStrut(SPACING));
 
-        createCheckboxPanel(flavourPanel, flavourDimension, A_NASTRO, downcastDatamodel.aNastroCheckbox);
+        createCheckboxPanel(flavourPanel, A_NASTRO, downcastDatamodel.aNastroCheckbox);
 
         return flavourPanel;
     }

@@ -229,8 +229,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
         parent.add(sliderPanel);
     }
 
-    protected void createCheckboxPanel(JPanel parent, Dimension labelDimension, String checkboxLabel,
-                                       JCheckBox checkbox) {
+    protected void createCheckboxPanel(JPanel parent, String checkboxLabel, JCheckBox checkbox) {
 
         JPanel checkboxPanel = new JPanel();
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.LINE_AXIS));

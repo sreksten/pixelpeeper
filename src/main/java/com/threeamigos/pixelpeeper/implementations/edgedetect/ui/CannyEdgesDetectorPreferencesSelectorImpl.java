@@ -82,8 +82,7 @@ public class CannyEdgesDetectorPreferencesSelectorImpl extends AbstractEdgesDete
 
         flavourPanel.add(Box.createVerticalStrut(SPACING));
 
-        createCheckboxPanel(flavourPanel, flavourDimension, CONTRAST_NORMALIZED,
-                downcastDatamodel.contrastNormalizedCheckbox);
+        createCheckboxPanel(flavourPanel, CONTRAST_NORMALIZED, downcastDatamodel.contrastNormalizedCheckbox);
 
         return flavourPanel;
     }
