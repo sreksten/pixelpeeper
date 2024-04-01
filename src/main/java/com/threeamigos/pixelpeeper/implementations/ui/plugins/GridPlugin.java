@@ -21,7 +21,7 @@ import java.util.Map;
 public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer<String>, PropertyChangeListener {
 
     private final GridPreferences gridPreferences;
-    private Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
+    private final Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
     private JMenuItem gridVisibleMenuItem;
 
     public GridPlugin(GridPreferences gridPreferences) {

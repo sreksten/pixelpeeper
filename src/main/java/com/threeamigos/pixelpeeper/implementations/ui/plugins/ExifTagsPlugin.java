@@ -72,8 +72,8 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
         JMenu exifTagMenu = exifTagMenusByTag.get(exifTag);
         Component[] items = exifTagMenu.getMenuComponents();
         ExifTagVisibility exifTagVisibility = exifTagPreferences.getTagVisibility(exifTag);
-        for (int i = 0; i < items.length; i++) {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) items[i];
+        for (Component component : items) {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) component;
             item.setSelected(exifTagVisibility.getDescription().equals(item.getText()));
         }
     }

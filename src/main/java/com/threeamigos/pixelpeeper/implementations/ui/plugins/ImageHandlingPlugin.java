@@ -28,9 +28,9 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
     private JCheckBoxMenuItem normalizeForCropFactorMenuItem;
     private JCheckBoxMenuItem normalizeForFocalLengthMenuItem;
 
-    private Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
-    private Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
-    private Map<Disposition, JMenuItem> dispositions = new EnumMap<>(Disposition.class);
+    private final Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
+    private final Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
+    private final Map<Disposition, JMenuItem> dispositions = new EnumMap<>(Disposition.class);
 
     public ImageHandlingPlugin(ImageHandlingPreferences imageHandlingPreferences) {
         super();

@@ -22,8 +22,6 @@ public interface ExifTagsClassifier {
 
     boolean isCommonTag(ExifTag exifTag);
 
-    Collection<ExifTag> getCommonTags();
-
     Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues();
 
     Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues(Collection<ExifTag> tagsToFilter);

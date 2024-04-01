@@ -45,11 +45,6 @@ public class ExifTagsClassifierImpl implements ExifTagsClassifier {
     }
 
     @Override
-    public Collection<ExifTag> getCommonTags() {
-        return Collections.unmodifiableCollection(commonTags);
-    }
-
-    @Override
     public Map<ExifTag, Collection<ExifValue>> getUncommonTagsToValues() {
         return Collections.unmodifiableMap(uncommonTagsToValues);
     }
