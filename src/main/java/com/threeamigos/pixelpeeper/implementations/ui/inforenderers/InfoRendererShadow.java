@@ -1,26 +1,26 @@
-package com.threeamigos.pixelpeeper.implementations.datamodel;
+package com.threeamigos.pixelpeeper.implementations.ui.inforenderers;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.PictureData;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsRenderer;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRenderer {
+public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRenderer {
 
     private Image image;
     private int realY;
     private Graphics2D g2d;
 
-    TagsRendererShadow(FontService fontService, PictureData pictureData,
-                       ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
-        super(tagPreferences, commonTagsHelper, fontService, pictureData);
+    public InfoRendererShadow(FontService fontService, PictureData pictureData,
+                              ExifTagsPreferences tagPreferences, ExifTagsClassifier exifTagsClassifier) {
+        super(tagPreferences, exifTagsClassifier, fontService, pictureData);
     }
 
     public void reset() {
@@ -63,11 +63,11 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
         int y = FILENAME_FONT_HEIGHT;
         graphics.setFont(getFilenameFont());
         graphics.drawString(pictureData.getFilename(), 0, y);
-        graphics.setFont(getTagFont());
+        graphics.setFont(getExifTagFont());
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
                 y += TAG_FONT_HEIGHT + VSPACING;
-                graphics.setColor(getTagColor(exifTag));
+                graphics.setColor(getExifTagColor(exifTag));
                 graphics.drawString(getCompleteTag(exifTag), 0, y);
             }
         }
@@ -145,7 +145,7 @@ public class TagsRendererShadow extends AbstractTagsRenderer implements TagsRend
         int width = g.getFontMetrics(getFilenameFont()).stringWidth(pictureData.getFilename());
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                int tagWidth = g.getFontMetrics(getTagFont()).stringWidth(getCompleteTag(exifTag));
+                int tagWidth = g.getFontMetrics(getExifTagFont()).stringWidth(getCompleteTag(exifTag));
                 width = Math.max(width, tagWidth);
             }
         }

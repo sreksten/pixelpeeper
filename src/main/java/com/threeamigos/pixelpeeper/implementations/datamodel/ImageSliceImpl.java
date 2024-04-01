@@ -4,13 +4,14 @@ import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
+import com.threeamigos.pixelpeeper.implementations.ui.inforenderers.InfoRendererShadow;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsRenderer;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 import java.awt.*;
@@ -24,15 +25,13 @@ import java.util.List;
 public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     private final PictureData pictureData;
-    private final TagsClassifier tagsClassifier;
-    private final ExifTagPreferences tagPreferences;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DrawingPreferences drawingPreferences;
     private final EdgesDetectorPreferences edgesDetectorPreferences;
     private final FontService fontService;
 
     private final PropertyChangeSupport propertyChangeSupport;
-    private TagsRenderer tagsRenderer;
+    private InfoRenderer infoRenderer;
 
     private Rectangle location;
     private double imageOffsetX;
@@ -46,13 +45,11 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     private boolean edgeCalculationInProgress;
 
-    public ImageSliceImpl(PictureData pictureData, TagsClassifier tagsClassifier, ExifTagPreferences tagPreferences,
+    public ImageSliceImpl(PictureData pictureData, ExifTagsClassifier tagsClassifier, ExifTagsPreferences tagPreferences,
                           ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
                           EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.pictureData = pictureData;
         pictureData.addPropertyChangeListener(this);
-        this.tagsClassifier = tagsClassifier;
-        this.tagPreferences = tagPreferences;
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
         this.edgesDetectorPreferences = edgesDetectorPreferences;
@@ -63,7 +60,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         propertyChangeSupport = new PropertyChangeSupport(this);
 
-        tagsRenderer = new TagsRendererSimpleBorder(fontService, pictureData, tagPreferences, tagsClassifier);
+        infoRenderer = new InfoRendererShadow(fontService, pictureData, tagPreferences, tagsClassifier);
     }
 
     @Override
@@ -124,7 +121,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private void checkBoundaries() {
         int pictureWidth = pictureData.getWidth();
         if (location != null && imageOffsetX > pictureWidth - location.width) {
-            imageOffsetX = pictureWidth - location.width;
+            imageOffsetX = (double) pictureWidth - location.width;
         }
         if (imageOffsetX < 0.0d) {
             imageOffsetX = 0.0d;
@@ -132,7 +129,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         int pictureHeight = pictureData.getHeight();
         if (location != null && imageOffsetY > pictureHeight - location.height) {
-            imageOffsetY = pictureHeight - location.height;
+            imageOffsetY = (double) pictureHeight - location.height;
         }
         if (imageOffsetY < 0.0d) {
             imageOffsetY = 0.0d;
@@ -209,26 +206,6 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     public boolean contains(int x, int y) {
         return location != null && location.x <= x && x < location.x + location.width && location.y <= y
                 && y < location.y + location.height;
-    }
-
-    private int getScreenCenteringX() {
-        int screenCenteringX = 0;
-        int locationWidth = location.width;
-        int pictureWidth = pictureData.getWidth();
-        if (locationWidth > pictureWidth) {
-            screenCenteringX = (locationWidth - pictureWidth) / 2;
-        }
-        return screenCenteringX;
-    }
-
-    private int getScreenCenteringY() {
-        int screenCenteringY = 0;
-        int locationHeight = location.height;
-        int pictureHeight = pictureData.getHeight();
-        if (locationHeight > pictureHeight) {
-            screenCenteringY = (locationHeight - pictureHeight) / 2;
-        }
-        return screenCenteringY;
     }
 
     @Override
@@ -323,7 +300,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         drawMiniatureWithPosition(g2d);
 
-        tagsRenderer.render(g2d, locationX, locationY + locationHeight - 1);
+        infoRenderer.render(g2d, locationX, locationY + locationHeight - 1);
 
         if (edgeCalculationInProgress) {
             Font font = fontService.getFont("Arial", Font.BOLD, 24);
@@ -434,7 +411,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
-            tagsRenderer.reset();
+            infoRenderer.reset();
         }
     }
 
@@ -497,6 +474,27 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         private int adapt(int coordinate) {
             return (int) (coordinate * getZoomLevel() / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
         }
+
+        private int getScreenCenteringX() {
+            int screenCenteringX = 0;
+            int locationWidth = location.width;
+            int pictureWidth = pictureData.getWidth();
+            if (locationWidth > pictureWidth) {
+                screenCenteringX = (locationWidth - pictureWidth) / 2;
+            }
+            return screenCenteringX;
+        }
+
+        private int getScreenCenteringY() {
+            int screenCenteringY = 0;
+            int locationHeight = location.height;
+            int pictureHeight = pictureData.getHeight();
+            if (locationHeight > pictureHeight) {
+                screenCenteringY = (locationHeight - pictureHeight) / 2;
+            }
+            return screenCenteringY;
+        }
+
     }
 
 }

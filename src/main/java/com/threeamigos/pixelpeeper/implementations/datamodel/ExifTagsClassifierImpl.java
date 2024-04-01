@@ -3,12 +3,12 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 import com.threeamigos.pixelpeeper.data.ExifMap;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TagsClassifierImpl implements TagsClassifier {
+public class ExifTagsClassifierImpl implements ExifTagsClassifier {
 
     private Collection<ExifTag> commonTags;
     private Map<ExifTag, Collection<ExifValue>> uncommonTagsToValues;

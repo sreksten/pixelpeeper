@@ -7,7 +7,7 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 import java.util.Collection;
 import java.util.Map;
 
-public interface TagsClassifier {
+public interface ExifTagsClassifier {
 
     /**
      * Splits tags in common tags (present in all images with the same value) and

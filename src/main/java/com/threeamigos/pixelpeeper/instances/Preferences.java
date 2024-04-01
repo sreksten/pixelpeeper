@@ -24,7 +24,7 @@ public class Preferences {
     public static final DragAndDropWindowPreferences DRAG_AND_DROP_WINDOW;
     public static final ImageHandlingPreferences IMAGE_HANDLING;
     public static final SessionPreferences SESSION;
-    public static final ExifTagPreferences EXIF_TAG;
+    public static final ExifTagsPreferences EXIF_TAG;
     public static final GridPreferences GRID;
     public static final CursorPreferences CURSOR;
     public static final EdgesDetectorPreferences EDGES_DETECTOR;

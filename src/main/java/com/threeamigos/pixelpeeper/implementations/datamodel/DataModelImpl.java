@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class DataModelImpl implements DataModel {
 
-    private final TagsClassifier tagsClassifier;
+    private final ExifTagsClassifier tagsClassifier;
     private final ImageSlices imageSlices;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final SessionPreferences sessionPreferences;
@@ -44,7 +44,7 @@ public class DataModelImpl implements DataModel {
 
     private final GroupedFilesByExifTag groupedFiles;
 
-    public DataModelImpl(TagsClassifier commonTagsHelper, ImageSlices imageSlicesManager,
+    public DataModelImpl(ExifTagsClassifier commonTagsHelper, ImageSlices imageSlicesManager,
                          ImageHandlingPreferences imageHandlingPreferences, SessionPreferences sessionPreferences,
                          EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader,
                          ExifTagsFilter exifTagsFilter, MessageHandler messageHandler) {
@@ -71,7 +71,7 @@ public class DataModelImpl implements DataModel {
     }
 
     private void loadFilesByName() {
-        List<File> files = sessionPreferences.getLastFilenames().stream().map(name -> new File(name))
+        List<File> files = sessionPreferences.getLastFilenames().stream().map(File::new)
                 .collect(Collectors.toList());
         loadFiles(files, sessionPreferences.getTagToGroupBy(), sessionPreferences.getTolerance(),
                 sessionPreferences.getTagToOrderBy(), sessionPreferences.getGroupIndex());
@@ -317,9 +317,9 @@ public class DataModelImpl implements DataModel {
         } else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
             calculateEdges();
         } else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationStarted(evt);
+            handleEdgeCalculationStarted();
         } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationCompleted(evt);
+            handleEdgeCalculationCompleted();
         } else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())
                 || CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED.equals(evt.getPropertyName())
                 || CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED.equals(evt.getPropertyName())) {
@@ -327,7 +327,7 @@ public class DataModelImpl implements DataModel {
         } else if (CommunicationMessages.MOUSE_PRESSED.equals(evt.getPropertyName())) {
             handleMousePressed(evt);
         } else if (CommunicationMessages.MOUSE_RELEASED.equals(evt.getPropertyName())) {
-            handleMouseReleased(evt);
+            handleMouseReleased();
         } else if (CommunicationMessages.MOUSE_DRAGGED.equals(evt.getPropertyName())) {
             handleMouseDragged(evt);
         }
@@ -337,11 +337,11 @@ public class DataModelImpl implements DataModel {
         requestRepaint();
     }
 
-    private void handleEdgeCalculationStarted(PropertyChangeEvent evt) {
+    private void handleEdgeCalculationStarted() {
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
     }
 
-    private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
+    private void handleEdgeCalculationCompleted() {
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
     }
 
@@ -356,7 +356,7 @@ public class DataModelImpl implements DataModel {
         }
     }
 
-    private void handleMouseReleased(PropertyChangeEvent evt) {
+    private void handleMouseReleased() {
         if (hasLoadedImages()) {
             if (isDrawing) {
                 imageSlices.stopAnnotating();

@@ -4,9 +4,9 @@ import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.data.ExifMap;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
-import com.threeamigos.pixelpeeper.implementations.datamodel.TagsClassifierImpl;
+import com.threeamigos.pixelpeeper.implementations.datamodel.ExifTagsClassifierImpl;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
 
 import javax.swing.*;
@@ -56,7 +56,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
             return Collections.emptyList();
         }
 
-        TagsClassifier tagsClassifier = new TagsClassifierImpl();
+        ExifTagsClassifier tagsClassifier = new ExifTagsClassifierImpl();
         tagsClassifier.classifyTags(groupingPanel.getMap().values());
 
         tagsToFilterBy = tagsClassifier.getUncommonTagsToValues(GroupingPanel.getGroupableTags());
@@ -184,7 +184,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
         List<ExifValue> values = new ArrayList<>(entry.getValue());
         values.sort(ExifValue.getComparator());
 
-        JList<ExifValue> list = new JList<ExifValue>((ExifValue[]) values.toArray());
+        JList<ExifValue> list = new JList<>(values.toArray(values.toArray(new ExifValue[0])));
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setFixedCellWidth(400);
         list.addListSelectionListener(e -> updateSelectionInformation());
@@ -286,14 +286,14 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
 
         for (Map.Entry<ExifValue, Collection<File>> entry : groupedFiles.entrySet()) {
             ExifValue tagValue = entry.getKey();
-            Collection<File> files = entry.getValue();
-            if (files.size() > MAX_SELECTABLE_FILES_PER_GROUP) {
+            int totalFiles = entry.getValue().size();
+            if (totalFiles > MAX_SELECTABLE_FILES_PER_GROUP) {
                 ExifTag tagToGroupBy = groupingPanel.getExifTagToGroupBy();
                 if (tagToGroupBy == null) {
                     newLabel += "Please add some filters or specify how to group files.";
                 } else {
                     newLabel += String.format(" Group for %s %s contains %d elements. Please add some filters.",
-                            tagToGroupBy.getDescription(), tagValue.getDescription(), files.size());
+                            tagToGroupBy.getDescription(), tagValue.getDescription(), totalFiles);
                 }
             }
         }

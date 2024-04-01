@@ -3,12 +3,12 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 import java.awt.*;
@@ -22,8 +22,8 @@ import java.util.List;
 
 public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
-    private final TagsClassifier commonTagsHelper;
-    private final ExifTagPreferences tagPreferences;
+    private final ExifTagsClassifier commonTagsHelper;
+    private final ExifTagsPreferences tagPreferences;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DrawingPreferences drawingPreferences;
     private final EdgesDetectorPreferences edgesDetectorPreferences;
@@ -37,7 +37,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     private ImageSlice activeSlice;
     private ImageSlice lastActiveSlice;
 
-    public ImageSlicesImpl(TagsClassifier commonTagsHelper, ExifTagPreferences tagPreferences,
+    public ImageSlicesImpl(ExifTagsClassifier commonTagsHelper, ExifTagsPreferences tagPreferences,
                            ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
                            EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.commonTagsHelper = commonTagsHelper;

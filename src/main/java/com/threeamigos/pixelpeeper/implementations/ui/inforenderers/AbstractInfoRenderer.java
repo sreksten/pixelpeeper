@@ -1,16 +1,16 @@
-package com.threeamigos.pixelpeeper.implementations.datamodel;
+package com.threeamigos.pixelpeeper.implementations.ui.inforenderers;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.data.PictureData;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsRenderer;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 
 import java.awt.*;
 
-abstract class AbstractTagsRenderer implements TagsRenderer {
+abstract class AbstractInfoRenderer implements InfoRenderer {
 
     protected static final ExifTag[] tagsToCheck = new ExifTag[]{
             ExifTag.CAMERA_MANUFACTURER,
@@ -46,28 +46,28 @@ abstract class AbstractTagsRenderer implements TagsRenderer {
             ExifTag.HDR
     };
 
-    protected final ExifTagPreferences tagPreferences;
-    protected final TagsClassifier tagsClassifier;
+    protected final ExifTagsPreferences exifTagsPreferences;
+    protected final ExifTagsClassifier exifTagsClassifier;
     protected final FontService fontService;
     protected final PictureData pictureData;
 
-    protected AbstractTagsRenderer(ExifTagPreferences tagPreferences, TagsClassifier tagsClassifier,
+    protected AbstractInfoRenderer(ExifTagsPreferences tagPreferences, ExifTagsClassifier tagsClassifier,
                                    FontService fontService, PictureData pictureData) {
-        this.tagPreferences = tagPreferences;
-        this.tagsClassifier = tagsClassifier;
+        this.exifTagsPreferences = tagPreferences;
+        this.exifTagsClassifier = tagsClassifier;
         this.fontService = fontService;
         this.pictureData = pictureData;
     }
 
     protected boolean isVisible(ExifTag exifTag) {
-        boolean tagVisible = tagPreferences.isTagsVisible();
-        if (tagVisible && !tagPreferences.isOverridingTagsVisibility()) {
-            ExifTagVisibility visibility = tagPreferences.getTagVisibility(exifTag);
-            tagVisible = visibility == ExifTagVisibility.YES ||
+        boolean exifTagVisible = exifTagsPreferences.isTagsVisible();
+        if (exifTagVisible && !exifTagsPreferences.isOverridingTagsVisibility()) {
+            ExifTagVisibility visibility = exifTagsPreferences.getTagVisibility(exifTag);
+            exifTagVisible = visibility == ExifTagVisibility.YES ||
                     visibility == ExifTagVisibility.ONLY_IF_DIFFERENT &&
-                            (tagsClassifier.getTotalMappedPictures() == 1 || !tagsClassifier.isCommonTag(exifTag));
+                            (exifTagsClassifier.getTotalMappedPictures() == 1 || !exifTagsClassifier.isCommonTag(exifTag));
         }
-        return tagVisible;
+        return exifTagVisible;
     }
 
     protected String getCompleteTag(ExifTag exifTag) {
@@ -79,17 +79,17 @@ abstract class AbstractTagsRenderer implements TagsRenderer {
     protected Font getFilenameFont() {
         return fontService.getFont("Arial", Font.BOLD, FILENAME_FONT_HEIGHT);
     }
-    
+
     protected Color getFilenameColor() {
         return Color.WHITE;
     }
 
-    protected Font getTagFont() {
+    protected Font getExifTagFont() {
         return fontService.getFont("Arial", Font.BOLD, TAG_FONT_HEIGHT);
     }
 
-    protected Color getTagColor(ExifTag exifTag) {
-        return tagsClassifier.getTotalMappedPictures() == 1 || tagsClassifier.isCommonTag(exifTag)
+    protected Color getExifTagColor(ExifTag exifTag) {
+        return exifTagsClassifier.getTotalMappedPictures() == 1 || exifTagsClassifier.isCommonTag(exifTag)
                 ? Color.LIGHT_GRAY
                 : Color.YELLOW;
     }

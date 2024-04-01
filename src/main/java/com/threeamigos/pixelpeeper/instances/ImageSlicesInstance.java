@@ -5,7 +5,7 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
 
 public class ImageSlicesInstance {
 
-    private static final ImageSlices instance = new ImageSlicesImpl(TagsClassifierInstance.get(), Preferences.EXIF_TAG, Preferences.IMAGE_HANDLING,
+    private static final ImageSlices instance = new ImageSlicesImpl(ExifTagsClassifierInstance.get(), Preferences.EXIF_TAG, Preferences.IMAGE_HANDLING,
             Preferences.DRAWING, Preferences.EDGES_DETECTOR, FontServiceInstance.get());
 
     public static ImageSlices get() {

@@ -2,7 +2,7 @@ package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 import java.awt.*;
 
-public interface TagsRenderer {
+public interface InfoRenderer {
 
     int HSPACING = 5;
     int VSPACING = 5;

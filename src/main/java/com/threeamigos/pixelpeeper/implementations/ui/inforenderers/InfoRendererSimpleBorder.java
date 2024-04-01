@@ -1,21 +1,21 @@
-package com.threeamigos.pixelpeeper.implementations.datamodel;
+package com.threeamigos.pixelpeeper.implementations.ui.inforenderers;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.PictureData;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.TagsRenderer;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagPreferences;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
+import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TagsRendererSimpleBorder extends AbstractTagsRenderer implements TagsRenderer {
+public class InfoRendererSimpleBorder extends AbstractInfoRenderer implements InfoRenderer {
 
-    TagsRendererSimpleBorder(FontService fontService, PictureData pictureData,
-                             ExifTagPreferences tagPreferences, TagsClassifier commonTagsHelper) {
+    InfoRendererSimpleBorder(FontService fontService, PictureData pictureData,
+                             ExifTagsPreferences tagPreferences, ExifTagsClassifier commonTagsHelper) {
         super(tagPreferences, commonTagsHelper, fontService, pictureData);
     }
 
@@ -28,8 +28,8 @@ public class TagsRendererSimpleBorder extends AbstractTagsRenderer implements Ta
         x = x + HSPACING;
         y = y - VSPACING - FILENAME_FONT_HEIGHT;
 
-        if (tagPreferences.isTagsVisible()) {
-            g2d.setFont(getTagFont());
+        if (exifTagsPreferences.isTagsVisible()) {
+            g2d.setFont(getExifTagFont());
             List<ExifTag> exifTags = new LinkedList<>();
             for (ExifTag exifTag : tagsToCheck) {
                 exifTags.add(0, exifTag);
@@ -47,6 +47,6 @@ public class TagsRendererSimpleBorder extends AbstractTagsRenderer implements Ta
     }
 
     private void info(ExifTag exifTag, Graphics2D g2d, final int x, final int y) {
-        BorderedStringRenderer.drawString(g2d, getCompleteTag(exifTag), x, y, Color.BLACK, getTagColor(exifTag));
+        BorderedStringRenderer.drawString(g2d, getCompleteTag(exifTag), x, y, Color.BLACK, getExifTagColor(exifTag));
     }
 }
