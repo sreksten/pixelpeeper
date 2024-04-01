@@ -1,9 +1,9 @@
 package com.threeamigos.pixelpeeper.interfaces.edgedetect.ui;
 
-import java.awt.Component;
+import java.awt.*;
 
 public interface EdgesDetectorPreferencesSelectorFactory {
 
-	public EdgesDetectorPreferencesSelector createSelector(Component component);
+    EdgesDetectorPreferencesSelector createSelector(Component component);
 
 }

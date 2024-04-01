@@ -2,16 +2,16 @@ package com.threeamigos.pixelpeeper.interfaces.preferences;
 
 public enum ExifReaderFlavour {
 
-	DREW_NOAKES("Drew Noakes' library");
+    DREW_NOAKES("Drew Noakes' library");
 
-	private String description;
+    private final String description;
 
-	private ExifReaderFlavour(String description) {
-		this.description = description;
-	}
+    ExifReaderFlavour(String description) {
+        this.description = description;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
 }

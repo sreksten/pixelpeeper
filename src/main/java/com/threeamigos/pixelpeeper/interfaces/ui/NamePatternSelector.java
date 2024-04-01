@@ -1,9 +1,9 @@
 package com.threeamigos.pixelpeeper.interfaces.ui;
 
-import java.awt.Component;
+import java.awt.*;
 
 public interface NamePatternSelector {
 
-	public void selectNamePattern(Component component);
-	
+    void selectNamePattern(Component component);
+
 }

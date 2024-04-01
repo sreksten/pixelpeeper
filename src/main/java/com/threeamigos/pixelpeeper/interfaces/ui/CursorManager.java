@@ -1,18 +1,18 @@
 package com.threeamigos.pixelpeeper.interfaces.ui;
 
-import java.awt.Cursor;
-import java.beans.PropertyChangeListener;
-
 import com.threeamigos.common.util.interfaces.PropertyChangeAware;
 import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+
 public interface CursorManager extends PropertyChangeAware, PropertyChangeListener, HintsProducer<String> {
 
-	public int getMaxCursorSize();
+    int getMaxCursorSize();
 
-	public Cursor getCursor();
+    Cursor getCursor();
 
-	public InputConsumer getInputConsumer();
+    InputConsumer getInputConsumer();
 
 }

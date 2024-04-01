@@ -4,14 +4,14 @@ import com.threeamigos.common.util.interfaces.preferences.flavours.SecondaryWind
 
 public interface DragAndDropWindowPreferences extends SecondaryWindowPreferences {
 
-	public static final boolean OPEN_IMMEDIATELY_DEFAULT = true;
+    boolean OPEN_IMMEDIATELY_DEFAULT = true;
 
-	public boolean isOpenImmediately();
+    boolean isOpenImmediately();
 
-	public void setOpenImmediately(boolean openImmediately);
+    void setOpenImmediately(boolean openImmediately);
 
-	default String getDescription() {
-		return "Drag and drop window preferences";
-	}
+    default String getDescription() {
+        return "Drag and drop window preferences";
+    }
 
 }

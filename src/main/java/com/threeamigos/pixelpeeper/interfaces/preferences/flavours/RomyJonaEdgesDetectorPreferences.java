@@ -4,21 +4,21 @@ import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
 public interface RomyJonaEdgesDetectorPreferences extends Preferences {
 
-	public static final int PUPPAMENTO_PREFERENCES_DEFAULT = 3;
-	public static final boolean A_NASTRO_PREFERENCES_DEFAULT = true;
+    int PUPPAMENTO_PREFERENCES_DEFAULT = 3;
+    boolean A_NASTRO_PREFERENCES_DEFAULT = true;
 
-	default String getDescription() {
-		return "Romy Jona Edges Detector preferences";
-	}
+    default String getDescription() {
+        return "Romy Jona Edges Detector preferences";
+    }
 
-	public void setPuppamento(int puppamento);
+    void setPuppamento(int puppamento);
 
-	public int getPuppamento();
+    int getPuppamento();
 
-	public void setANastro(boolean aNastro);
+    void setANastro(boolean aNastro);
 
-	public boolean isANastro();
+    boolean isANastro();
 
-	void loadDefaultValues();
+    void loadDefaultValues();
 
 }

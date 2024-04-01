@@ -151,10 +151,6 @@ class GroupingPanel extends JPanel {
         groupByComboBox.addActionListener(actionListener);
     }
 
-    void addToleranceActionListener(ActionListener actionListener) {
-        groupByComboBox.addActionListener(actionListener);
-    }
-
     ExifTag getExifTagToGroupBy() {
         return (ExifTag) groupByComboBox.getSelectedItem();
     }
@@ -168,14 +164,14 @@ class GroupingPanel extends JPanel {
     }
 
     private JComboBox<ExifTag> createGroupByComboBox() {
-        ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
-        for (int i = 0; i < groupableTags.size(); i++) {
-            listElements[i + 1] = groupableTags.get(i);
-        }
-        return new JComboBox<>(listElements);
+        return createComboBox();
     }
 
     private JComboBox<ExifTag> createOrderByComboBox() {
+        return createComboBox();
+    }
+
+    private JComboBox<ExifTag> createComboBox() {
         ExifTag[] listElements = new ExifTag[1 + groupableTags.size()];
         for (int i = 0; i < groupableTags.size(); i++) {
             listElements[i + 1] = groupableTags.get(i);

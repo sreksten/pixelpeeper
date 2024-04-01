@@ -4,12 +4,12 @@ import java.awt.image.BufferedImage;
 
 public interface EdgesDetector {
 
-	public void setSourceImage(BufferedImage sourceImage);
+    void setSourceImage(BufferedImage sourceImage);
 
-	public void process();
+    void process();
 
-	public void abort();
+    void abort();
 
-	public BufferedImage getEdgesImage();
+    BufferedImage getEdgesImage();
 
 }

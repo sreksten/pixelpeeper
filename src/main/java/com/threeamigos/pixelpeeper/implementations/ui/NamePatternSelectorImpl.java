@@ -27,7 +27,7 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
 
         String[] options = {OK_OPTION, CANCEL_OPTION};
 
-        JOptionPane optionPane = new JOptionPane(createPreferencesPanel(parentComponent), -1,
+        JOptionPane optionPane = new JOptionPane(createPreferencesPanel(), JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION, null, options, options[1]);
 
         JDialog dialog = optionPane.createDialog(parentComponent, "Select name pattern");
@@ -42,17 +42,15 @@ public class NamePatternSelectorImpl implements NamePatternSelector {
         dialog.dispose();
     }
 
-    private final JPanel createPreferencesPanel(Component component) {
+    private JPanel createPreferencesPanel() {
 
         textField = new JTextField();
         textField.setText(namePatternPreferences.getNamePattern());
         ExifTag[] comboBoxValues = new ExifTag[ExifTag.values().length + 1];
         comboBoxValues[0] = null;
         ExifTag[] exifTagValues = ExifTag.values();
-        for (int i = 0; i < exifTagValues.length; i++) {
-            comboBoxValues[i + 1] = exifTagValues[i];
-        }
-        JComboBox<ExifTag> comboBox = new JComboBox<ExifTag>(comboBoxValues);
+        System.arraycopy(exifTagValues, 0, comboBoxValues, 1, exifTagValues.length);
+        JComboBox<ExifTag> comboBox = new JComboBox<>(comboBoxValues);
         comboBox.addActionListener(e -> {
             ExifTag selectedItem = (ExifTag) comboBox.getSelectedItem();
             if (selectedItem != null) {

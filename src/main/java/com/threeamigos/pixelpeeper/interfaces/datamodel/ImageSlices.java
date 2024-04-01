@@ -30,9 +30,6 @@ public interface ImageSlices extends PropertyChangeListener {
 
     /**
      * To be used when the main window is resized
-     *
-     * @param panelWidth
-     * @param panelHeight
      */
     void reframe(int panelWidth, int panelHeight);
 

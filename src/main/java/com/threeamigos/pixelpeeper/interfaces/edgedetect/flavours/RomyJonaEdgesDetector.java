@@ -4,12 +4,12 @@ import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 
 public interface RomyJonaEdgesDetector extends EdgesDetector {
 
-	public void setPuppamento(int puppamento);
+    void setPuppamento(int puppamento);
 
-	public int getPuppamento();
+    int getPuppamento();
 
-	public void setANastro(boolean aNastro);
+    void setANastro(boolean aNastro);
 
-	public boolean isANastro();
+    boolean isANastro();
 
 }

@@ -5,26 +5,26 @@ import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
 
 public interface EdgesDetectorPreferences extends Preferences {
 
-	public static final boolean SHOW_EDGES_DEFAULT = false;
-	public static final int NO_EDGES_TRANSPARENCY = 0;
-	public static final int EDGES_TRANSPARENCY_DEFAULT = 30;
-	public static final int TOTAL_EDGES_TRANSPARENCY = 100;
-	public static final EdgesDetectorFlavour EDGES_DETECTOR_FLAVOUR_DEFAULT = EdgesDetectorFlavour.CANNY_EDGES_DETECTOR;
+    boolean SHOW_EDGES_DEFAULT = false;
+    int NO_EDGES_TRANSPARENCY = 0;
+    int EDGES_TRANSPARENCY_DEFAULT = 30;
+    int TOTAL_EDGES_TRANSPARENCY = 100;
+    EdgesDetectorFlavour EDGES_DETECTOR_FLAVOUR_DEFAULT = EdgesDetectorFlavour.CANNY_EDGES_DETECTOR;
 
-	default String getDescription() {
-		return "Edges Detector preferences";
-	}
+    default String getDescription() {
+        return "Edges Detector preferences";
+    }
 
-	public void setShowEdges(boolean showEdges);
+    void setShowEdges(boolean showEdges);
 
-	public boolean isShowEdges();
+    boolean isShowEdges();
 
-	public void setEdgesTransparency(int edgesTransparency);
+    void setEdgesTransparency(int edgesTransparency);
 
-	public int getEdgesTransparency();
+    int getEdgesTransparency();
 
-	public void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour);
+    void setEdgesDetectorFlavour(EdgesDetectorFlavour flavour);
 
-	public EdgesDetectorFlavour getEdgesDetectorFlavour();
+    EdgesDetectorFlavour getEdgesDetectorFlavour();
 
 }

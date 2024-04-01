@@ -6,77 +6,77 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
 
 public interface ImageHandlingPreferences extends Preferences {
 
-	public static final boolean AUTOROTATION_DEFAULT = true;
-	public static final Disposition DISPOSITION_DEFAULT = Disposition.VERTICAL;
-	public static final float MIN_ZOOM_LEVEL = 10.0f;
-	public static final float ZOOM_LEVEL_DEFAULT = 100.0f;
-	public static final float MAX_ZOOM_LEVEL = 100.0f;
-	public static final float ZOOM_LEVEL_STEP = 10.0f;
-	public static final boolean NORMALIZED_FOR_CROP_DEFAULT = false;
-	public static final boolean NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT = false;
-	public static final boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;
-	public static final boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
-	public static final boolean POSITION_MINIATURE_VISIBLE_DEFAULT = false;
-	public static final ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.APACHE_COMMONS_IMAGING;
-	public static final ExifReaderFlavour METADATA_READER_FLAVOUR_DEFAULT = ExifReaderFlavour.DREW_NOAKES;
+    boolean AUTOROTATION_DEFAULT = true;
+    Disposition DISPOSITION_DEFAULT = Disposition.VERTICAL;
+    float MIN_ZOOM_LEVEL = 10.0f;
+    float ZOOM_LEVEL_DEFAULT = 100.0f;
+    float MAX_ZOOM_LEVEL = 100.0f;
+    float ZOOM_LEVEL_STEP = 10.0f;
+    boolean NORMALIZED_FOR_CROP_DEFAULT = false;
+    boolean NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT = false;
+    boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;
+    boolean MOVEMENT_APPLIED_TO_ALL_IMAGES_DEFAULT = true;
+    boolean POSITION_MINIATURE_VISIBLE_DEFAULT = false;
+    ImageReaderFlavour IMAGE_READER_FLAVOUR_DEFAULT = ImageReaderFlavour.APACHE_COMMONS_IMAGING;
+    ExifReaderFlavour METADATA_READER_FLAVOUR_DEFAULT = ExifReaderFlavour.DREW_NOAKES;
 
-	default String getDescription() {
-		return "Image handling preferences";
-	}
+    default String getDescription() {
+        return "Image handling preferences";
+    }
 
-	public void setAutorotation(boolean autorotation);
+    void setAutorotation(boolean autorotation);
 
-	public boolean isAutorotation();
+    boolean isAutorotation();
 
-	public void setDisposition(Disposition disposition);
+    void setDisposition(Disposition disposition);
 
-	public Disposition getDisposition();
+    Disposition getDisposition();
 
-	public void setZoomLevel(int zoomLevel);
+    void setZoomLevel(int zoomLevel);
 
-	public int getZoomLevel();
+    int getZoomLevel();
 
-	public void setNormalizedForCrop(boolean adaptToCrop);
+    void setNormalizedForCrop(boolean adaptToCrop);
 
-	public boolean isNormalizedForCrop();
+    boolean isNormalizedForCrop();
 
-	public void setNormalizedForFocalLength(boolean adaptToFocalLength);
+    void setNormalizedForFocalLength(boolean adaptToFocalLength);
 
-	public boolean isNormalizedForFocalLength();
+    boolean isNormalizedForFocalLength();
 
-	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
+    void setMovementAppliedToAllImages(boolean movementAppliesToAllImages);
 
-	public boolean isMovementAppliedToAllImages();
+    boolean isMovementAppliedToAllImages();
 
-	public void setRelativeMovement(boolean movementInPercentage);
+    void setRelativeMovement(boolean movementInPercentage);
 
-	public boolean isRelativeMovement();
+    boolean isRelativeMovement();
 
-	public void setPositionMiniatureVisible(boolean positionMiniatureVisible);
+    void setPositionMiniatureVisible(boolean positionMiniatureVisible);
 
-	public boolean isPositionMiniatureVisible();
+    boolean isPositionMiniatureVisible();
 
-	public void setImageReaderFlavour(ImageReaderFlavour imageReaderFlavour);
+    void setImageReaderFlavour(ImageReaderFlavour imageReaderFlavour);
 
-	public ImageReaderFlavour getImageReaderFlavour();
+    ImageReaderFlavour getImageReaderFlavour();
 
-	public void setExifReaderFlavour(ExifReaderFlavour exifReaderFlavour);
+    void setExifReaderFlavour(ExifReaderFlavour exifReaderFlavour);
 
-	public ExifReaderFlavour getExifReaderFlavour();
+    ExifReaderFlavour getExifReaderFlavour();
 
-	public enum Disposition {
+    enum Disposition {
 
-		VERTICAL("Vertical"), HORIZONTAL("Horizontal"), GRID("Grid");
+        VERTICAL("Vertical"), HORIZONTAL("Horizontal"), GRID("Grid");
 
-		private String description;
+        private final String description;
 
-		private Disposition(String description) {
-			this.description = description;
-		}
+        Disposition(String description) {
+            this.description = description;
+        }
 
-		public String getDescription() {
-			return description;
-		}
-	}
+        public String getDescription() {
+            return description;
+        }
+    }
 
 }

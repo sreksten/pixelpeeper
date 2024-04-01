@@ -201,11 +201,6 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         }
     }
 
-    private void selectColor(Color color, boolean isSelected) {
-        coloredButtons.forEach(b -> b.setSelected(color.equals(b.getColor()) && isSelected));
-        drawingPreferences.setColor(color);
-    }
-
     private ColoredButton createColoredButton(Color color) {
         ColoredButton button = new ColoredButton(color);
         coloredButtons.add(button);
@@ -252,6 +247,11 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         @Override
         public Dimension getSize() {
             return new Dimension(20, 20);
+        }
+
+        private void selectColor(Color color, boolean isSelected) {
+            coloredButtons.forEach(b -> b.setSelected(color.equals(b.getColor()) && isSelected));
+            drawingPreferences.setColor(color);
         }
 
         @Override

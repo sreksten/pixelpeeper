@@ -4,24 +4,24 @@ import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 
 public interface CannyEdgesDetector extends EdgesDetector {
 
-	public float getLowThreshold();
+    float getLowThreshold();
 
-	public void setLowThreshold(float lowThreshold);
+    void setLowThreshold(float lowThreshold);
 
-	public float getHighThreshold();
+    float getHighThreshold();
 
-	public void setHighThreshold(float highThreshold);
+    void setHighThreshold(float highThreshold);
 
-	public float getGaussianKernelRadius();
+    float getGaussianKernelRadius();
 
-	public void setGaussianKernelRadius(float gaussianKernelRadius);
+    void setGaussianKernelRadius(float gaussianKernelRadius);
 
-	public int getGaussianKernelWidth();
+    int getGaussianKernelWidth();
 
-	public void setGaussianKernelWidth(int gaussianKernelWidth);
+    void setGaussianKernelWidth(int gaussianKernelWidth);
 
-	public boolean isContrastNormalized();
+    boolean isContrastNormalized();
 
-	public void setContrastNormalized(boolean contrastNormalized);
+    void setContrastNormalized(boolean contrastNormalized);
 
 }
