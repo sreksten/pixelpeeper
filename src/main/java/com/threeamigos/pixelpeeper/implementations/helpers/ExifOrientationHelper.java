@@ -5,6 +5,9 @@ import java.awt.image.WritableRaster;
 
 public class ExifOrientationHelper {
 
+    private ExifOrientationHelper() {
+    }
+
     public static final int AS_IS = 1;
     public static final int FLIP_HORIZONTALLY = 2;
     public static final int CLOCKWISE_180 = 3;

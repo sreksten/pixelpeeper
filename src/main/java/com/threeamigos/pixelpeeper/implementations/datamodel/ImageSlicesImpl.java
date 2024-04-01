@@ -8,7 +8,6 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
@@ -16,15 +15,13 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
     private final ExifTagsClassifier exifTagsClassifier;
-    private final ExifTagsPreferences tagPreferences;
     private final InfoRendererFactory infoRendererFactory;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DrawingPreferences drawingPreferences;
@@ -39,13 +36,10 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     private ImageSlice activeSlice;
     private ImageSlice lastActiveSlice;
 
-    public ImageSlicesImpl(ExifTagsClassifier exifTagsClassifier, ExifTagsPreferences tagPreferences,
-                           InfoRendererFactory infoRendererFactory,
+    public ImageSlicesImpl(ExifTagsClassifier exifTagsClassifier, InfoRendererFactory infoRendererFactory,
                            ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
                            EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.exifTagsClassifier = exifTagsClassifier;
-        this.tagPreferences = tagPreferences;
-        tagPreferences.addPropertyChangeListener(this);
         this.infoRendererFactory = infoRendererFactory;
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
@@ -95,54 +89,55 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         if (activeSlice == null) {
             return;
         }
+        activeSlice.move(deltaX, deltaY);
         if (movementAppliesToAllImages) {
+            Collection<ImageSlice> remainingSlices = imageSlices.stream()
+                    .filter(s -> !activeSlice.equals(s))
+                    .collect(Collectors.toList());
             if (imageHandlingPreferences.isRelativeMovement()) {
-
-                int notVisibleActiveSliceWidth = activeSlice.getPictureData().getWidth()
-                        - activeSlice.getLocation().width;
-                int notVisibleActiveSliceHeight = activeSlice.getPictureData().getHeight()
-                        - activeSlice.getLocation().height;
-
-                for (ImageSlice currentSlice : imageSlices) {
-                    if (currentSlice == activeSlice) {
-                        currentSlice.move(deltaX, deltaY);
-                    } else {
-                        int notVisibleCurrentSliceWidth = currentSlice.getPictureData().getWidth()
-                                - currentSlice.getLocation().width;
-                        double offsetX;
-                        if (notVisibleCurrentSliceWidth > 0) {
-                            if (notVisibleActiveSliceWidth < 0) {
-                                offsetX = deltaX;
-                            } else {
-                                offsetX = (double) deltaX * notVisibleCurrentSliceWidth / notVisibleActiveSliceWidth;
-                            }
-                        } else {
-                            offsetX = 0.0d;
-                        }
-
-                        int notVisibleCurrentSliceHeight = currentSlice.getPictureData().getHeight()
-                                - currentSlice.getLocation().height;
-                        double offsetY;
-                        if (notVisibleCurrentSliceHeight > 0) {
-                            if (notVisibleActiveSliceHeight < 0) {
-                                offsetY = deltaY;
-                            } else {
-                                offsetY = (double) deltaY * notVisibleCurrentSliceHeight / notVisibleActiveSliceHeight;
-                            }
-                        } else {
-                            offsetY = 0.0d;
-                        }
-
-                        currentSlice.move(offsetX, offsetY);
-                    }
-                }
+                moveOtherSlicesRelative(remainingSlices, deltaX, deltaY);
             } else {
-                for (ImageSlice imageSlice : imageSlices) {
+                for (ImageSlice imageSlice : remainingSlices) {
                     imageSlice.move(deltaX, deltaY);
                 }
             }
-        } else {
-            activeSlice.move(deltaX, deltaY);
+        }
+    }
+
+    private void moveOtherSlicesRelative(Collection<ImageSlice> remainingSlices, int deltaX, int deltaY) {
+        int notVisibleActiveSliceWidth = activeSlice.getPictureData().getWidth()
+                - activeSlice.getLocation().width;
+        int notVisibleActiveSliceHeight = activeSlice.getPictureData().getHeight()
+                - activeSlice.getLocation().height;
+
+        for (ImageSlice currentSlice : remainingSlices) {
+            int notVisibleCurrentSliceWidth = currentSlice.getPictureData().getWidth()
+                    - currentSlice.getLocation().width;
+            double offsetX;
+            if (notVisibleCurrentSliceWidth > 0) {
+                if (notVisibleActiveSliceWidth < 0) {
+                    offsetX = deltaX;
+                } else {
+                    offsetX = (double) deltaX * notVisibleCurrentSliceWidth / notVisibleActiveSliceWidth;
+                }
+            } else {
+                offsetX = 0.0d;
+            }
+
+            int notVisibleCurrentSliceHeight = currentSlice.getPictureData().getHeight()
+                    - currentSlice.getLocation().height;
+            double offsetY;
+            if (notVisibleCurrentSliceHeight > 0) {
+                if (notVisibleActiveSliceHeight < 0) {
+                    offsetY = deltaY;
+                } else {
+                    offsetY = (double) deltaY * notVisibleCurrentSliceHeight / notVisibleActiveSliceHeight;
+                }
+            } else {
+                offsetY = 0.0d;
+            }
+
+            currentSlice.move(offsetX, offsetY);
         }
     }
 
@@ -153,30 +148,12 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
     @Override
     public void updateZoomLevel() {
-        float baseZoomLevel = imageHandlingPreferences.getZoomLevel();
 
-        Float minCropFactor = null;
-        if (imageHandlingPreferences.isNormalizedForCrop()) {
-            for (ImageSlice imageSlice : imageSlices) {
-                Float cropFactor = imageSlice.getPictureData().getCropFactor();
-                if (minCropFactor == null || cropFactor != null && minCropFactor > cropFactor) {
-                    minCropFactor = cropFactor;
-                }
-            }
-        }
-
-        Float minFocalLength = null;
-        if (imageHandlingPreferences.isNormalizedForFocalLength()) {
-            for (ImageSlice imageSlice : imageSlices) {
-                Float focalLength = imageSlice.getPictureData().getFocalLength35mmEquivalent();
-                if (minFocalLength == null || focalLength != null && minFocalLength > focalLength) {
-                    minFocalLength = focalLength;
-                }
-            }
-        }
+        Float minCropFactor = calculateMinCropFactor();
+        Float minFocalLength = calculateMinFocalLength();
 
         for (ImageSlice imageSlice : imageSlices) {
-            float zoomLevel = baseZoomLevel;
+            float zoomLevel = imageHandlingPreferences.getZoomLevel();
             if (imageHandlingPreferences.isNormalizedForCrop()) {
                 Float cropFactor = imageSlice.getPictureData().getCropFactor();
                 if (minCropFactor != null && cropFactor != null) {
@@ -191,6 +168,32 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
             }
             imageSlice.changeZoomLevel(zoomLevel);
         }
+    }
+
+    private Float calculateMinCropFactor() {
+        Float minCropFactor = null;
+        if (imageHandlingPreferences.isNormalizedForCrop()) {
+            for (ImageSlice imageSlice : imageSlices) {
+                Float cropFactor = imageSlice.getPictureData().getCropFactor();
+                if (minCropFactor == null || cropFactor != null && minCropFactor > cropFactor) {
+                    minCropFactor = cropFactor;
+                }
+            }
+        }
+        return minCropFactor;
+    }
+
+    private Float calculateMinFocalLength() {
+        Float minFocalLength = null;
+        if (imageHandlingPreferences.isNormalizedForFocalLength()) {
+            for (ImageSlice imageSlice : imageSlices) {
+                Float focalLength = imageSlice.getPictureData().getFocalLength35mmEquivalent();
+                if (minFocalLength == null || focalLength != null && minFocalLength > focalLength) {
+                    minFocalLength = focalLength;
+                }
+            }
+        }
+        return minFocalLength;
     }
 
     @Override

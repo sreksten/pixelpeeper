@@ -41,8 +41,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private boolean selected;
 
     private boolean isDrawing;
-    private Drawing currentDrawing;
-    private final List<Drawing> drawings;
+    private Doodle currentDrawing;
+    private final List<Doodle> doodles;
 
     private boolean edgeCalculationInProgress;
 
@@ -58,8 +58,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         this.fontService = fontService;
         this.infoRendererFactory = infoRendererFactory;
 
-        currentDrawing = new Drawing();
-        drawings = new ArrayList<>();
+        currentDrawing = new Doodle();
+        doodles = new ArrayList<>();
 
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
@@ -87,8 +87,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     @Override
     public void startDrawing() {
         isDrawing = true;
-        currentDrawing = new Drawing();
-        drawings.add(currentDrawing);
+        currentDrawing = new Doodle();
+        doodles.add(currentDrawing);
     }
 
     @Override
@@ -103,8 +103,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     @Override
     public void undoLastDrawing() {
-        if (!drawings.isEmpty()) {
-            drawings.remove(drawings.size() - 1);
+        if (!doodles.isEmpty()) {
+            doodles.remove(doodles.size() - 1);
         }
         if (isDrawing) {
             startDrawing();
@@ -113,7 +113,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     @Override
     public void clearDrawings() {
-        drawings.clear();
+        doodles.clear();
         if (isDrawing) {
             startDrawing();
         }
@@ -234,7 +234,6 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         }
 
         int imageSliceWidth = Math.min(locationWidth, pictureWidth);
-        int imageSliceHeight = Math.min(locationHeight, pictureHeight);
         int imageSliceStartX = (int) imageOffsetX;
         if (imageSliceStartX < 0) {
             imageSliceStartX = 0;
@@ -242,6 +241,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         if (imageSliceStartX + imageSliceWidth > pictureWidth) {
             imageSliceStartX = pictureWidth - imageSliceWidth;
         }
+
+        int imageSliceHeight = Math.min(locationHeight, pictureHeight);
         int imageSliceStartY = (int) imageOffsetY;
         if (imageSliceStartY < 0) {
             imageSliceStartY = 0;
@@ -279,6 +280,17 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             pictureY += zoomOffsetY;
         }
 
+        drawDetectedEdges(g2d, edgesImage, subImage, pictureX, pictureY);
+        drawSelectedRectangle(g2d, locationX, locationY, locationWidth, locationHeight);
+        drawDoodles(g2d, zoomOffsetX, zoomOffsetY);
+        drawMiniatureWithPosition(g2d);
+        drawInfos(g2d, locationX, locationY, locationHeight);
+        drawEdgeCalculationInProgessNotice(g2d, locationX, locationY);
+
+        g2d.setClip(previousClip);
+    }
+
+    private void drawDetectedEdges(Graphics2D g2d, BufferedImage edgesImage, BufferedImage subImage, int pictureX, int pictureY) {
         if (!edgesDetectorPreferences.isShowEdges()
                 || edgesDetectorPreferences.getEdgesTransparency() == EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY
                 || edgesImage == null) {
@@ -289,31 +301,35 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             ImageDrawHelper.drawTransparentImageAtop(g2d, subImage, edgesImage, pictureX, pictureY,
                     edgesDetectorPreferences.getEdgesTransparency());
         }
+    }
 
+    private void drawSelectedRectangle(Graphics2D g2d, int locationX, int locationY, int locationWidth, int locationHeight) {
         if (selected) {
             g2d.setColor(Color.RED);
             g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
         }
+    }
 
-        for (Drawing drawing : drawings) {
-            drawing.paint(g2d, zoomOffsetX, zoomOffsetY);
-        }
-
-        drawMiniatureWithPosition(g2d);
-
-        if (infoRenderer == null) {
-            infoRenderer = infoRendererFactory.getInfoRenderer(pictureData, exifTagsClassifier);
-        }
-        infoRenderer.render(g2d, locationX, locationY + locationHeight - 1);
-
+    private void drawEdgeCalculationInProgessNotice(Graphics2D g2d, int locationX, int locationY) {
         if (edgeCalculationInProgress) {
             Font font = fontService.getFont("Arial", Font.BOLD, 24);
             g2d.setFont(font);
             BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
                     Color.BLACK, Color.WHITE);
         }
+    }
 
-        g2d.setClip(previousClip);
+    private void drawInfos(Graphics2D g2d, int locationX, int locationY, int locationHeight) {
+        if (infoRenderer == null) {
+            infoRenderer = infoRendererFactory.getInfoRenderer(pictureData, exifTagsClassifier);
+        }
+        infoRenderer.render(g2d, locationX, locationY + locationHeight - 1);
+    }
+
+    private void drawDoodles(Graphics2D g2d, int zoomOffsetX, int zoomOffsetY) {
+        for (Doodle doodle : doodles) {
+            doodle.paint(g2d, zoomOffsetX, zoomOffsetY);
+        }
     }
 
     private void drawMiniatureWithPosition(Graphics2D g2d) {
@@ -431,13 +447,13 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, this);
     }
 
-    private class Drawing {
+    private class Doodle {
         private final Color color;
         private final int brushSize;
         private final int transparency;
         private final List<Point> points;
 
-        Drawing() {
+        Doodle() {
             color = drawingPreferences.getColor();
             brushSize = drawingPreferences.getBrushSize();
             transparency = drawingPreferences.getTransparency();

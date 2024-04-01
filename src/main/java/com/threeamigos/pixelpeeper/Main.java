@@ -71,6 +71,7 @@ public class Main {
         Preferences.GRID.addPropertyChangeListener(imageViewerCanvas);
         Preferences.GRID.addPropertyChangeListener(GridPluginInstance.get());
         Preferences.EXIF_TAG.addPropertyChangeListener(imageViewerCanvas);
+        Preferences.EXIF_TAG.addPropertyChangeListener(ImageSlicesInstance.get());
         Preferences.EDGES_DETECTOR.addPropertyChangeListener(dataModel);
         Preferences.EDGES_DETECTOR.addPropertyChangeListener(EdgesDetectorPluginInstance.get());
         CursorManagerInstance.get().addPropertyChangeListener(imageViewerCanvas);

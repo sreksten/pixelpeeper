@@ -8,6 +8,9 @@ import java.util.List;
 
 public class RectanglesProducer {
 
+    private RectanglesProducer() {
+    }
+
     public static List<Rectangle> createRectangles(final int panelWidth, final int panelHeight,
                                                    final Disposition disposition, final int totalSlices) {
         switch (disposition) {
@@ -56,12 +59,12 @@ public class RectanglesProducer {
         int currentScreenOffsetY = 0;
         int currentSlice = 0;
 
-        loop:
         for (int row = 0; row < rows; row++) {
             currentScreenOffsetX = 0;
             for (int column = 0; column < columns; column++) {
                 if (currentSlice == totalSlices) {
-                    break loop;
+                    // We're done
+                    return slices;
                 }
                 slices.add(new Rectangle(currentScreenOffsetX, currentScreenOffsetY, sliceWidth, sliceHeight));
                 currentScreenOffsetX += sliceWidth;

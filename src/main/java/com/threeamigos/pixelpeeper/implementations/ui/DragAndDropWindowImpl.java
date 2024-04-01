@@ -41,8 +41,6 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
     private final List<File> allFiles = new ArrayList<>();
 
-    private DecorativePanel decorativePanel;
-    private JPanel commandsPanel;
     private GroupingPanel groupingPanel;
     private JCheckBox sendImmediatelyCheckbox;
     private JButton sendButton;
@@ -82,8 +80,8 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
         setLayout(new BorderLayout());
 
-        decorativePanel = new DecorativePanel();
-        commandsPanel = buildCommandsPanel();
+        DecorativePanel decorativePanel = new DecorativePanel();
+        JPanel commandsPanel = buildCommandsPanel();
 
         add(decorativePanel, BorderLayout.CENTER);
         add(commandsPanel, BorderLayout.SOUTH);
@@ -152,15 +150,13 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
             if (dragAndDropWindowPreferences.isOpenImmediately()) {
                 sendFiles(moreFiles);
             } else {
-                for (File file : moreFiles) {
-                    if (file.isFile()) {
-                        allFiles.add(file);
-                        Optional<ExifMap> exifMap = exifCache.getExifMap(file);
-                        if (exifMap.isPresent()) {
-                            groupingPanel.mapFileToTags(file);
-                        }
+                moreFiles.stream().filter(File::isFile).forEach(file -> {
+                    allFiles.add(file);
+                    Optional<ExifMap> exifMap = exifCache.getExifMap(file);
+                    if (exifMap.isPresent()) {
+                        groupingPanel.mapFileToTags(file);
                     }
-                }
+                });
                 repaint();
             }
         }
@@ -258,6 +254,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
 
         private static final long serialVersionUID = 1L;
 
+        @Override
         public void paintComponent(Graphics gfx) {
             super.paintComponent(gfx);
             Graphics2D g2d = (Graphics2D) gfx;

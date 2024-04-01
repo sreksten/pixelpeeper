@@ -17,18 +17,23 @@ public class SobelEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
     }
 
     void cancelSelection() {
+        // Sobel Edges Detector has no actual parameters
     }
 
     void acceptSelection() {
+        // Sobel Edges Detector has no actual parameters
     }
 
     void reset() {
+        // Sobel Edges Detector has no actual parameters
     }
 
     void resetToDefault() {
+        // Sobel Edges Detector has no actual parameters
     }
 
     public void handleStateChanged(ChangeEvent e) {
+        // Sobel Edges Detector has no actual parameters
     }
 
     @Override
