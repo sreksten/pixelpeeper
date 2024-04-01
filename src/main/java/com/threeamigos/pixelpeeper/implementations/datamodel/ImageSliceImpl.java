@@ -85,7 +85,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     }
 
     @Override
-    public void startDrawing() {
+    public void startDoodling() {
         isDrawing = true;
         currentDrawing = new Doodle();
         doodles.add(currentDrawing);
@@ -97,25 +97,25 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     }
 
     @Override
-    public void stopDrawing() {
+    public void stopDoodling() {
         isDrawing = false;
     }
 
     @Override
-    public void undoLastDrawing() {
+    public void undoLastDoodle() {
         if (!doodles.isEmpty()) {
             doodles.remove(doodles.size() - 1);
         }
         if (isDrawing) {
-            startDrawing();
+            startDoodling();
         }
     }
 
     @Override
-    public void clearDrawings() {
+    public void clearDoodles() {
         doodles.clear();
         if (isDrawing) {
-            startDrawing();
+            startDoodling();
         }
     }
 

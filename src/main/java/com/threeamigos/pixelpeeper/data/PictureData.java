@@ -16,10 +16,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collection;
 
-import static com.threeamigos.pixelpeeper.data.ExifValue.PICTURE_ORIENTATION_AS_IS;
+import static com.threeamigos.pixelpeeper.data.ExifValue.*;
 
 /**
- * The data model used to show and compare images.
+ * The data model used to show and compare an image to another.
+ * Each PictureData contains references to an image, its edges representation, zoom level,
+ * EXIF tags, and so on.
  *
  * @author Stefano Reksten
  */
@@ -225,7 +227,7 @@ public class PictureData implements PropertyChangeAware {
     }
 
     private void swapDimensionsIfNeeded() {
-        if (orientation > 4 && orientation <= 8) {
+        if (orientation > PICTURE_ORIENTATION_FLIP_VERTICALLY && orientation <= PICTURE_ORIENTATION_CLOCKWISE_90) {
             int tmp = sourceWidth;
             sourceWidth = sourceHeight;
             sourceHeight = tmp;

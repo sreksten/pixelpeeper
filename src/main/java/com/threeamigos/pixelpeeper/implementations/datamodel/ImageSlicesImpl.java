@@ -217,38 +217,38 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     }
 
     @Override
-    public void startAnnotating() {
+    public void startDoodling() {
         if (activeSlice != null) {
-            activeSlice.startDrawing();
+            activeSlice.startDoodling();
         }
     }
 
     @Override
-    public void addPoint(int x, int y) {
+    public void addVertex(int x, int y) {
         if (activeSlice != null) {
             activeSlice.addVertex(x, y);
         }
     }
 
     @Override
-    public void stopAnnotating() {
+    public void stopDoodling() {
         if (activeSlice != null) {
-            activeSlice.stopDrawing();
+            activeSlice.stopDoodling();
         }
     }
 
     @Override
-    public void undoLastAnnotation() {
+    public void undoLastDoodle() {
         if (lastActiveSlice != null) {
-            lastActiveSlice.undoLastDrawing();
+            lastActiveSlice.undoLastDoodle();
             requestRepaint();
         }
     }
 
     @Override
-    public void clearAnnotations() {
+    public void clearDoodles() {
         if (lastActiveSlice != null) {
-            lastActiveSlice.clearDrawings();
+            lastActiveSlice.clearDoodles();
             requestRepaint();
         }
     }

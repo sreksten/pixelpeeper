@@ -6,24 +6,24 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 
 /**
- * A portion of the screen that depicts part of an image
+ * A portion of the application's window that depicts part of an image
  *
  * @author Stefano Reksten
  */
 public interface ImageSlice extends PropertyChangeListener {
 
     /**
-     * The onscreen location of this slice
+     * Set the onscreen location of this slice
      */
     void setLocation(Rectangle location);
 
     /**
-     * The onscreen location of this slice
+     * Return the onscreen location of this slice
      */
     Rectangle getLocation();
 
     /**
-     * Used to unserstand if the mouse is hovering over this slice
+     * Used to understand if the mouse is hovering over this slice
      *
      * @param x mouse coordinate
      * @param y mouse coordinate
@@ -38,7 +38,7 @@ public interface ImageSlice extends PropertyChangeListener {
     void setSelected(boolean selected);
 
     /**
-     * The image along with the Exif tags
+     * The {@link PictureData} associated to this slice
      */
     PictureData getPictureData();
 
@@ -52,15 +52,32 @@ public interface ImageSlice extends PropertyChangeListener {
      */
     void move(double deltaX, double deltaY);
 
-    void startDrawing();
+    /**
+     * Starts doodling. The user can draw simple doodles to point out some portions of the image
+     * in different colors.
+     */
+    void startDoodling();
 
+    /**
+     * Adds a vertex to the current doodle.
+     */
     void addVertex(int x, int y);
 
-    void stopDrawing();
+    /**
+     * Completes the current doodle.
+     */
+    void stopDoodling();
 
-    void undoLastDrawing();
+    /**
+     * Deletes the last doodle. Subsequent calls to this method
+     * will continue removing the most recent doodle.
+     */
+    void undoLastDoodle();
 
-    void clearDrawings();
+    /**
+     * Deletes all doodles.
+     */
+    void clearDoodles();
 
     /**
      * To clear the image shifting when loading a new image. Image is centered on
@@ -73,8 +90,14 @@ public interface ImageSlice extends PropertyChangeListener {
      */
     void changeZoomLevel(float zoomLevel);
 
+    /**
+     * Returns the current zoom level for this slice.
+     */
     float getZoomLevel();
 
+    /**
+     * Paints the slice.
+     */
     void paint(Graphics2D g2d);
 
     /**

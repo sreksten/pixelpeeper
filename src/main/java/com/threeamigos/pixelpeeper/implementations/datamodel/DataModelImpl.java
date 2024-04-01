@@ -350,7 +350,7 @@ public class DataModelImpl implements DataModel {
             MouseEvent e = (MouseEvent) evt.getNewValue();
             setActiveSlice(e.getX(), e.getY());
             if (isDrawing) {
-                imageSlices.startAnnotating();
+                imageSlices.startDoodling();
             }
             requestRepaint();
         }
@@ -359,7 +359,7 @@ public class DataModelImpl implements DataModel {
     private void handleMouseReleased() {
         if (hasLoadedImages()) {
             if (isDrawing) {
-                imageSlices.stopAnnotating();
+                imageSlices.stopDoodling();
             }
             resetActiveSlice();
             requestRepaint();
@@ -370,7 +370,7 @@ public class DataModelImpl implements DataModel {
         if (hasLoadedImages()) {
             if (isDrawing) {
                 MouseEvent newEvent = (MouseEvent) evt.getNewValue();
-                imageSlices.addPoint(newEvent.getX(), newEvent.getY());
+                imageSlices.addVertex(newEvent.getX(), newEvent.getY());
             } else {
                 MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
                 MouseEvent newEvent = (MouseEvent) evt.getNewValue();
@@ -391,9 +391,9 @@ public class DataModelImpl implements DataModel {
                 if (e.getKeyCode() == KeyRegistry.ANNOTATE_KEY.getKeyCode()) {
                     isDrawing = true;
                 } else if (e.getKeyCode() == KeyRegistry.UNDO_KEY.getKeyCode()) {
-                    imageSlices.undoLastAnnotation();
+                    imageSlices.undoLastDoodle();
                 } else if (e.getKeyCode() == KeyRegistry.DELETE_KEY.getKeyCode()) {
-                    imageSlices.clearAnnotations();
+                    imageSlices.clearDoodles();
                 } else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED
                         .getKeyCode()) {
                     isMovementAppliedToAllImagesTemporarilyInverted = true;

@@ -43,15 +43,15 @@ public interface ImageSlices extends PropertyChangeListener {
 
     void setNoActiveSlice();
 
-    void startAnnotating();
+    void startDoodling();
 
-    void addPoint(int x, int y);
+    void addVertex(int x, int y);
 
-    void stopAnnotating();
+    void stopDoodling();
 
-    void undoLastAnnotation();
+    void undoLastDoodle();
 
-    void clearAnnotations();
+    void clearDoodles();
 
     /**
      * Asks all slices to recalculate edge images
