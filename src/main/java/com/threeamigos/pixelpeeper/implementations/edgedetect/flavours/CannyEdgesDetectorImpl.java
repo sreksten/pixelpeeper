@@ -573,7 +573,7 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
         }
     }
 
-    private void writeEdges(int pixels[]) {
+    private void writeEdges(int[] pixels) {
         // NOTE: There is currently no mechanism for obtaining the edge data
         // in any other format other than an INT_ARGB type BufferedImage.
         // This may be easily remedied by providing alternative accessors.

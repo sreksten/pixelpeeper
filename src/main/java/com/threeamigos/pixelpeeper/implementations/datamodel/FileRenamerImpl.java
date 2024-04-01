@@ -50,11 +50,9 @@ public class FileRenamerImpl implements FileRenamer, PropertyChangeListener {
         if ("progress".equals(evt.getPropertyName())) {
             int progress = (Integer) evt.getNewValue();
             progressMonitor.setProgress(progress);
-            if (progressMonitor.isCanceled() || task.isDone()) {
-                if (progressMonitor.isCanceled()) {
-                    task.cancel(true);
-                    progressMonitor.close();
-                }
+            if ((progressMonitor.isCanceled() || task.isDone()) && progressMonitor.isCanceled()) {
+                task.cancel(true);
+                progressMonitor.close();
             }
         }
     }

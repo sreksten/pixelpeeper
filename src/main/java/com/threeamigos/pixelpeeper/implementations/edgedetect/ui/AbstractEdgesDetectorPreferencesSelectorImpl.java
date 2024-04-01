@@ -62,6 +62,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
         try {
             InputStream inputStream = getClass().getResourceAsStream("/testImage.jpg");
+            assert inputStream != null;
             testImage = ImageIO.read(inputStream);
             width = testImage.getWidth();
             height = testImage.getHeight();
@@ -292,7 +293,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
         @Override
         public void accept(List<File> files) {
-            Optional<BufferedImage> optImage = files.stream().map(file -> loadCropAndResizeImage(file))
+            Optional<BufferedImage> optImage = files.stream().map(this::loadCropAndResizeImage)
                     .filter(Objects::nonNull).findFirst();
             if (optImage.isPresent()) {
                 preferencesSelectorDataModel.setSourceImage(optImage.get());

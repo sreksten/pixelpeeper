@@ -28,11 +28,9 @@ public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryMana
         this.messageHandler = messageHandler;
 
         PersistResult persistResult = persister.load(cropFactorRepository);
-        if (!persistResult.isSuccessful()) {
-            if (!persistResult.isNotFound()) {
-                handleError(persistResult.getError());
-                invalidAtLoad = true;
-            }
+        if (!persistResult.isSuccessful() && !persistResult.isNotFound()) {
+            handleError(persistResult.getError());
+            invalidAtLoad = true;
         }
         statusTracker.loadInitialValues();
     }

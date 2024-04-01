@@ -9,8 +9,11 @@ import java.util.*;
 
 public class FileGrouper {
 
-    public static final Map<ExifValue, Collection<File>> groupFiles(Map<File, ExifMap> filesToTagsMap,
-                                                                    ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy) {
+    private FileGrouper() {
+    }
+
+    public static Map<ExifValue, Collection<File>> groupFiles(Map<File, ExifMap> filesToTagsMap,
+                                                              ExifTag tagToGroupBy, int tolerance, ExifTag tagToOrderBy) {
         Map<ExifValue, Collection<File>> groupedFiles = new HashMap<>();
         if (tagToGroupBy != null) {
             for (File file : filesToTagsMap.keySet()) {
@@ -66,7 +69,6 @@ public class FileGrouper {
             if (distance <= tolerance && distance < minDistance) {
                 minDistance = distance;
                 nearestValue = possibleValue;
-            } else {
             }
         }
         return nearestValue;

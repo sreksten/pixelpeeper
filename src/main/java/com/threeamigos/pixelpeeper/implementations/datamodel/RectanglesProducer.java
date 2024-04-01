@@ -8,8 +8,8 @@ import java.util.List;
 
 public class RectanglesProducer {
 
-    public static final List<Rectangle> createRectangles(final int panelWidth, final int panelHeight,
-                                                         final Disposition disposition, final int totalSlices) {
+    public static List<Rectangle> createRectangles(final int panelWidth, final int panelHeight,
+                                                   final Disposition disposition, final int totalSlices) {
         switch (disposition) {
             case HORIZONTAL:
                 return sliceHorizontally(panelWidth, panelHeight, totalSlices);

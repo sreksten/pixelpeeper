@@ -36,7 +36,7 @@ public class CropFactorRepositoryImpl implements CropFactorRepository {
     }
 
     private String buildKey(String cameraManufacturer, String cameraModel) {
-        return new StringBuilder(cameraManufacturer).append("/").append(cameraModel).toString();
+        return cameraManufacturer + "/" + cameraModel;
     }
 
 }

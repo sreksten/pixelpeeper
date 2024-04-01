@@ -85,9 +85,7 @@ class GroupedFilesByExifTag {
 
     private void sort(List<ExifValueToFilesHolder> list) {
         final Comparator<ExifValue> exifValueComparator = ExifValue.getComparator();
-        final Comparator<ExifValueToFilesHolder> comparator = (v1, v2) -> {
-            return exifValueComparator.compare(v1.exifValue, v2.exifValue);
-        };
-        Collections.sort(list, comparator);
+        final Comparator<ExifValueToFilesHolder> comparator = (v1, v2) -> exifValueComparator.compare(v1.exifValue, v2.exifValue);
+        list.sort(comparator);
     }
 }
