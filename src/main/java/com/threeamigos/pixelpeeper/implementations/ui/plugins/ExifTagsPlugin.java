@@ -10,7 +10,6 @@ import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -93,9 +92,5 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
                 }
             }
         };
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
     }
 }

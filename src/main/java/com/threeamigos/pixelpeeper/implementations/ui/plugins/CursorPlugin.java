@@ -7,10 +7,11 @@ import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CursorPlugin extends AbstractMainWindowPlugin {
+public class CursorPlugin extends AbstractMainWindowPlugin implements PropertyChangeListener {
 
     private final CursorPreferences bigPointerPreferences;
     private final CursorManager cursorManager;

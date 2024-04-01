@@ -1,47 +1,47 @@
 package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.MainWindowPlugin;
 
-public abstract class AbstractMainWindowPlugin implements MainWindowPlugin, PropertyChangeListener {
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
-	private final PropertyChangeSupport propertyChangeSupport;
+public abstract class AbstractMainWindowPlugin implements MainWindowPlugin {
 
-	protected MainWindow mainWindow;
+    private final PropertyChangeSupport propertyChangeSupport;
 
-	protected AbstractMainWindowPlugin() {
-		propertyChangeSupport = new PropertyChangeSupport(this);
-	}
+    protected MainWindow mainWindow;
 
-	@Override
-	public void setMainWindow(MainWindow mainWindow) {
-		this.mainWindow = mainWindow;
+    protected AbstractMainWindowPlugin() {
+        propertyChangeSupport = new PropertyChangeSupport(this);
+    }
 
-		createMenu();
-	}
+    @Override
+    public void setMainWindow(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
 
-	public abstract void createMenu();
+        createMenu();
+    }
 
-	protected void repaint() {
-		propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
-	}
+    public abstract void createMenu();
 
-	protected void firePropertyChange(String message, Object oldValue, Object newValue) {
-		propertyChangeSupport.firePropertyChange(message, oldValue, newValue);
-	}
+    protected void repaint() {
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+    }
 
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.addPropertyChangeListener(pcl);
-	}
+    protected void firePropertyChange(String message, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(message, oldValue, newValue);
+    }
 
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.removePropertyChangeListener(pcl);
-	}
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propertyChangeSupport.addPropertyChangeListener(pcl);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propertyChangeSupport.removePropertyChangeListener(pcl);
+    }
 
 }
