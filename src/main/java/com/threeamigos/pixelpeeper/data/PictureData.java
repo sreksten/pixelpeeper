@@ -122,10 +122,6 @@ public class PictureData implements PropertyChangeAware {
         return exifMap.getKeys();
     }
 
-    public boolean isTagPresent(ExifTag exifTag) {
-        return exifMap.getKeys().contains(exifTag);
-    }
-
     public String getTagDescriptive(ExifTag exifTag) {
         return exifMap.getTagDescriptive(exifTag);
     }
@@ -156,13 +152,12 @@ public class PictureData implements PropertyChangeAware {
     }
 
     public void undoOrientationCorrection() {
-        if (orientation != ExifOrientationHelper.AS_IS) {
-            if (orientationAdjusted) {
-                sourceImage = ExifOrientationHelper.undoOrientationCorrection(sourceImage, orientation);
-                swapDimensionsIfNeeded();
-                changeZoomLevel(zoomLevel);
-                orientationAdjusted = false;
-            }
+        if (orientation != ExifOrientationHelper.AS_IS && orientationAdjusted) {
+            sourceImage = ExifOrientationHelper.undoOrientationCorrection(sourceImage, orientation);
+            swapDimensionsIfNeeded();
+            changeZoomLevel(zoomLevel);
+            orientationAdjusted = false;
+
         }
     }
 
@@ -172,10 +167,6 @@ public class PictureData implements PropertyChangeAware {
             sourceWidth = sourceHeight;
             sourceHeight = tmp;
         }
-    }
-
-    public boolean isEdgesImagePresent() {
-        return edgesImage != null;
     }
 
     public BufferedImage getEdgesImage() {
