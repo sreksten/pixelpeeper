@@ -6,7 +6,6 @@ import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -55,11 +54,6 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
         this.overridingTagsVisibility = overridingTagsVisibility;
         firePropertyChange(CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED, oldOverridingTagsVisibility,
                 overridingTagsVisibility);
-    }
-
-    @Override
-    public Map<ExifTag, ExifTagVisibility> getVisibilityMap() {
-        return Collections.unmodifiableMap(tagsMap);
     }
 
     @Override
