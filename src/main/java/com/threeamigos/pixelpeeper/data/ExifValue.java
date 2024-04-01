@@ -6,7 +6,31 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Comparator;
 
+/**
+ * The value associated to a single {@link ExifTag}. Each tag has its type,
+ * so the ExifValue is stored as an Object.<br/>
+ * As picture can be taken with the camera rotated in different ways,
+ * PICTURE_ORIENTATION_... constants are provided to help the application correctly
+ * preprocess the images before showing them. This information is stored in its
+ * specific tag, but as this tag is surely one of interest, constants have been
+ * added to help identify the preprocessing needed before the image can be
+ * correctly visualized.<br/>
+ * Otherwise, tags have a human-readable description and a value that can be
+ * a String (e.g. camera manufacturer), an integer (e.g. ISO), decimal numbers
+ * or {@link com.drew.lang.Rational} values.
+ *
+ * @author Stefano Reksten
+ */
 public class ExifValue {
+
+    public static final int PICTURE_ORIENTATION_AS_IS = 1;
+    public static final int PICTURE_ORIENTATION_FLIP_HORIZONTALLY = 2;
+    public static final int PICTURE_ORIENTATION_CLOCKWISE_180 = 3;
+    public static final int PICTURE_ORIENTATION_FLIP_VERTICALLY = 4;
+    public static final int PICTURE_ORIENTATION_ANTICLOCKWISE_90_FLIP_VERTICALLY = 5;
+    public static final int PICTURE_ORIENTATION_ANTICLOCKWISE_90 = 6;
+    public static final int PICTURE_ORIENTATION_CLOCKWISE_90_FLIP_VERTICALLY = 7;
+    public static final int PICTURE_ORIENTATION_CLOCKWISE_90 = 8;
 
     private final ExifTag exifTag;
     private final String description;
@@ -49,7 +73,7 @@ public class ExifValue {
         return description;
     }
 
-    public String asComparable() {
+    private String asComparable() {
         if (value instanceof Integer) {
             return format(Float.valueOf((Integer) value));
         } else if (value instanceof Float) {
@@ -68,6 +92,10 @@ public class ExifValue {
         }
     }
 
+    /**
+     * Transforms the {@link ExifTag} value to a Float where applicable, in order to
+     * be able to filter on ranges of values.
+     */
     public Float asFloat() {
         Object object = getValue();
         if (object instanceof Integer) {
@@ -93,6 +121,9 @@ public class ExifValue {
         return String.format("%16.6f", floatValue);
     }
 
+    /**
+     * A Comparator that can be used to sort ExifValues.
+     */
     public static Comparator<ExifValue> getComparator() {
         return (ev1, ev2) -> {
             if (ev1 == null) {

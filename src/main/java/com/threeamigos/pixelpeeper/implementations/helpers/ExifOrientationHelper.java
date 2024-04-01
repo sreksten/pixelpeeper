@@ -3,19 +3,12 @@ package com.threeamigos.pixelpeeper.implementations.helpers;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
+import static com.threeamigos.pixelpeeper.data.ExifValue.*;
+
 public class ExifOrientationHelper {
 
     private ExifOrientationHelper() {
     }
-
-    public static final int AS_IS = 1;
-    public static final int FLIP_HORIZONTALLY = 2;
-    public static final int CLOCKWISE_180 = 3;
-    public static final int FLIP_VERTICALLY = 4;
-    public static final int ANTICLOCKWISE_90_FLIP_VERTICALLY = 5;
-    public static final int ANTICLOCKWISE_90 = 6;
-    public static final int CLOCKWISE_90_FLIP_VERTICALLY = 7;
-    public static final int CLOCKWISE_90 = 8;
 
     public static BufferedImage correctOrientation(final BufferedImage original, final int orientation) {
 
@@ -28,17 +21,17 @@ public class ExifOrientationHelper {
         final WritableRaster rasterOriginal = original.copyData(null);
         final WritableRaster rasterRotated = rotated.copyData(null);
 
-        if (orientation == FLIP_HORIZONTALLY) {
+        if (orientation == PICTURE_ORIENTATION_FLIP_HORIZONTALLY) {
             flipHorizontally(rasterOriginal, rasterRotated);
-        } else if (orientation == CLOCKWISE_180) {
+        } else if (orientation == PICTURE_ORIENTATION_CLOCKWISE_180) {
             rotate180(rasterOriginal, rasterRotated);
-        } else if (orientation == FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_FLIP_VERTICALLY) {
             flipVertically(rasterOriginal, rasterRotated);
-        } else if (orientation == ANTICLOCKWISE_90_FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_ANTICLOCKWISE_90_FLIP_VERTICALLY) {
             rotateAnticlockwise90FlipVertically(rasterOriginal, rasterRotated);
-        } else if (orientation == ANTICLOCKWISE_90) {
+        } else if (orientation == PICTURE_ORIENTATION_ANTICLOCKWISE_90) {
             rotateClockwise90(rasterOriginal, rasterRotated);
-        } else if (orientation == CLOCKWISE_90_FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_CLOCKWISE_90_FLIP_VERTICALLY) {
             rotateClockwise90FlipVertically(rasterOriginal, rasterRotated);
         } else {
             // orientation is CLOCKWISE_90
@@ -59,17 +52,17 @@ public class ExifOrientationHelper {
         final WritableRaster rasterRotated = rotated.copyData(null);
         final WritableRaster rasterOriginal = original.copyData(null);
 
-        if (orientation == FLIP_HORIZONTALLY) {
+        if (orientation == PICTURE_ORIENTATION_FLIP_HORIZONTALLY) {
             flipHorizontally(rasterRotated, rasterOriginal);
-        } else if (orientation == CLOCKWISE_180) {
+        } else if (orientation == PICTURE_ORIENTATION_CLOCKWISE_180) {
             rotate180(rasterRotated, rasterOriginal);
-        } else if (orientation == FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_FLIP_VERTICALLY) {
             flipVertically(rasterRotated, rasterOriginal);
-        } else if (orientation == ANTICLOCKWISE_90_FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_ANTICLOCKWISE_90_FLIP_VERTICALLY) {
             rotateAnticlockwise90FlipVertically(rasterRotated, rasterOriginal);
-        } else if (orientation == ANTICLOCKWISE_90) {
+        } else if (orientation == PICTURE_ORIENTATION_ANTICLOCKWISE_90) {
             rotateAnticlockwise90(rasterRotated, rasterOriginal);
-        } else if (orientation == CLOCKWISE_90_FLIP_VERTICALLY) {
+        } else if (orientation == PICTURE_ORIENTATION_CLOCKWISE_90_FLIP_VERTICALLY) {
             rotateClockwise90FlipVertically(rasterRotated, rasterOriginal);
         } else {
             // orientation is CLOCKWISE_90
@@ -81,11 +74,11 @@ public class ExifOrientationHelper {
     }
 
     private static boolean rotationNotNeeded(int orientation) {
-        return orientation <= AS_IS || orientation > CLOCKWISE_90;
+        return orientation <= PICTURE_ORIENTATION_AS_IS || orientation > PICTURE_ORIENTATION_CLOCKWISE_90;
     }
 
     private static BufferedImage buildEmptyImage(BufferedImage original, int orientation) {
-        if (orientation <= FLIP_VERTICALLY) {
+        if (orientation <= PICTURE_ORIENTATION_FLIP_VERTICALLY) {
             return new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
         } else {
             return new BufferedImage(original.getHeight(), original.getWidth(), original.getType());
