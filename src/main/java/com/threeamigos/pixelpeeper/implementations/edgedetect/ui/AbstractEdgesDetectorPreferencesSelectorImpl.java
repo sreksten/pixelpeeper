@@ -119,7 +119,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
     abstract String getPreferencesDescription();
 
-    private final JPanel createPreferencesPanel(Component component) {
+    private JPanel createPreferencesPanel(Component component) {
 
         JPanel sliderAndPreviewPanel = new JPanel();
         sliderAndPreviewPanel.setLayout(new BoxLayout(sliderAndPreviewPanel, BoxLayout.LINE_AXIS));
