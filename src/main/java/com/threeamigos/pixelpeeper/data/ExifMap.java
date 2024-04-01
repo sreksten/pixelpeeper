@@ -6,6 +6,11 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
+/**
+ * A collection of {@link ExifTag}s associated to a single image.
+ *
+ * @author Stefano Reksten
+ */
 public class ExifMap {
 
     private final Map<ExifTag, ExifValue> map = new EnumMap<>(ExifTag.class);
@@ -14,11 +19,10 @@ public class ExifMap {
     // from the map
     private int pictureOrientation = ExifOrientationHelper.AS_IS;
 
-    public void setIfAbsent(ExifTag exifTag, String value, Object object) {
-        if (value == null || value.trim().isEmpty()) {
-            return;
+    public void add(ExifTag exifTag, String value, Object object) {
+        if (value != null && !value.trim().isEmpty()) {
+            map.put(exifTag, new ExifValue(exifTag, value, object));
         }
-        map.put(exifTag, new ExifValue(exifTag, value, object));
     }
 
     public Collection<ExifTag> getKeys() {

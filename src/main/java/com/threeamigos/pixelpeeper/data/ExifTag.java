@@ -1,5 +1,12 @@
 package com.threeamigos.pixelpeeper.data;
 
+/**
+ * An EXIF tag is a tag associated to an image that brings along information like camera manufacturer,
+ * lens model, ISO, aperture etc. An image file contains a set of EXIF tags within. This class lists some of
+ * the tags we are interested in when comparing two images.
+ *
+ * @author Stefano Reksten
+ */
 public enum ExifTag {
 
     CAMERA_MANUFACTURER("Camera maker"),

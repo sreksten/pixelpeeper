@@ -25,7 +25,7 @@ import java.util.List;
 
 public class Main {
 
-    // BUGFIX: if the drag and drop window is open focus is switched to that. Well
+    // BUGFIX: if the drag and drop window is open, focus is switched to that. Well
     // maybe not quite a bug but...
 
     // BUGFIX: the big pointer may flicker when changed

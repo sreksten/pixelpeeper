@@ -311,8 +311,8 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     private void computeGradients(float kernelRadius, int kernelWidth) {
 
         // generate the gaussian convolution masks
-        float kernel[] = new float[kernelWidth];
-        float diffKernel[] = new float[kernelWidth];
+        float[] kernel = new float[kernelWidth];
+        float[] diffKernel = new float[kernelWidth];
         int kwidth;
         float constant = 1 / 3f / (2f * (float) Math.PI * kernelRadius * kernelRadius);
         for (kwidth = 0; kwidth < kernelWidth; kwidth++) {
@@ -338,7 +338,7 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
                 float sumY = sumX;
                 int xOffset = 1;
                 int yOffset = width;
-                for (; xOffset < kwidth; ) {
+                while (xOffset < kwidth) {
                     sumY += kernel[xOffset] * (data[index - yOffset] + data[index + yOffset]);
                     sumX += kernel[xOffset] * (data[index - xOffset] + data[index + xOffset]);
                     yOffset += width;
@@ -432,7 +432,7 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
                  * temporary variable (3) and reused in the mirror case (4).
                  *
                  */
-                if (xGrad * yGrad <= (float) 0 /* (1) */
+                if (xGrad * yGrad <= 0 /* (1) */
                         ? Math.abs(xGrad) >= Math.abs(yGrad) /* (2) */
                         ? (tmp = Math.abs(xGrad * gradMag)) >= Math
                         .abs(yGrad * neMag - (xGrad + yGrad) * eMag) /* (3) */

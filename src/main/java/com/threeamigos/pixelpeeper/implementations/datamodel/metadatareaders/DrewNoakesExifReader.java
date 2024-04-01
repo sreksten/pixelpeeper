@@ -80,7 +80,7 @@ public class DrewNoakesExifReader implements ExifReader {
         int pictureWidth = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_WIDTH);
         int pictureHeight = jpegDirectory.getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
         String dimensions = pictureWidth + "x" + pictureHeight;
-        exifMap.setIfAbsent(ExifTag.IMAGE_DIMENSIONS, dimensions, dimensions);
+        exifMap.add(ExifTag.IMAGE_DIMENSIONS, dimensions, dimensions);
     }
 
     private void consumeCamera(ExifIFD0Directory directory) {
@@ -153,7 +153,7 @@ public class DrewNoakesExifReader implements ExifReader {
     }
 
     private void consume(Directory directory, ExifTag exifTag, int tag) {
-        exifMap.setIfAbsent(exifTag, directory.getDescription(tag), directory.getObject(tag));
+        exifMap.add(exifTag, directory.getDescription(tag), directory.getObject(tag));
     }
 
     private void printAllTags(Metadata metadata) {

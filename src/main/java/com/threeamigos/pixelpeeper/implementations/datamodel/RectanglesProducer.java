@@ -55,7 +55,7 @@ public class RectanglesProducer {
         int columns = (totalSlices + rows - 1) / rows;
         int sliceWidth = panelWidth / columns;
         int sliceHeight = panelHeight / rows;
-        int currentScreenOffsetX = 0;
+        int currentScreenOffsetX;
         int currentScreenOffsetY = 0;
         int currentSlice = 0;
 

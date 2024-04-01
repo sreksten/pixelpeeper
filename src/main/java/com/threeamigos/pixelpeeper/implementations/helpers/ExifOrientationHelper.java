@@ -19,53 +19,30 @@ public class ExifOrientationHelper {
 
     public static BufferedImage correctOrientation(final BufferedImage original, final int orientation) {
 
-        if (orientation < 1 || orientation > 8) {
+        if (rotationNotNeeded(orientation)) {
             return original;
         }
 
-        if (orientation == AS_IS) {
-            return original;
-        }
-
-        final BufferedImage rotated;
-
-        if (orientation <= 4) {
-            rotated = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
-        } else {
-            rotated = new BufferedImage(original.getHeight(), original.getWidth(), original.getType());
-        }
+        final BufferedImage rotated = buildEmptyImage(original, orientation);
 
         final WritableRaster rasterOriginal = original.copyData(null);
         final WritableRaster rasterRotated = rotated.copyData(null);
 
         if (orientation == FLIP_HORIZONTALLY) {
-
             flipHorizontally(rasterOriginal, rasterRotated);
-
         } else if (orientation == CLOCKWISE_180) {
-
             rotate180(rasterOriginal, rasterRotated);
-
         } else if (orientation == FLIP_VERTICALLY) {
-
             flipVertically(rasterOriginal, rasterRotated);
-
         } else if (orientation == ANTICLOCKWISE_90_FLIP_VERTICALLY) {
-
             rotateAnticlockwise90FlipVertically(rasterOriginal, rasterRotated);
-
         } else if (orientation == ANTICLOCKWISE_90) {
-
             rotateClockwise90(rasterOriginal, rasterRotated);
-
         } else if (orientation == CLOCKWISE_90_FLIP_VERTICALLY) {
-
             rotateClockwise90FlipVertically(rasterOriginal, rasterRotated);
-
-        } else if (orientation == CLOCKWISE_90) {
-
+        } else {
+            // orientation is CLOCKWISE_90
             rotateAnticlockwise90(rasterOriginal, rasterRotated);
-
         }
         rotated.setData(rasterRotated);
 
@@ -74,57 +51,45 @@ public class ExifOrientationHelper {
 
     public static BufferedImage undoOrientationCorrection(final BufferedImage rotated, final int orientation) {
 
-        if (orientation < 1 || orientation > 8) {
+        if (rotationNotNeeded(orientation)) {
             return rotated;
         }
 
-        if (orientation == AS_IS) {
-            return rotated;
-        }
-
-        final BufferedImage original;
-
-        if (orientation <= 4) {
-            original = new BufferedImage(rotated.getWidth(), rotated.getHeight(), rotated.getType());
-        } else {
-            original = new BufferedImage(rotated.getHeight(), rotated.getWidth(), rotated.getType());
-        }
-
+        final BufferedImage original = buildEmptyImage(rotated, orientation);
         final WritableRaster rasterRotated = rotated.copyData(null);
         final WritableRaster rasterOriginal = original.copyData(null);
 
         if (orientation == FLIP_HORIZONTALLY) {
-
             flipHorizontally(rasterRotated, rasterOriginal);
-
         } else if (orientation == CLOCKWISE_180) {
-
             rotate180(rasterRotated, rasterOriginal);
-
         } else if (orientation == FLIP_VERTICALLY) {
-
             flipVertically(rasterRotated, rasterOriginal);
-
         } else if (orientation == ANTICLOCKWISE_90_FLIP_VERTICALLY) {
-
             rotateAnticlockwise90FlipVertically(rasterRotated, rasterOriginal);
-
         } else if (orientation == ANTICLOCKWISE_90) {
-
             rotateAnticlockwise90(rasterRotated, rasterOriginal);
-
         } else if (orientation == CLOCKWISE_90_FLIP_VERTICALLY) {
-
             rotateClockwise90FlipVertically(rasterRotated, rasterOriginal);
-
-        } else if (orientation == CLOCKWISE_90) {
-
+        } else {
+            // orientation is CLOCKWISE_90
             rotateClockwise90(rasterRotated, rasterOriginal);
-
         }
         original.setData(rasterOriginal);
 
         return original;
+    }
+
+    private static boolean rotationNotNeeded(int orientation) {
+        return orientation <= AS_IS || orientation > CLOCKWISE_90;
+    }
+
+    private static BufferedImage buildEmptyImage(BufferedImage original, int orientation) {
+        if (orientation <= FLIP_VERTICALLY) {
+            return new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
+        } else {
+            return new BufferedImage(original.getHeight(), original.getWidth(), original.getType());
+        }
     }
 
     private static void flipHorizontally(WritableRaster original, WritableRaster destination) {

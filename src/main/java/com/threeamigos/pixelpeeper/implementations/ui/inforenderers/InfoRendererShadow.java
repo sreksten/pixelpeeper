@@ -43,7 +43,7 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
 
         BufferedImage texts = createTextsImage(textsWidth, textsHeight);
         int borderThickness = exifTagsPreferences.getBorderThickness();
-        int[][] shadowMatrix = buildShadowMatrix(borderThickness, borderThickness);
+        short[][] shadowMatrix = buildShadowMatrix(borderThickness, borderThickness);
         final int shadowMatrixWidth = shadowMatrix[0].length;
         final int shadowMatrixHeight = shadowMatrix.length;
 
@@ -76,17 +76,17 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         return textsImage;
     }
 
-    private int[][] buildShadowMatrix(final int width, final int height) {
+    private short[][] buildShadowMatrix(final int width, final int height) {
         final int centerX = width / 2;
         final int centerY = height / 2;
         final int radius = width / 2;
 
-        int[] shadowIntensity = new int[radius];
+        short[] shadowIntensity = new short[radius];
         for (int i = 0; i < radius; i++) {
-            shadowIntensity[i] = (int) (255.0f * (1 - (double) i / radius));
+            shadowIntensity[i] = (short) (255.0f * (1 - (double) i / radius));
         }
 
-        int[][] shadowMatrix = new int[height][width];
+        short[][] shadowMatrix = new short[height][width];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (x == centerX && y == centerY) {
@@ -104,13 +104,13 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         return shadowMatrix;
     }
 
-    private Image createShadowsImage(BufferedImage texts, int textsWidth, int textsHeight, int[][] shadowMatrix) {
+    private Image createShadowsImage(BufferedImage texts, int textsWidth, int textsHeight, short[][] shadowMatrix) {
         final int matrixHeight = shadowMatrix.length;
         final int matrixWidth = shadowMatrix[0].length;
         final int width = textsWidth + matrixWidth;
         final int height = textsHeight + matrixHeight;
         int[] colors = new int[width * height];
-        int[] alpha = new int[width * height];
+        short[] alpha = new short[width * height];
         int[] textsPixels = new int[textsWidth * textsHeight];
         texts.getRGB(0, 0, textsWidth, textsHeight, textsPixels, 0, textsWidth);
 
@@ -120,7 +120,7 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
                 if (pixel != 0) {
                     for (int i = 0; i < matrixWidth; i++) {
                         for (int j = 0; j < matrixHeight; j++) {
-                            int newAlpha = shadowMatrix[j][i];
+                            short newAlpha = shadowMatrix[j][i];
                             if (newAlpha > 0) {
                                 final int cx = x + i;
                                 final int cy = y + j;
