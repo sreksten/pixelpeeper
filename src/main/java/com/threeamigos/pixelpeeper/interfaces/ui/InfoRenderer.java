@@ -1,4 +1,4 @@
-package com.threeamigos.pixelpeeper.interfaces.datamodel;
+package com.threeamigos.pixelpeeper.interfaces.ui;
 
 import java.awt.*;
 

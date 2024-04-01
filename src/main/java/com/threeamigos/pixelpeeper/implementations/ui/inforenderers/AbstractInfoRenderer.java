@@ -5,8 +5,8 @@ import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
+import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
 
 import java.awt.*;
 

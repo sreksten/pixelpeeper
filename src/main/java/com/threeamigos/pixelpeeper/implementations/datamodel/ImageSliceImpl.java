@@ -8,11 +8,11 @@ import com.threeamigos.pixelpeeper.implementations.ui.inforenderers.InfoRenderer
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.InfoRenderer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
