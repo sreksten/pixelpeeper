@@ -14,6 +14,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     private boolean tagsVisible = TAGS_VISIBLE_DEFAULT;
     private boolean overridingTagsVisibility = OVERRIDING_TAGS_VISIBILITY_DEFAULT;
     private final Map<ExifTag, ExifTagVisibility> tagsMap = new EnumMap<>(ExifTag.class);
+    private int borderThickness = BORDER_THICKNESS_DEFAULT;
 
     @Override
     public void setTagVisibility(ExifTag tag, ExifTagVisibility tagVisibility) {
@@ -67,8 +68,21 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     }
 
     @Override
-    public void validate() {
-        // There is not much to validate
+    public int getBorderThickness() {
+        return borderThickness;
     }
 
+    @Override
+    public void setBorderThickness(int borderThickness) {
+        int oldBorderThickness = this.borderThickness;
+        this.borderThickness = borderThickness;
+        firePropertyChange(CommunicationMessages.TAGS_RENDERING_CHANGED, oldBorderThickness, borderThickness);
+    }
+
+    @Override
+    public void validate() {
+        if (borderThickness < 1 || borderThickness > BORDER_THICKNESS_MAX) {
+            borderThickness = BORDER_THICKNESS_DEFAULT;
+        }
+    }
 }

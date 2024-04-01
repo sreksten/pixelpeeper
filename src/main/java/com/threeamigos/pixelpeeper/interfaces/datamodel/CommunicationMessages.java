@@ -26,6 +26,7 @@ public interface CommunicationMessages {
     String TAG_VISIBILITY_CHANGED = "TagVisibilityChanged";
     String TAGS_VISIBILITY_CHANGED = "TagsVisibilityChanged";
     String TAGS_VISIBILITY_OVERRIDE_CHANGED = "TagsVisibilityOverrideChanged";
+    String TAGS_RENDERING_CHANGED = "TagsRenderingChanged";
 
     String HINTS_VISIBILITY_AT_STARTUP_CHANGED = "HintsVisibilityAtStartupChanged";
     String HINTS_INDEX_CHANGED = "HintsIndexChanged";

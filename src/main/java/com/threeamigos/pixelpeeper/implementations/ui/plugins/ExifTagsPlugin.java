@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExifTagsPlugin extends AbstractMainWindowPlugin {
@@ -18,6 +19,9 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
     private final ExifTagsPreferences exifTagPreferences;
 
     private final Map<ExifTag, JMenu> exifTagMenusByTag = new EnumMap<>(ExifTag.class);
+
+    private final Map<Integer, JCheckBoxMenuItem> borderThicknessMenuItemsByThickness = new HashMap<>();
+    private JMenu borderThicknessMenu;
 
     public ExifTagsPlugin(ExifTagsPreferences exifTagPreferences) {
         super();
@@ -34,6 +38,15 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
         addCheckboxMenuItem(tagsMenu, "overriding visibility", KeyRegistry.SHOW_TAGS_OVERRIDING_PREFERENCES_KEY,
                 exifTagPreferences.isOverridingTagsVisibility(), event -> toggleTagsOverriddenVisibility());
         tagsMenu.addSeparator();
+
+        borderThicknessMenu = new JMenu("Border rendering");
+        tagsMenu.add(borderThicknessMenu);
+        addBorderThicknessMenuItem("Line", ExifTagsPreferences.BORDER_THICKNESS_LINE);
+        addBorderThicknessMenuItem("Thin shadow", ExifTagsPreferences.BORDER_THICKNESS_THIN);
+        addBorderThicknessMenuItem("Medium shadow", ExifTagsPreferences.BORDER_THICKNESS_MEDIUM);
+        addBorderThicknessMenuItem("Large shadow", ExifTagsPreferences.BORDER_THICKNESS_LARGE);
+        tagsMenu.addSeparator();
+
         for (ExifTag exifTag : ExifTag.values()) {
             JMenu exifTagMenu = new JMenu(exifTag.getDescription());
             exifTagMenusByTag.put(exifTag, exifTagMenu);
@@ -60,6 +73,18 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
 
     }
 
+    private void addBorderThicknessMenuItem(final String description, final int borderThicknessLine) {
+        borderThicknessMenuItemsByThickness.put(borderThicknessLine,
+                addCheckboxMenuItem(borderThicknessMenu, description, KeyRegistry.NO_KEY,
+                        exifTagPreferences.getBorderThickness() == borderThicknessLine,
+                        event -> {
+                            exifTagPreferences.setBorderThickness(borderThicknessLine);
+                            updateBorderThicknessMenu();
+                            repaint();
+                        })
+        );
+    }
+
     private void toggleTagsVisibility() {
         exifTagPreferences.setTagsVisible(!exifTagPreferences.isTagsVisible());
     }
@@ -68,11 +93,18 @@ public class ExifTagsPlugin extends AbstractMainWindowPlugin {
         exifTagPreferences.setOverridingTagsVisibility(!exifTagPreferences.isOverridingTagsVisibility());
     }
 
+    private void updateBorderThicknessMenu() {
+        JCheckBoxMenuItem activeItem = borderThicknessMenuItemsByThickness.get(exifTagPreferences.getBorderThickness());
+        for (Component component : borderThicknessMenu.getMenuComponents()) {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) component;
+            item.setSelected(item.equals(activeItem));
+        }
+    }
+
     private void updateExifTagMenu(ExifTag exifTag) {
         JMenu exifTagMenu = exifTagMenusByTag.get(exifTag);
-        Component[] items = exifTagMenu.getMenuComponents();
         ExifTagVisibility exifTagVisibility = exifTagPreferences.getTagVisibility(exifTag);
-        for (Component component : items) {
+        for (Component component : exifTagMenu.getMenuComponents()) {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) component;
             item.setSelected(exifTagVisibility.getDescription().equals(item.getText()));
         }

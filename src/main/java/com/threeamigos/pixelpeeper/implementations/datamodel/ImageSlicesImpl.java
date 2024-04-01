@@ -10,6 +10,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPrefer
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -22,8 +23,9 @@ import java.util.List;
 
 public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
-    private final ExifTagsClassifier commonTagsHelper;
+    private final ExifTagsClassifier exifTagsClassifier;
     private final ExifTagsPreferences tagPreferences;
+    private final InfoRendererFactory infoRendererFactory;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DrawingPreferences drawingPreferences;
     private final EdgesDetectorPreferences edgesDetectorPreferences;
@@ -37,12 +39,14 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     private ImageSlice activeSlice;
     private ImageSlice lastActiveSlice;
 
-    public ImageSlicesImpl(ExifTagsClassifier commonTagsHelper, ExifTagsPreferences tagPreferences,
+    public ImageSlicesImpl(ExifTagsClassifier exifTagsClassifier, ExifTagsPreferences tagPreferences,
+                           InfoRendererFactory infoRendererFactory,
                            ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
                            EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
-        this.commonTagsHelper = commonTagsHelper;
+        this.exifTagsClassifier = exifTagsClassifier;
         this.tagPreferences = tagPreferences;
         tagPreferences.addPropertyChangeListener(this);
+        this.infoRendererFactory = infoRendererFactory;
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
         this.edgesDetectorPreferences = edgesDetectorPreferences;
@@ -59,7 +63,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
     @Override
     public void add(PictureData pictureData) {
-        ImageSlice imageSlice = new ImageSliceImpl(pictureData, commonTagsHelper, tagPreferences,
+        ImageSlice imageSlice = new ImageSliceImpl(pictureData, exifTagsClassifier, infoRendererFactory,
                 imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
         imageSlice.addPropertyChangeListener(this);
         imageSlices.add(imageSlice);
@@ -293,7 +297,8 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
             handleEdgeCalculationCompleted(evt);
         } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
+                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName()) ||
+                CommunicationMessages.TAGS_RENDERING_CHANGED.equals(evt.getPropertyName())) {
             handleTagsPreferencesChanged(evt);
         }
     }
@@ -305,8 +310,8 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     }
 
     private void handleTagsPreferencesChanged(PropertyChangeEvent evt) {
-        for (ImageSlice slice : imageSlices) {
-            slice.propertyChange(evt);
+        for (ImageSlice imageSlice : imageSlices) {
+            imageSlice.propertyChange(evt);
         }
     }
 

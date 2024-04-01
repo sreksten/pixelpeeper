@@ -42,7 +42,8 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         int textsHeight = calculateHeight();
 
         BufferedImage texts = createTextsImage(textsWidth, textsHeight);
-        int[][] shadowMatrix = buildShadowMatrix(21, 21);
+        int borderThickness = exifTagsPreferences.getBorderThickness();
+        int[][] shadowMatrix = buildShadowMatrix(borderThickness, borderThickness);
         final int shadowMatrixWidth = shadowMatrix[0].length;
         final int shadowMatrixHeight = shadowMatrix.length;
 

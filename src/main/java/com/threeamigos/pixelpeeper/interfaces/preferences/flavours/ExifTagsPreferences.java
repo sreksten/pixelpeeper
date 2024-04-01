@@ -13,6 +13,12 @@ public interface ExifTagsPreferences extends Preferences {
 
     boolean TAGS_VISIBLE_DEFAULT = true;
     boolean OVERRIDING_TAGS_VISIBILITY_DEFAULT = false;
+    int BORDER_THICKNESS_LINE = 1;
+    int BORDER_THICKNESS_THIN = 11;
+    int BORDER_THICKNESS_MEDIUM = 21;
+    int BORDER_THICKNESS_LARGE = 31;
+    int BORDER_THICKNESS_DEFAULT = BORDER_THICKNESS_LINE;
+    int BORDER_THICKNESS_MAX = BORDER_THICKNESS_LARGE;
 
     default String getDescription() {
         return "Exif tags preferences";
@@ -30,4 +36,7 @@ public interface ExifTagsPreferences extends Preferences {
 
     ExifTagVisibility getTagVisibility(ExifTag tag);
 
+    int getBorderThickness();
+
+    void setBorderThickness(int borderThickness);
 }

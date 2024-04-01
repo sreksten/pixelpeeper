@@ -14,8 +14,8 @@ import java.util.List;
 
 public class InfoRendererSimpleBorder extends AbstractInfoRenderer implements InfoRenderer {
 
-    InfoRendererSimpleBorder(FontService fontService, PictureData pictureData,
-                             ExifTagsPreferences tagPreferences, ExifTagsClassifier commonTagsHelper) {
+    public InfoRendererSimpleBorder(FontService fontService, PictureData pictureData,
+                                    ExifTagsPreferences tagPreferences, ExifTagsClassifier commonTagsHelper) {
         super(tagPreferences, commonTagsHelper, fontService, pictureData);
     }
 
