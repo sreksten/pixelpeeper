@@ -45,9 +45,4 @@ public class SobelEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
     boolean isAnyCalculationParameterModified() {
         return false;
     }
-
-    @Override
-    public void validate() {
-    }
-
 }

@@ -104,12 +104,7 @@ public class RomyJonaEdgesDetectorPreferencesSelectorDataModel extends AbstractE
     }
 
     @Override
-    public void validate() {
-    }
-
-    @Override
     public String getDescription() {
         return RomyJonaEdgesDetectorPreferences.super.getDescription();
     }
-
 }

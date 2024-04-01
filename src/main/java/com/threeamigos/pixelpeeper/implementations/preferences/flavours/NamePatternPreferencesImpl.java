@@ -5,25 +5,20 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPr
 
 public class NamePatternPreferencesImpl extends BasicPropertyChangeAware implements NamePatternPreferences {
 
-	private String namePattern;
+    private String namePattern;
 
-	@Override
-	public void setNamePattern(String namePattern) {
-		this.namePattern = namePattern;
-	}
+    @Override
+    public void setNamePattern(String namePattern) {
+        this.namePattern = namePattern;
+    }
 
-	@Override
-	public String getNamePattern() {
-		return namePattern;
-	}
+    @Override
+    public String getNamePattern() {
+        return namePattern;
+    }
 
-	@Override
-	public void validate() {
-	}
-
-	@Override
-	public void loadDefaultValues() {
-		namePattern = NamePatternPreferences.NAME_PATTERN_PREFERENCES_DEFAULT;
-	}
-
+    @Override
+    public void loadDefaultValues() {
+        namePattern = NamePatternPreferences.NAME_PATTERN_PREFERENCES_DEFAULT;
+    }
 }

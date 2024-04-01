@@ -195,12 +195,7 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
     }
 
     @Override
-    public void validate() {
-    }
-
-    @Override
     public String getDescription() {
         return CannyEdgesDetectorPreferences.super.getDescription();
     }
-
 }
