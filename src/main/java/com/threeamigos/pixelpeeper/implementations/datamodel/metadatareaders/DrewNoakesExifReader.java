@@ -20,6 +20,12 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifReader;
 import java.io.File;
 import java.util.Optional;
 
+/**
+ * An implementation of the {@link ExifReader} that uses Drew Noakes' library.
+ * Visit {@link https://github.com/drewnoakes/metadata-extractor Drew Noakes' GitHub project} for more information.
+ *
+ * @author Stefano Reksten
+ */
 public class DrewNoakesExifReader implements ExifReader {
 
     private File file;
@@ -36,7 +42,7 @@ public class DrewNoakesExifReader implements ExifReader {
         }
     }
 
-    boolean consume() {
+    private boolean consume() {
 
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(file);
@@ -70,10 +76,6 @@ public class DrewNoakesExifReader implements ExifReader {
 
         }
 
-    }
-
-    ExifMap getExifMap() {
-        return exifMap;
     }
 
     private void consumeJpeg(JpegDirectory jpegDirectory) throws MetadataException {
@@ -147,7 +149,7 @@ public class DrewNoakesExifReader implements ExifReader {
 
     private void consumeCanon(CanonMakernoteDirectory directory) {
 
-        // FIXME Seems that Canon (full frame?) cameras does not provide the FOCAL_LENGTH_35MM_EQUIVALENT
+        // It seems that Canon (full frame?) cameras does not provide the FOCAL_LENGTH_35MM_EQUIVALENT
 
         // https://exiftool.org/TagNames/Canon.html#SensorInfo
     }
