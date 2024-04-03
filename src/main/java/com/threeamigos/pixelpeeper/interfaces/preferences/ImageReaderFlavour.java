@@ -1,5 +1,10 @@
 package com.threeamigos.pixelpeeper.interfaces.preferences;
 
+/**
+ * An enumeration of the various image-reader libraries available to the application
+ *
+ * @author Stefano Reksten
+ */
 public enum ImageReaderFlavour {
 
     // Standard java libraries

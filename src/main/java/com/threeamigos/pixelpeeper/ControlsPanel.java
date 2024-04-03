@@ -3,7 +3,7 @@ package com.threeamigos.pixelpeeper;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DoodlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 
 import javax.swing.*;
@@ -16,12 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A control panel with zoom and doodling controls
+ *
+ * @author Stefano Reksten
+ */
 public class ControlsPanel extends JPanel implements ChangeListener, PropertyChangeListener {
 
     private static final long serialVersionUID = 1L;
 
     private final transient ImageHandlingPreferences imageHandlingPreferences;
-    private final transient DrawingPreferences drawingPreferences;
+    private final transient DoodlingPreferences drawingPreferences;
     private final transient DataModel dataModel;
 
     private JButton previousGroupButton;
@@ -37,7 +42,7 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
     private JLabel zoomLabel;
     private JSlider zoomSlider;
 
-    public ControlsPanel(ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
+    public ControlsPanel(ImageHandlingPreferences imageHandlingPreferences, DoodlingPreferences drawingPreferences,
                          DataModel dataModel) {
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
@@ -92,8 +97,8 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         buildBrushLabel();
         controlsBox.add(brushLabel);
 
-        brushSlider = new JSlider(SwingConstants.HORIZONTAL, DrawingPreferences.BRUSH_SIZE_MIN,
-                DrawingPreferences.BRUSH_SIZE_MAX, drawingPreferences.getBrushSize());
+        brushSlider = new JSlider(SwingConstants.HORIZONTAL, DoodlingPreferences.BRUSH_SIZE_MIN,
+                DoodlingPreferences.BRUSH_SIZE_MAX, drawingPreferences.getBrushSize());
         brushSlider.setMajorTickSpacing(10);
         brushSlider.setMinorTickSpacing(5);
         brushSlider.setPaintTicks(true);
@@ -106,8 +111,8 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         buildTransparencyLabel();
         controlsBox.add(transparencyLabel);
 
-        transparencySlider = new JSlider(SwingConstants.HORIZONTAL, DrawingPreferences.TRANSPARENCY_MIN,
-                DrawingPreferences.TRANSPARENCY_MAX, drawingPreferences.getTransparency());
+        transparencySlider = new JSlider(SwingConstants.HORIZONTAL, DoodlingPreferences.TRANSPARENCY_MIN,
+                DoodlingPreferences.TRANSPARENCY_MAX, drawingPreferences.getTransparency());
         transparencySlider.setMajorTickSpacing(10);
         transparencySlider.setMinorTickSpacing(5);
         transparencySlider.setPaintTicks(true);

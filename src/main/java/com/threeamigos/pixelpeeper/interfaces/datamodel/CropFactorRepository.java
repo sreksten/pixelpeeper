@@ -1,11 +1,13 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
+import com.threeamigos.pixelpeeper.data.ExifTag;
+
 import java.util.Optional;
 
 /**
  * An interface used to load and store crop factors for camera models that do not provide
  * the 35-mm (full frame) focal length equivalent in their EXIF tags. See also
- * {@link com.threeamigos.pixelpeeper.data.ExifTag}.<br/>
+ * {@link ExifTag}.<br/>
  * Since the 35-mm equivalent is used as a common denominator to properly scale images,
  * if this cannot be found the user may be asked to specify a crop factor for their camera.
  * This information can then be saved in order to be used in later sessions.

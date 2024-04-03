@@ -2,6 +2,11 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
+/**
+ * Preferences for the Canny edges-detection algorithm.
+ *
+ * @author Stefano Reksten
+ */
 public interface CannyEdgesDetectorPreferences extends Preferences {
 
     float LOW_THRESHOLD_PREFERENCES_DEFAULT = 2.5f;

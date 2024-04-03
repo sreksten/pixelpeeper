@@ -2,6 +2,11 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
+/**
+ * Preferences for the cursor
+ *
+ * @author Stefano Reksten
+ */
 public interface CursorPreferences extends Preferences {
 
     boolean BIG_POINTER_VISIBLE_DEFAULT = false;
@@ -37,7 +42,7 @@ public interface CursorPreferences extends Preferences {
         ROTATION_8((float) (Math.PI / 2)),
         ROTATION_9((float) (3 * Math.PI / 4));
 
-        private float radians;
+        private final float radians;
 
         Rotation(float radians) {
             this.radians = radians;

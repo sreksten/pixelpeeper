@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The canvas on which we draw the various image slices
+ * The canvas on which we draw the various images
  *
  * @author Stefano Reksten
  */

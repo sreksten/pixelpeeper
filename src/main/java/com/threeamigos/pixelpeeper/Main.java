@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Main class of the PixelPeeper application.<br/>
  * Makes use of Drew Noakes'
  * <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.
  *
@@ -34,6 +35,9 @@ public class Main {
     // cursor even when drawing
 
     // BUGFIX: lens manufacturer still missing
+
+    //TODO activate the RomyJona edges detector only in a test environment :)
+    //TODO a help window that shows all keyboard shortcuts
 
     public static final String APPLICATION_NAME = "3AM Pixel Peeper";
 

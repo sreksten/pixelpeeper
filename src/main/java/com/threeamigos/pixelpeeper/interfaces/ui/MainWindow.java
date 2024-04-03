@@ -1,13 +1,25 @@
 package com.threeamigos.pixelpeeper.interfaces.ui;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JMenu;
-
+/**
+ * An interface for the main UI of the application. When asked for a menu, it should return it or create it
+ * on-the-fly in order to let plugins add their capabilities to the main menu bar.
+ *
+ * @author Stefano Reksten
+ */
 public interface MainWindow {
 
-	JMenu getMenu(String menuTitle);
+    /**
+     * @param menuTitle title of the menu a plugin would like to add some voices to
+     * @return the JMenu
+     */
+    JMenu getMenu(String menuTitle);
 
-	Component getComponent();
+    /**
+     * @return main UI component
+     */
+    Component getComponent();
 
 }

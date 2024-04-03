@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 /**
- * An interface able to produce EXIF readers
+ * An interface able to produce {@link ExifReader}s.
  *
  * @author Stefano Reksten
  */

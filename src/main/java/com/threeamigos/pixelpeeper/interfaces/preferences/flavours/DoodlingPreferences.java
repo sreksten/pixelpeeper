@@ -4,7 +4,12 @@ import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
 import java.awt.*;
 
-public interface DrawingPreferences extends Preferences {
+/**
+ * Preferences for the doodling capabilities
+ *
+ * @author Stefano Reksten
+ */
+public interface DoodlingPreferences extends Preferences {
 
     int TRANSPARENCY_MIN = 0;
     int TRANSPARENCY_MAX = 100;

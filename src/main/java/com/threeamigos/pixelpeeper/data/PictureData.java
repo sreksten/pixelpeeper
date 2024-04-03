@@ -25,6 +25,7 @@ import static com.threeamigos.pixelpeeper.data.ExifValue.*;
  *
  * @author Stefano Reksten
  */
+//TODO move part of the comments to header
 public class PictureData implements PropertyChangeAware {
 
     /**

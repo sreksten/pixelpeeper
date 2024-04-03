@@ -6,7 +6,8 @@ import com.threeamigos.pixelpeeper.data.ExifTag;
 import java.util.List;
 
 /**
- * Keeps track of the last directory browsed and the files that were loaded last
+ * Not exactly a set of preferences; the session keeps track of the
+ * last directory browsed and the files that were loaded last.
  *
  * @author Stefano Reksten
  */

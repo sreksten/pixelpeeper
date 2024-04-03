@@ -31,7 +31,7 @@ public class Preferences {
     public static final CannyEdgesDetectorPreferences CANNY_EDGES_DETECTOR;
     public static final RomyJonaEdgesDetectorPreferences ROMY_JONA_EDGES_DETECTOR;
     public static final NamePatternPreferences NAME_PATTERN;
-    public static final DrawingPreferences DRAWING;
+    public static final DoodlingPreferences DRAWING;
     public static final HintsPreferences HINTS;
 
     static {
@@ -90,7 +90,7 @@ public class Preferences {
         NAME_PATTERN = new NamePatternPreferencesImpl();
         preferencesCollector.add(NAME_PATTERN, "name_pattern.preferences");
 
-        DRAWING = new DrawingPreferencesImpl();
+        DRAWING = new DoodlingPreferencesImpl();
         preferencesCollector.add(DRAWING, "drawing.preferences");
 
         HINTS = new HintsPreferencesImpl();

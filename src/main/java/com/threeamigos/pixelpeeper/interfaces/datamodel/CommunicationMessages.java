@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
-//TODO move the messages to the proper classes.
+//TODO move messages to the corresponding classes.
 public interface CommunicationMessages {
 
     String WINDOW_X_POSITION_CHANGED = "WindowXPositionChanged";

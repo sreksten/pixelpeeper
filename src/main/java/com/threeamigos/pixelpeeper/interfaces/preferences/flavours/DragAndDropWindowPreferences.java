@@ -2,6 +2,11 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import com.threeamigos.common.util.interfaces.preferences.flavours.SecondaryWindowPreferences;
 
+/**
+ * Preferences for the drag-and-drop proxy window
+ *
+ * @author Stefano Reksten
+ */
 public interface DragAndDropWindowPreferences extends SecondaryWindowPreferences {
 
     boolean OPEN_IMMEDIATELY_DEFAULT = true;

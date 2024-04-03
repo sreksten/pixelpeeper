@@ -5,7 +5,7 @@ import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
 
 /**
- * Keeps track of the Exif tags we are interested in
+ * Preferences for the various {@link ExifTag} we are interested in
  *
  * @author Stefano Reksten
  */

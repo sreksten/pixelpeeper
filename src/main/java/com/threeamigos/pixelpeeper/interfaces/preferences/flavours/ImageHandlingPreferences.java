@@ -4,6 +4,24 @@ import com.threeamigos.common.util.interfaces.preferences.Preferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavour;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
 
+/**
+ * Preferences for the image handling capabilities. These track:
+ * <ul>
+ *     <li>Autorotation: should the image be automatically rotated to show it properly or not (a picture may be
+ *     taken with the camera tilted to one side)</li>
+ *     <li>Zoom level from 10% to 100%</li>
+ *     <li>Normalization for crop factor (images will be zoomed relative to the camera crop factor)</li>
+ *     <li>Normalization for focal length (images will be zoomed relative to the focal length)</li>
+ *     <li>Movement in percentage when images are of different size</li>
+ *     <li>Movement applied to all images or only to the active image</li>
+ *     <li>Visibility of the position miniature</li>
+ *     <li>Disposition of the images if more than one is loaded (vertically, horizontally, grid)</li>
+ *     <li>Library used to load the images</li>
+ *     <li>Library used to read the EXIF tags</li>
+ * </ul>
+ *
+ * @author Stefano Reksten
+ */
 public interface ImageHandlingPreferences extends Preferences {
 
     boolean AUTOROTATION_DEFAULT = true;

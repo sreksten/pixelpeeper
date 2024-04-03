@@ -2,6 +2,11 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
+/**
+ * Preferences for the onscreen grid
+ *
+ * @author Stefano Reksten
+ */
 public interface GridPreferences extends Preferences {
 
     boolean GRID_VISIBLE_DEFAULT = false;

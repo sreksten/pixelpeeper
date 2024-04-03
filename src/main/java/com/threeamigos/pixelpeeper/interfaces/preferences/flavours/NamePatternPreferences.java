@@ -2,6 +2,11 @@ package com.threeamigos.pixelpeeper.interfaces.preferences.flavours;
 
 import com.threeamigos.common.util.interfaces.preferences.Preferences;
 
+/**
+ * Preferences for the mass-renaming capabilities
+ *
+ * @author Stefano Reksten
+ */
 public interface NamePatternPreferences extends Preferences {
 
     String NAME_PATTERN_PREFERENCES_DEFAULT = "{FILENAME}";

@@ -7,7 +7,7 @@ import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DrawingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DoodlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
@@ -26,7 +26,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private final PictureData pictureData;
     private final ExifTagsClassifier exifTagsClassifier;
     private final ImageHandlingPreferences imageHandlingPreferences;
-    private final DrawingPreferences drawingPreferences;
+    private final DoodlingPreferences drawingPreferences;
     private final EdgesDetectorPreferences edgesDetectorPreferences;
     private final FontService fontService;
     private final InfoRendererFactory infoRendererFactory;
@@ -47,7 +47,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private boolean edgeCalculationInProgress;
 
     public ImageSliceImpl(PictureData pictureData, ExifTagsClassifier exifTagsClassifier, InfoRendererFactory infoRendererFactory,
-                          ImageHandlingPreferences imageHandlingPreferences, DrawingPreferences drawingPreferences,
+                          ImageHandlingPreferences imageHandlingPreferences, DoodlingPreferences drawingPreferences,
                           EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
         this.pictureData = pictureData;
         this.exifTagsClassifier = exifTagsClassifier;

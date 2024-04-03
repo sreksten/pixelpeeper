@@ -7,5 +7,4 @@ import com.threeamigos.common.util.interfaces.persistence.Persistable;
  * See {@link Persistable} for more information.
  */
 public interface CropFactorRepositoryManager extends Persistable {
-
 }
