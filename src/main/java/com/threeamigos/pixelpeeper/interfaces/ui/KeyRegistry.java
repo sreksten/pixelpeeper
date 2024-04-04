@@ -68,7 +68,10 @@ public enum KeyRegistry implements HintsProducer<String> {
     SHOW_TAGS_KEY(KeyEvent.VK_T, "T", "Show tags",
             "You can show or hide the tags by pressing the 'T' key."),
 
-    SHOW_TAGS_OVERRIDING_PREFERENCES_KEY(KeyEvent.VK_V, "V", "Override tags preferences",
+    UNDO_KEY(KeyEvent.VK_U, "U", "Undo last doodle",
+            "You can undo the last annotation by pressing the 'U' key."),
+
+    SHOW_TAGS_OVERRIDING_PREFERENCES_KEY(KeyEvent.VK_V, "V", "View all tags overriding preferences",
             "You can override the single tags' preferences by pressing the 'V' key."),
 
     MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED(KeyEvent.VK_CONTROL, "Control",
@@ -78,9 +81,6 @@ public enum KeyRegistry implements HintsProducer<String> {
     ANNOTATE_KEY(KeyEvent.VK_SHIFT, "Shift", "Start doodling when clicking the mouse",
             "You can annotate an image by keeping the 'Shift' key pressed and then moving the mouse. Change color, size and transparency of the brush with the controls panel in the lower part of the window."),
 
-    UNDO_KEY(KeyEvent.VK_U, "U", "Undo last doodle",
-            "You can undo the last annotation by pressing the 'U' key."),
-
     DELETE_KEY(KeyEvent.VK_DELETE, "Delete", "Delete all doodles",
             "You can clear all annotations for the last selected slice by pressing the 'Delete' button."),
 
@@ -89,7 +89,7 @@ public enum KeyRegistry implements HintsProducer<String> {
 
     CHANGE_BIG_POINTER_ORIENTATION(-1, "Numpad 1 to 9", "Big Pointer orientation",
             "You can alter the Big Pointer orientation by clicking keys '1' to '9' (excluding '5') on your numeric keypad."),
-    
+
     ENLARGE_KEY(KeyEvent.VK_ADD, "Numpad +", "Enlarge grid",
             "You can zoom in or enlarge the grid by pressing the '+' key on the numeric keypad."),
 
