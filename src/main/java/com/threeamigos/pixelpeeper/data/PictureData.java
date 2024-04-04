@@ -20,17 +20,22 @@ import static com.threeamigos.pixelpeeper.data.ExifValue.*;
 
 /**
  * The data model used to show and compare an image to another.
- * Each PictureData contains references to an image, its edges representation, zoom level,
- * EXIF tags, and so on.
+ * Each PictureData contains info about:
+ * <ul>
+ *     <li>Image orientation, orientation correction, dimensions</li>
+ *     <li>All {@link ExifTag} associated with this image</li>
+ *     <li>A reference to the original file</li>
+ *     <li>An optional image containing calculated edges</li>
+ *     <li>The focal length, 35mm equivalent, current zoom level</li>
+ * </ul>
  *
  * @author Stefano Reksten
  */
-//TODO move part of the comments to header
 public class PictureData implements PropertyChangeAware {
 
     /**
      * PropertyChangeSupport is used to alert of edge calculation start and completion,
-     * in order to refresh UI components.
+     * in order for the UI to refresh components.
      */
     private final PropertyChangeSupport propertyChangeSupport;
     /**
