@@ -103,14 +103,14 @@ public enum KeyRegistry implements HintsProducer<String> {
     private final String action;
     private final String hint;
 
-    private KeyRegistry(int keyCode, String keyName, String action) {
+    KeyRegistry(int keyCode, String keyName, String action) {
         this.keyCode = keyCode;
         this.keyName = keyName;
         this.action = action;
         this.hint = null;
     }
 
-    private KeyRegistry(int keyCode, String keyName, String action, String hint) {
+    KeyRegistry(int keyCode, String keyName, String action, String hint) {
         this.keyCode = keyCode;
         this.keyName = keyName;
         this.action = action;
