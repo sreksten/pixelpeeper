@@ -4,12 +4,6 @@ import com.threeamigos.common.util.interfaces.preferences.flavours.SecondaryWind
 
 public interface ShortcutsWindowPreferences extends SecondaryWindowPreferences {
 
-    boolean OPEN_IMMEDIATELY_DEFAULT = true;
-
-    boolean isOpenImmediately();
-
-    void setOpenImmediately(boolean openImmediately);
-
     default String getDescription() {
         return "Shortcuts window preferences";
     }
