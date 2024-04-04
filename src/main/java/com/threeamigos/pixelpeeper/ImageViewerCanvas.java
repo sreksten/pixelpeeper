@@ -13,6 +13,7 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ShortcutsWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.*;
 
 import javax.swing.*;
@@ -37,6 +38,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
     private static final long serialVersionUID = 1L;
 
     private final transient DragAndDropWindowPreferences dragAndDropWindowPreferences;
+    private final transient ShortcutsWindowPreferences shortcutsWindowPreferences;
     private final transient DataModel dataModel;
     private final transient CursorManager cursorManager;
     private final transient FileSelector fileSelector;
@@ -46,20 +48,25 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
     private final transient AboutWindow aboutWindow;
     private final transient HintsDisplayer hintsWindow;
     private final transient DragAndDropWindow dragAndDropWindow;
+    private final transient ShortcutsWindow shortcutsWindow;
     private final transient List<MainWindowPlugin> plugins;
 
     private final JMenuBar menuBar;
     private final Map<String, JMenu> menus = new HashMap<>();
 
     public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
-                             DragAndDropWindowPreferences dragAndDropWindowPreferences, DataModel dataModel, CursorManager cursorManager,
+                             DragAndDropWindowPreferences dragAndDropWindowPreferences,
+                             ShortcutsWindowPreferences shortcutsWindowPreferences,
+                             DataModel dataModel, CursorManager cursorManager,
                              FileSelector fileSelector, NamePatternSelector namePatternSelector, FileRenamer fileRenamer,
                              ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
-                             HintsDisplayer hintsWindow, DragAndDropWindow dragAndDropWindow, MessageHandler messageHandler,
+                             HintsDisplayer hintsWindow, DragAndDropWindow dragAndDropWindow, ShortcutsWindow shortcutsWindow,
+                             MessageHandler messageHandler,
                              List<MainWindowPlugin> plugins) {
         super();
         this.menuBar = menuBar;
         this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
+        this.shortcutsWindowPreferences = shortcutsWindowPreferences;
         this.dataModel = dataModel;
         this.cursorManager = cursorManager;
         this.fileSelector = fileSelector;
@@ -69,6 +76,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
         this.aboutWindow = aboutWindow;
         this.hintsWindow = hintsWindow;
         this.dragAndDropWindow = dragAndDropWindow;
+        this.shortcutsWindow = shortcutsWindow;
         dragAndDropWindow.setProxyFor(this);
         this.plugins = plugins;
 
@@ -114,6 +122,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
         JMenu aboutMenu = new JMenu("?");
         menuBar.add(aboutMenu);
         addMenuItem(aboutMenu, "Show hints", KeyRegistry.SHOW_HINTS_KEY, event -> showHints());
+        addMenuItem(aboutMenu, "Show shortcuts", KeyRegistry.NO_KEY, event -> showShortcuts());
         addMenuItem(aboutMenu, "About", KeyRegistry.SHOW_ABOUT_KEY, event -> showAboutWindow());
 
     }
@@ -142,6 +151,12 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
     private void showHints() {
         hintsWindow.showHints(this);
+    }
+
+    private void showShortcuts() {
+        boolean visible = !shortcutsWindowPreferences.isVisible();
+        shortcutsWindowPreferences.setVisible(visible);
+        shortcutsWindow.setVisible(visible);
     }
 
     private void showAboutWindow() {

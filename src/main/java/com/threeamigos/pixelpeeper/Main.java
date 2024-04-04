@@ -37,7 +37,7 @@ public class Main {
     // BUGFIX: lens manufacturer still missing
 
     //TODO activate the RomyJona edges detector only in a test environment :)
-    //TODO a help window that shows all keyboard shortcuts
+    //TODO DataModel: check whether methods are in use or not
 
     public static final String APPLICATION_NAME = "3AM Pixel Peeper";
 
@@ -54,10 +54,10 @@ public class Main {
         JMenuBar menuBar = new JMenuBar();
 
         ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, Preferences.MAIN_WINDOW,
-                Preferences.DRAG_AND_DROP_WINDOW, dataModel, CursorManagerInstance.get(), FileSelectorInstance.get(),
+                Preferences.DRAG_AND_DROP_WINDOW, Preferences.SHORTCUTS_WINDOW, dataModel, CursorManagerInstance.get(), FileSelectorInstance.get(),
                 NamePatternSelectorInstance.get(), FileRenamerInstance.get(),
                 ChainedInputConsumerInstance.get(), decorators, AboutWindowInstance.get(), HintsDisplayerInstance.get(),
-                DragAndDropWindowInstance.get(), MessageHandlerInstance.get(), getPlugins());
+                DragAndDropWindowInstance.get(), ShortcutsWindowInstance.get(), MessageHandlerInstance.get(), getPlugins());
 
         dataModel.addPropertyChangeListener(imageViewerCanvas);
         dataModel.addPropertyChangeListener(ControlsPanelInstance.get());

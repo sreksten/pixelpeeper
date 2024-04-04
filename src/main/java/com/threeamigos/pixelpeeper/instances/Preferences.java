@@ -33,6 +33,7 @@ public class Preferences {
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DRAWING;
     public static final HintsPreferences HINTS;
+    public static final ShortcutsWindowPreferences SHORTCUTS_WINDOW;
 
     static {
 
@@ -95,6 +96,9 @@ public class Preferences {
 
         HINTS = new HintsPreferencesImpl();
         preferencesCollector.add(HINTS, "hints.preferences");
+
+        SHORTCUTS_WINDOW = new ShortcutsWindowPreferencesImpl();
+        preferencesCollector.add(SHORTCUTS_WINDOW, "shortcuts.preferences");
     }
 
     private Preferences() {
