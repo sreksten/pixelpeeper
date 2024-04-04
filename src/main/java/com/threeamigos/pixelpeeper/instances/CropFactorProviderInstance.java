@@ -34,7 +34,7 @@ public class CropFactorProviderInstance {
 
         Runtime.getRuntime().addShutdownHook(new Thread(cropFactorRepositoryManager::persist));
 
-        instance = new CropFactorProviderImpl(cropFactorRepository);
+        instance = new CropFactorProviderImpl(cropFactorRepository, MessageHandlerInstance.get());
     }
 
     private CropFactorProviderInstance() {

@@ -1,5 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
+import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CropFactorRepository;
 import com.threeamigos.pixelpeeper.interfaces.ui.CropFactorProvider;
 
@@ -10,11 +11,13 @@ import java.util.Optional;
 public class CropFactorProviderImpl implements CropFactorProvider {
 
     private final CropFactorRepository cropFactorRepository;
+    private final MessageHandler messageHandler;
 
     boolean busy;
 
-    public CropFactorProviderImpl(CropFactorRepository cropFactorRepository) {
+    public CropFactorProviderImpl(CropFactorRepository cropFactorRepository, MessageHandler messageHandler) {
         this.cropFactorRepository = cropFactorRepository;
+        this.messageHandler = messageHandler;
     }
 
     @Override
@@ -74,6 +77,7 @@ public class CropFactorProviderImpl implements CropFactorProvider {
             try {
                 return Float.parseFloat(cropString);
             } catch (NumberFormatException e) {
+                messageHandler.handleErrorMessage("Wrong crop factor: " + cropFactorTextField.getText());
             }
         }
         return null;
