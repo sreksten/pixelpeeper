@@ -18,8 +18,23 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CursorManagerImpl implements CursorManager, PropertyChangeListener {
+
+    private static final Map<Integer, Rotation> keyCodesToRotation = new HashMap<>();
+
+    static {
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD1, Rotation.ROTATION_1);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD2, Rotation.ROTATION_2);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD3, Rotation.ROTATION_3);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD4, Rotation.ROTATION_4);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD6, Rotation.ROTATION_6);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD7, Rotation.ROTATION_7);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD8, Rotation.ROTATION_8);
+        keyCodesToRotation.put(KeyEvent.VK_NUMPAD9, Rotation.ROTATION_9);
+    }
 
     private final CursorPreferences pointerPreferences;
 
@@ -52,24 +67,7 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
                     updateCursor();
 
                 } else if (pointerPreferences.isBigPointerVisible()) {
-                    Rotation rotation = null;
-                    if (e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
-                        rotation = Rotation.ROTATION_1;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD2) {
-                        rotation = Rotation.ROTATION_2;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD3) {
-                        rotation = Rotation.ROTATION_3;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD4) {
-                        rotation = Rotation.ROTATION_4;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD6) {
-                        rotation = Rotation.ROTATION_6;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
-                        rotation = Rotation.ROTATION_7;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD8) {
-                        rotation = Rotation.ROTATION_8;
-                    } else if (e.getKeyCode() == KeyEvent.VK_NUMPAD9) {
-                        rotation = Rotation.ROTATION_9;
-                    }
+                    Rotation rotation = keyCodesToRotation.get(e.getKeyCode());
                     if (rotation != null) {
                         pointerPreferences.setBigPointerRotation(rotation);
                         updateCursor();
