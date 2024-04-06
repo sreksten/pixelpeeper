@@ -41,7 +41,7 @@ public class EdgesDetectorPlugin extends AbstractMainWindowPlugin implements Pro
                 edgesDetectorPreferences.isShowEdges(), event -> toggleShowEdges());
         JMenu edgesDetectorFlavourMenuItem = new JMenu("Flavours");
         edgesDetectorMenu.add(edgesDetectorFlavourMenuItem);
-        for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.values()) {
+        for (EdgesDetectorFlavour flavour : EdgesDetectorFlavour.getActiveValues()) {
             JMenuItem flavourMenuItem = addCheckboxMenuItem(edgesDetectorFlavourMenuItem, flavour.getDescription(),
                     KeyRegistry.NO_KEY, edgesDetectorPreferences.getEdgesDetectorFlavour() == flavour,
                     event -> updateEdgesDetectorFlavour(flavour));

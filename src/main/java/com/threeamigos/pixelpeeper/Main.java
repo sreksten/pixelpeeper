@@ -20,25 +20,18 @@ import java.util.List;
 /**
  * Main class of the PixelPeeper application.<br/>
  * Makes use of Drew Noakes'
- * <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.
+ * <a href="https://drewnoakes.com/code/exif/">Metadata Extractor</a>.<br/>
+ * Makes use of Tom Gibara's Canny Edge algorithm implementation.
  *
  * @author Stefano Reksten
  */
 
 public class Main {
 
-    // BUGFIX: if the drag and drop window is open, focus is switched to that. Well
-    // maybe not quite a bug but...
-
-    // BUGFIX: the big pointer may flicker when changed
-
     // BUGFIX: clicking mouse button when keeping CAPS key will still change to hand
     // cursor even when drawing
 
-    // BUGFIX: lens manufacturer still missing
-
-    //TODO activate the RomyJona edges detector only in a test environment :)
-    //TODO DataModel: check whether methods are in use or not
+    // BUGFIX: lens manufacturer still missing - can it actually be retrieved?
 
     public static final String APPLICATION_NAME = "3AM Pixel Peeper";
 

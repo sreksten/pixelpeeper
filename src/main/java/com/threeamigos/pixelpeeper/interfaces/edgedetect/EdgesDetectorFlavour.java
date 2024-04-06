@@ -1,5 +1,11 @@
 package com.threeamigos.pixelpeeper.interfaces.edgedetect;
 
+import com.threeamigos.pixelpeeper.Environment;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * An enumeration of the various edge-detection algorithms available to the application
  *
@@ -28,5 +34,15 @@ public enum EdgesDetectorFlavour {
 
     public String getDescription() {
         return description;
+    }
+
+    public static Collection<EdgesDetectorFlavour> getActiveValues() {
+        List<EdgesDetectorFlavour> list = new ArrayList<>();
+        list.add(CANNY_EDGES_DETECTOR);
+        if (Environment.isDev()) {
+            list.add(ROMY_JONA_EDGES_DETECTOR);
+        }
+        list.add(SOBEL_EDGES_DETECTOR);
+        return list;
     }
 }
