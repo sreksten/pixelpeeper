@@ -178,7 +178,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
         }
     }
 
-    private JMenuItem addMenuItem(JMenu menu, String title, KeyRegistry mnemonic, ActionListener actionListener) {
+    private void addMenuItem(JMenu menu, String title, KeyRegistry mnemonic, ActionListener actionListener) {
         JMenuItem menuItem = new JMenuItem(title);
         if (actionListener != null) {
             menuItem.addActionListener(actionListener);
@@ -187,7 +187,6 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
             menuItem.setMnemonic(mnemonic.getKeyCode());
         }
         menu.add(menuItem);
-        return menuItem;
     }
 
     public void reframeDataModel() {
