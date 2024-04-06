@@ -28,39 +28,31 @@ import java.util.stream.Collectors;
 
 public class DataModelImpl implements DataModel {
 
-    private final ExifTagsClassifier tagsClassifier;
+    private final MessageHandler messageHandler;
+    private final SessionPreferences sessionPreferences;
     private final ImageSlices imageSlices;
     private final ImageHandlingPreferences imageHandlingPreferences;
-    private final SessionPreferences sessionPreferences;
     private final EdgesDetectorPreferences edgesDetectorPreferences;
+    private final GroupedFilesByExifTag groupedFiles;
     private final ExifImageReader imageReader;
+    private final ExifTagsClassifier tagsClassifier;
     private final ExifTagsFilter exifTagsFilter;
-    private final MessageHandler messageHandler;
-
     private final PropertyChangeSupport propertyChangeSupport;
 
     private boolean isDrawing;
     private boolean isMovementAppliedToAllImagesTemporarilyInverted;
 
-    private final GroupedFilesByExifTag groupedFiles;
-
-    public DataModelImpl(ExifTagsClassifier commonTagsHelper, ImageSlices imageSlicesManager,
-                         ImageHandlingPreferences imageHandlingPreferences, SessionPreferences sessionPreferences,
-                         EdgesDetectorPreferences edgesDetectorPreferences, ExifCache exifCache, ExifImageReader imageReader,
-                         ExifTagsFilter exifTagsFilter, MessageHandler messageHandler) {
-        this.tagsClassifier = commonTagsHelper;
-        this.imageSlices = imageSlicesManager;
-        imageSlicesManager.addPropertyChangeListener(this);
-        this.imageHandlingPreferences = imageHandlingPreferences;
-        this.sessionPreferences = sessionPreferences;
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
-        this.imageReader = imageReader;
-        this.exifTagsFilter = exifTagsFilter;
-        this.messageHandler = messageHandler;
-
+    DataModelImpl(DataModelBuilder builder) {
+        messageHandler = builder.getMessageHandler();
+        sessionPreferences = builder.getSessionPreferences();
+        imageSlices = builder.getImageSlices();
+        imageHandlingPreferences = builder.getImageHandlingPreferences();
+        edgesDetectorPreferences = builder.getEdgesDetectorPreferences();
+        groupedFiles = new GroupedFilesByExifTag(builder.getExifCache());
+        imageReader = builder.getExifImageReader();
+        tagsClassifier = builder.getExifTagsClassifier();
+        exifTagsFilter = builder.getExifTagsFilter();
         propertyChangeSupport = new PropertyChangeSupport(this);
-
-        groupedFiles = new GroupedFilesByExifTag(exifCache);
     }
 
     @Override
