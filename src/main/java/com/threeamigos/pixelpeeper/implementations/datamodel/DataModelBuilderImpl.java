@@ -2,7 +2,6 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.*;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
@@ -12,7 +11,6 @@ public class DataModelBuilderImpl implements DataModelBuilder,
         DataModelBuilder.StepSessionPreferences,
         DataModelBuilder.StepImageSlices,
         DataModelBuilder.StepImageHandlingPreferences,
-        DataModelBuilder.StepEdgesDetectorPreferences,
         DataModelBuilder.StepExifCache,
         DataModelBuilder.StepExifImageReader,
         DataModelBuilder.StepExifTagsClassifier,
@@ -27,7 +25,6 @@ public class DataModelBuilderImpl implements DataModelBuilder,
     private SessionPreferences sessionPreferences;
     private ImageSlices imageSlices;
     private ImageHandlingPreferences imageHandlingPreferences;
-    private EdgesDetectorPreferences edgesDetectorPreferences;
     private ExifCache exifCache;
     private ExifImageReader exifImageReader;
     private ExifTagsClassifier exifTagsClassifier;
@@ -52,14 +49,8 @@ public class DataModelBuilderImpl implements DataModelBuilder,
     }
 
     @Override
-    public StepEdgesDetectorPreferences withImageHandlingPreferences(ImageHandlingPreferences imageHandlingPreferences) {
+    public StepExifCache withImageHandlingPreferences(ImageHandlingPreferences imageHandlingPreferences) {
         this.imageHandlingPreferences = imageHandlingPreferences;
-        return this;
-    }
-
-    @Override
-    public StepExifCache withEdgesDetectorPreferences(EdgesDetectorPreferences edgesDetectorPreferences) {
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
         return this;
     }
 
@@ -80,7 +71,6 @@ public class DataModelBuilderImpl implements DataModelBuilder,
         this.exifTagsClassifier = exifTagsClassifier;
         return this;
     }
-
 
     @Override
     public StepBuild withExifTagsFilter(ExifTagsFilter exifTagsFilter) {
@@ -109,10 +99,6 @@ public class DataModelBuilderImpl implements DataModelBuilder,
         return imageHandlingPreferences;
     }
 
-    public EdgesDetectorPreferences getEdgesDetectorPreferences() {
-        return edgesDetectorPreferences;
-    }
-
     public ExifCache getExifCache() {
         return exifCache;
     }
@@ -128,4 +114,5 @@ public class DataModelBuilderImpl implements DataModelBuilder,
     public ExifTagsFilter getExifTagsFilter() {
         return exifTagsFilter;
     }
+
 }

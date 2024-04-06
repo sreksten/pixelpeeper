@@ -9,7 +9,6 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.*;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
@@ -32,7 +31,6 @@ public class DataModelImpl implements DataModel {
     private final SessionPreferences sessionPreferences;
     private final ImageSlices imageSlices;
     private final ImageHandlingPreferences imageHandlingPreferences;
-    private final EdgesDetectorPreferences edgesDetectorPreferences;
     private final GroupedFilesByExifTag groupedFiles;
     private final ExifImageReader imageReader;
     private final ExifTagsClassifier tagsClassifier;
@@ -47,7 +45,6 @@ public class DataModelImpl implements DataModel {
         sessionPreferences = builder.getSessionPreferences();
         imageSlices = builder.getImageSlices();
         imageHandlingPreferences = builder.getImageHandlingPreferences();
-        edgesDetectorPreferences = builder.getEdgesDetectorPreferences();
         groupedFiles = new GroupedFilesByExifTag(builder.getExifCache());
         imageReader = builder.getExifImageReader();
         tagsClassifier = builder.getExifTagsClassifier();
@@ -193,11 +190,6 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public boolean isAutorotation() {
-        return imageHandlingPreferences.isAutorotation();
-    }
-
-    @Override
     public void toggleAutorotation() {
         imageSlices.toggleAutorotation();
         propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
@@ -223,11 +215,6 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public void resetMovement() {
-        imageSlices.resetMovement();
-    }
-
-    @Override
     public void changeZoomLevel() {
         imageSlices.updateZoomLevel();
     }
@@ -240,41 +227,6 @@ public class DataModelImpl implements DataModel {
     @Override
     public void resetActiveSlice() {
         imageSlices.setNoActiveSlice();
-    }
-
-    @Override
-    public boolean isMovementAppliedToAllImages() {
-        return imageHandlingPreferences.isMovementAppliedToAllImages();
-    }
-
-    @Override
-    public void setMovementAppliedToAllImages(boolean movementAppliedToAllImages) {
-        imageHandlingPreferences.setMovementAppliedToAllImages(movementAppliedToAllImages);
-    }
-
-    @Override
-    public void toggleMovementAppliedToAllImages() {
-        imageHandlingPreferences
-                .setMovementAppliedToAllImages(!imageHandlingPreferences.isMovementAppliedToAllImages());
-    }
-
-    @Override
-    public boolean isMovementAppliedToAllImagesTemporarilyInverted() {
-        return isMovementAppliedToAllImagesTemporarilyInverted;
-    }
-
-    @Override
-    public boolean isShowEdges() {
-        return edgesDetectorPreferences.isShowEdges();
-    }
-
-    @Override
-    public void toggleShowingEdges() {
-        boolean isShowEdges = !edgesDetectorPreferences.isShowEdges();
-        edgesDetectorPreferences.setShowEdges(isShowEdges);
-        if (!isShowEdges) {
-            imageSlices.releaseEdges();
-        }
     }
 
     @Override

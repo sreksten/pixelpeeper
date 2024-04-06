@@ -18,8 +18,6 @@ import java.util.Optional;
  * @author Stefano Reksten
  */
 
-//TODO check if is it safe to remove all those methods
-//TODO document all this thing
 public interface DataModel extends PropertyChangeListener, PropertyChangeAware, HintsProducer<String> {
 
     // Preferences part

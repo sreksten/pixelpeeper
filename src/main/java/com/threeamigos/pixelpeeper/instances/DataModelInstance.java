@@ -10,7 +10,6 @@ public class DataModelInstance {
             .withSessionPreferences(Preferences.SESSION)
             .withImageSlices(ImageSlicesInstance.get())
             .withImageHandlingPreferences(Preferences.IMAGE_HANDLING)
-            .withEdgesDetectorPreferences(Preferences.EDGES_DETECTOR)
             .withExifCache(ExifCacheInstance.get())
             .withExifImageReader(ExifImageReaderInstance.get())
             .withExifTagsClassifier(ExifTagsClassifierInstance.get())

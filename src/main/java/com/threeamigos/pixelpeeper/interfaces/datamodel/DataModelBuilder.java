@@ -1,7 +1,6 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
@@ -21,11 +20,7 @@ public interface DataModelBuilder {
     }
 
     interface StepImageHandlingPreferences {
-        StepEdgesDetectorPreferences withImageHandlingPreferences(ImageHandlingPreferences imageHandlingPreferences);
-    }
-
-    interface StepEdgesDetectorPreferences {
-        StepExifCache withEdgesDetectorPreferences(EdgesDetectorPreferences edgesDetectorPreferences);
+        StepExifCache withImageHandlingPreferences(ImageHandlingPreferences imageHandlingPreferences);
     }
 
     interface StepExifCache {
@@ -55,8 +50,6 @@ public interface DataModelBuilder {
     ImageSlices getImageSlices();
 
     ImageHandlingPreferences getImageHandlingPreferences();
-
-    EdgesDetectorPreferences getEdgesDetectorPreferences();
 
     ExifCache getExifCache();
 
