@@ -24,24 +24,12 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
 
     // Preferences part
 
-    boolean isAutorotation();
-
     /**
      * Sets or unsets the autorotation feature. If this is active, when an image is loaded that has not
      * a correct orientation, it will be translated to an equivalent image that can be seen without the
      * end user being force to tilt his/her head.
      */
     void toggleAutorotation();
-
-    boolean isMovementAppliedToAllImages();
-
-    void toggleMovementAppliedToAllImages();
-
-    boolean isMovementAppliedToAllImagesTemporarilyInverted();
-
-    boolean isShowEdges();
-
-    void toggleShowingEdges();
 
     /**
      * Starts the edge-detection algorithm
@@ -58,8 +46,6 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
 
     /**
      * Paints all objects on screen (images, decorators, tags, ...).
-     *
-     * @param graphics
      */
     void repaint(Graphics2D graphics);
 
@@ -68,17 +54,10 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
      */
     void requestRepaint();
 
-    void setMovementAppliedToAllImages(boolean movementAppliesToAllFrames);
-
     /**
      * If the image is bigger than the screen, this function shifts it around.
      */
     void move(int deltaX, int deltaY);
-
-    /**
-     * Resets the movement and centers all images.
-     */
-    void resetMovement();
 
     /**
      * Changes zoom level for all images.
