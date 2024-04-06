@@ -66,13 +66,9 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
             return Collections.emptyList();
         }
 
-        Map<ExifTag, Collection<ExifValue>> filteredTags = filterTags(component);
+        Optional<Map<ExifTag, Collection<ExifValue>>> filteredTagsOpt = filterTags(component);
 
-        if (filteredTags == null) {
-            return Collections.emptyList();
-        } else {
-            return getMatchingFiles(filteredTags);
-        }
+        return filteredTagsOpt.map(this::getMatchingFiles).orElse(Collections.emptyList());
     }
 
     public ExifTag getTagToGroupBy() {
@@ -87,7 +83,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
         return groupingPanel.getTolerance();
     }
 
-    private Map<ExifTag, Collection<ExifValue>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
+    private Optional<Map<ExifTag, Collection<ExifValue>>> createSelectionMap(Map<ExifTag, Collection<ExifValue>> map) {
         Map<ExifTag, Collection<ExifValue>> selectionMap = new EnumMap<>(ExifTag.class);
 
         for (ExifTag exifTag : map.keySet()) {
@@ -98,10 +94,10 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
             }
         }
 
-        return selectionMap;
+        return Optional.of(selectionMap);
     }
 
-    private Map<ExifTag, Collection<ExifValue>> filterTags(Component component) {
+    private Optional<Map<ExifTag, Collection<ExifValue>>> filterTags(Component component) {
 
         tagsToSelectedValues = new EnumMap<>(ExifTag.class);
 
@@ -153,7 +149,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
         dialog.dispose();
 
         if (!selectionSuccessful) {
-            return null;
+            return Optional.empty();
         }
 
         return createSelectionMap(tagsToFilterBy);
@@ -235,24 +231,26 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
     }
 
     private void updateSelectionInformation() {
-        Map<ExifTag, Collection<ExifValue>> selectionMap = createSelectionMap(tagsToFilterBy);
-        Collection<File> matchingFiles;
+        Optional<Map<ExifTag, Collection<ExifValue>>> selectionMapOpt = createSelectionMap(tagsToFilterBy);
+        selectionMapOpt.ifPresent(selectionMap -> {
+            Collection<File> matchingFiles;
 
-        if (selectionMap.isEmpty()) {
-            matchingFiles = files;
-            matchingFilesCount = files.size();
-        } else {
-            matchingFiles = getMatchingFiles(selectionMap);
-            matchingFilesCount = matchingFiles.size();
-        }
+            if (selectionMap.isEmpty()) {
+                matchingFiles = files;
+                matchingFilesCount = files.size();
+            } else {
+                matchingFiles = getMatchingFiles(selectionMap);
+                matchingFilesCount = matchingFiles.size();
+            }
 
-        groupingPanel.clearMap();
-        groupingPanel.mapFilesToTags(matchingFiles);
+            groupingPanel.clearMap();
+            groupingPanel.mapFilesToTags(matchingFiles);
 
-        groupedFiles = groupingPanel.groupFiles();
+            groupedFiles = groupingPanel.groupFiles();
 
-        updateMatchingFilesLabel();
-        updateOkButtonStatus();
+            updateMatchingFilesLabel();
+            updateOkButtonStatus();
+        });
     }
 
     private Collection<File> getMatchingFiles(Map<ExifTag, Collection<ExifValue>> selectionMap) {
@@ -267,20 +265,20 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
     }
 
     private void updateMatchingFilesLabel() {
-        String newLabel;
+        StringBuilder newLabel = new StringBuilder();
         if (matchingFilesCount == 0) {
-            newLabel = "No file matches.";
+            newLabel.append("No file matches.");
         } else if (matchingFilesCount == 1) {
-            newLabel = "One file matches.";
+            newLabel.append("One file matches.");
         } else {
             int groups = groupedFiles.entrySet().size();
             if (groups == 1) {
-                newLabel = String.format("%d files match.", matchingFilesCount);
+                newLabel.append(String.format("%d files match.", matchingFilesCount));
             } else {
                 String groupsView = groupedFiles.values().stream().map(c -> String.valueOf(c.size()))
                         .collect(Collectors.joining(", "));
-                newLabel = String.format("%d files match in %d groups of %s files.", matchingFilesCount, groups,
-                        groupsView);
+                newLabel.append(String.format("%d files match in %d groups of %s files.", matchingFilesCount, groups,
+                        groupsView));
             }
         }
 
@@ -290,15 +288,15 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
             if (totalFiles > MAX_SELECTABLE_FILES_PER_GROUP) {
                 ExifTag tagToGroupBy = groupingPanel.getExifTagToGroupBy();
                 if (tagToGroupBy == null) {
-                    newLabel += "Please add some filters or specify how to group files.";
+                    newLabel.append("Please add some filters or specify how to group files.");
                 } else {
-                    newLabel += String.format(" Group for %s %s contains %d elements. Please add some filters.",
-                            tagToGroupBy.getDescription(), tagValue.getDescription(), totalFiles);
+                    newLabel.append(String.format(" Group for %s %s contains %d elements. Please add some filters.",
+                            tagToGroupBy.getDescription(), tagValue.getDescription(), totalFiles));
                 }
             }
         }
 
-        matchingFilesLabel.setText(newLabel);
+        matchingFilesLabel.setText(newLabel.toString());
     }
 
     private void updateOkButtonStatus() {
