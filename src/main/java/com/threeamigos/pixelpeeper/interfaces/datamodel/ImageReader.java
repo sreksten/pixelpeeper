@@ -11,6 +11,9 @@ import java.io.File;
 @FunctionalInterface
 public interface ImageReader {
 
-    BufferedImage readImage(File file) throws Exception;
+    /**
+     * All the actual implementations throw a generic Exception
+     */
+    BufferedImage readImage(File file) throws Exception; //NOSONAR
 
 }

@@ -13,6 +13,8 @@ import com.drew.metadata.exif.makernotes.NikonType1MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.NikonType2MakernoteDirectory;
 import com.drew.metadata.exif.makernotes.PanasonicMakernoteDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.threeamigos.common.util.implementations.messagehandler.ConsoleMessageHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.pixelpeeper.data.ExifMap;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifReader;
@@ -22,7 +24,7 @@ import java.util.Optional;
 
 /**
  * An implementation of the {@link ExifReader} that uses Drew Noakes' library.
- * Visit {@link https://github.com/drewnoakes/metadata-extractor Drew Noakes' GitHub project} for more information.
+ * Visit {@link <a href="https://github.com/drewnoakes/metadata-extractor">Drew Noakes' GitHub project</a>} for more information.
  *
  * @author Stefano Reksten
  */
@@ -30,6 +32,7 @@ public class DrewNoakesExifReader implements ExifReader {
 
     private File file;
     private ExifMap exifMap;
+    private final MessageHandler messageHandler = new ConsoleMessageHandler();
 
     @Override
     public Optional<ExifMap> readMetadata(File file) {
@@ -138,7 +141,7 @@ public class DrewNoakesExifReader implements ExifReader {
     }
 
     private void consumeNikon1(NikonType1MakernoteDirectory directory) {
-
+        // To be implemented - I don't have access to a Nikon camera
     }
 
     private void consumeNikon2(NikonType2MakernoteDirectory directory) {
@@ -148,9 +151,7 @@ public class DrewNoakesExifReader implements ExifReader {
     }
 
     private void consumeCanon(CanonMakernoteDirectory directory) {
-
         // It seems that Canon (full frame?) cameras does not provide the FOCAL_LENGTH_35MM_EQUIVALENT
-
         // https://exiftool.org/TagNames/Canon.html#SensorInfo
     }
 
@@ -161,12 +162,12 @@ public class DrewNoakesExifReader implements ExifReader {
     private void printAllTags(Metadata metadata) {
         for (Directory directory : metadata.getDirectories()) {
             for (Tag tag : directory.getTags()) {
-                System.out.format("[%s] - %s [%s] = %s%n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
-                        tag.getDescription());
+                messageHandler.handleInfoMessage(String.format("[%s] - %s [%s] = %s%n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
+                        tag.getDescription()));
             }
             if (directory.hasErrors()) {
                 for (String error : directory.getErrors()) {
-                    System.err.format("ERROR: %s%n", error);
+                    messageHandler.handleErrorMessage(String.format("ERROR: %s%n", error));
                 }
             }
         }
