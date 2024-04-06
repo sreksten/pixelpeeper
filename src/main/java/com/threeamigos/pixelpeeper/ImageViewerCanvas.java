@@ -1,7 +1,6 @@
 package com.threeamigos.pixelpeeper;
 
 import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
-import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.common.util.interfaces.ui.AboutWindow;
 import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
@@ -49,37 +48,30 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
     private final transient HintsDisplayer hintsWindow;
     private final transient DragAndDropWindow dragAndDropWindow;
     private final transient ShortcutsWindow shortcutsWindow;
-    private final transient List<MainWindowPlugin> plugins;
+    private final transient Collection<MainWindowPlugin> plugins;
 
     private final JMenuBar menuBar;
     private final Map<String, JMenu> menus = new HashMap<>();
 
-    public ImageViewerCanvas(JMenuBar menuBar, MainWindowPreferences mainWindowPreferences,
-                             DragAndDropWindowPreferences dragAndDropWindowPreferences,
-                             ShortcutsWindowPreferences shortcutsWindowPreferences,
-                             DataModel dataModel, CursorManager cursorManager,
-                             FileSelector fileSelector, NamePatternSelector namePatternSelector, FileRenamer fileRenamer,
-                             ChainedInputConsumer chainedInputConsumer, Collection<ImageDecorator> decorators, AboutWindow aboutWindow,
-                             HintsDisplayer hintsWindow, DragAndDropWindow dragAndDropWindow, ShortcutsWindow shortcutsWindow,
-                             MessageHandler messageHandler,
-                             List<MainWindowPlugin> plugins) {
+    public ImageViewerCanvas(ImageViewerCanvasBuilder builder) {
         super();
-        this.menuBar = menuBar;
-        this.dragAndDropWindowPreferences = dragAndDropWindowPreferences;
-        this.shortcutsWindowPreferences = shortcutsWindowPreferences;
-        this.dataModel = dataModel;
-        this.cursorManager = cursorManager;
-        this.fileSelector = fileSelector;
-        this.namePatternSelector = namePatternSelector;
-        this.fileRenamer = fileRenamer;
-        this.decorators = decorators;
-        this.aboutWindow = aboutWindow;
-        this.hintsWindow = hintsWindow;
-        this.dragAndDropWindow = dragAndDropWindow;
-        this.shortcutsWindow = shortcutsWindow;
+        this.menuBar = builder.getMenuBar();
+        this.dragAndDropWindowPreferences = builder.getDragAndDropWindowPreferences();
+        this.shortcutsWindowPreferences = builder.getShortcutsWindowPreferences();
+        this.dataModel = builder.getDataModel();
+        this.cursorManager = builder.getCursorManager();
+        this.fileSelector = builder.getFileSelector();
+        this.namePatternSelector = builder.getNamePatternSelector();
+        this.fileRenamer = builder.getFileRenamer();
+        this.decorators = builder.getDecorators();
+        this.aboutWindow = builder.getAboutWindow();
+        this.hintsWindow = builder.getHintsDisplayer();
+        this.dragAndDropWindow = builder.getDragAndDropWindow();
+        this.shortcutsWindow = builder.getShortcutsWindow();
         dragAndDropWindow.setProxyFor(this);
-        this.plugins = plugins;
+        this.plugins = builder.getPlugins();
 
+        MainWindowPreferences mainWindowPreferences = builder.getMainWindowPreferences();
         setPreferredSize(new Dimension(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight()));
         setSize(mainWindowPreferences.getWidth(), mainWindowPreferences.getHeight());
         setMinimumSize(new Dimension(800, 600));
@@ -88,6 +80,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
         setFocusable(true);
         setDoubleBuffered(true);
 
+        ChainedInputConsumer chainedInputConsumer = builder.getChainedInputConsumer();
         chainedInputConsumer.addConsumer(getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
         addMouseListener(chainedInputConsumer);
         addMouseMotionListener(chainedInputConsumer);
@@ -96,7 +89,7 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
         updateCursor();
 
-        DragAndDropSupportHelper.addJavaFileListSupport(this, messageHandler);
+        DragAndDropSupportHelper.addJavaFileListSupport(this, builder.getMessageHandler());
 
         addMenus();
     }

@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper;
 
 import com.threeamigos.common.util.implementations.ui.ChainedInputConsumer;
+import com.threeamigos.pixelpeeper.implementations.ui.ImageViewerCanvasBuilderImpl;
 import com.threeamigos.pixelpeeper.instances.*;
 import com.threeamigos.pixelpeeper.instances.decorators.GridDecoratorInstance;
 import com.threeamigos.pixelpeeper.instances.plugins.*;
@@ -53,11 +54,25 @@ public class Main {
 
         JMenuBar menuBar = new JMenuBar();
 
-        ImageViewerCanvas imageViewerCanvas = new ImageViewerCanvas(menuBar, Preferences.MAIN_WINDOW,
-                Preferences.DRAG_AND_DROP_WINDOW, Preferences.SHORTCUTS_WINDOW, dataModel, CursorManagerInstance.get(), FileSelectorInstance.get(),
-                NamePatternSelectorInstance.get(), FileRenamerInstance.get(),
-                ChainedInputConsumerInstance.get(), decorators, AboutWindowInstance.get(), HintsDisplayerInstance.get(),
-                DragAndDropWindowInstance.get(), ShortcutsWindowInstance.get(), MessageHandlerInstance.get(), getPlugins());
+        ImageViewerCanvas imageViewerCanvas = ImageViewerCanvasBuilderImpl.builder()
+                .withMessageHandler(MessageHandlerInstance.get())
+                .withDataModel(dataModel)
+                .withMainWindowPreferences(Preferences.MAIN_WINDOW)
+                .withDragAndDropWindowPreferences(Preferences.DRAG_AND_DROP_WINDOW)
+                .withDragAndDropWindow(DragAndDropWindowInstance.get())
+                .withShortcutsWindowPreferences(Preferences.SHORTCUTS_WINDOW)
+                .withShortcutsWindow(ShortcutsWindowInstance.get())
+                .withCursorManager(CursorManagerInstance.get())
+                .withFileSelector(FileSelectorInstance.get())
+                .withNamePatternSelector(NamePatternSelectorInstance.get())
+                .withFileRenamer(FileRenamerInstance.get())
+                .withHintsDisplayer(HintsDisplayerInstance.get())
+                .withMenuBar(menuBar)
+                .withChainedInputConsumer(ChainedInputConsumerInstance.get())
+                .withDecorators(decorators)
+                .withPlugins(getPlugins())
+                .withAboutWindow(AboutWindowInstance.get())
+                .build();
 
         dataModel.addPropertyChangeListener(imageViewerCanvas);
         dataModel.addPropertyChangeListener(ControlsPanelInstance.get());
