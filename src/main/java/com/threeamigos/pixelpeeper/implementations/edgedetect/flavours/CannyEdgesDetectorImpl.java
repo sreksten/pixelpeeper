@@ -58,8 +58,8 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
 
     private int height;
     private int width;
-    private int picsize;
-    private int[] data;
+    private int picSize;
+    private int[] luminanceData;
     private int[] magnitude;
     private BufferedImage sourceImage;
     private BufferedImage edgesImage;
@@ -74,6 +74,8 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     private float[] yConv;
     private float[] xGradient;
     private float[] yGradient;
+
+    private boolean isAborted;
 
     // constructors
 
@@ -202,7 +204,7 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     /**
      * The number of pixels across which the Gaussian kernel is applied. This
      * implementation will reduce the radius if the contribution of pixel values is
-     * deemed negligable, so this is actually a maximum radius.
+     * deemed negligible, so this is actually a maximum radius.
      *
      * @param gaussianKernelWidth a radius for the convolution operation in pixels,
      *                            at least 2.
@@ -218,7 +220,7 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
      * The radius of the Gaussian convolution kernel used to smooth the source image
      * prior to gradient calculation. The default value is 16.
      *
-     * @return the Gaussian kernel radius in pixels
+     * @return the Gaussian kernel radius in pixels, must exceed 0.1f.
      */
 
     public float getGaussianKernelRadius() {
@@ -228,8 +230,6 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     /**
      * Sets the radius of the Gaussian convolution kernel used to smooth the source
      * image prior to gradient calculation.
-     *
-     * @return a Gaussian kernel radius in pixels, must exceed 0.1f.
      */
 
     public void setGaussianKernelRadius(float gaussianKernelRadius) {
@@ -264,36 +264,120 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     // methods
 
     public void process() {
+
+        isAborted = false;
+
         width = sourceImage.getWidth();
         height = sourceImage.getHeight();
-        picsize = width * height;
+        picSize = width * height;
         initArrays();
         readLuminance();
+        if (isAborted) {
+            return;
+        }
         if (contrastNormalized)
             normalizeContrast();
+        if (isAborted) {
+            return;
+        }
         computeGradients(gaussianKernelRadius, gaussianKernelWidth);
+        if (isAborted) {
+            return;
+        }
         int low = Math.round(lowThreshold * MAGNITUDE_SCALE);
         int high = Math.round(highThreshold * MAGNITUDE_SCALE);
         performHysteresis(low, high);
+        if (isAborted) {
+            return;
+        }
         thresholdEdges();
-        writeEdges(data);
+        if (isAborted) {
+            return;
+        }
+        writeEdges(luminanceData);
+        if (isAborted) {
+            edgesImage = null;
+        }
     }
 
     @Override
     public void abort() {
+        isAborted = true;
     }
 
     // private utility methods
 
     private void initArrays() {
-        if (data == null || picsize != data.length) {
-            data = new int[picsize];
-            magnitude = new int[picsize];
+        if (luminanceData == null || picSize != luminanceData.length) {
+            luminanceData = new int[picSize];
+            magnitude = new int[picSize];
 
-            xConv = new float[picsize];
-            yConv = new float[picsize];
-            xGradient = new float[picsize];
-            yGradient = new float[picsize];
+            xConv = new float[picSize];
+            yConv = new float[picSize];
+            xGradient = new float[picSize];
+            yGradient = new float[picSize];
+        }
+    }
+
+    private void readLuminance() {
+        int type = sourceImage.getType();
+        if (type == BufferedImage.TYPE_INT_RGB || type == BufferedImage.TYPE_INT_ARGB) {
+            int[] pixels = (int[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
+            for (int i = 0; i < picSize && !isAborted; i++) {
+                int p = pixels[i];
+                int r = (p & 0xff0000) >> 16;
+                int g = (p & 0xff00) >> 8;
+                int b = p & 0xff;
+                luminanceData[i] = luminance(r, g, b);
+            }
+        } else if (type == BufferedImage.TYPE_BYTE_GRAY) {
+            byte[] pixels = (byte[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
+            for (int i = 0; i < picSize && !isAborted; i++) {
+                luminanceData[i] = (pixels[i] & 0xff);
+            }
+        } else if (type == BufferedImage.TYPE_USHORT_GRAY) {
+            short[] pixels = (short[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
+            for (int i = 0; i < picSize && !isAborted; i++) {
+                luminanceData[i] = (pixels[i] & 0xffff) / 256;
+            }
+        } else if (type == BufferedImage.TYPE_3BYTE_BGR) {
+            byte[] pixels = (byte[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
+            int offset = 0;
+            for (int i = 0; i < picSize && !isAborted; i++) {
+                int b = pixels[offset++] & 0xff;
+                int g = pixels[offset++] & 0xff;
+                int r = pixels[offset++] & 0xff;
+                luminanceData[i] = luminance(r, g, b);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported image type: " + type);
+        }
+    }
+
+    private int luminance(float r, float g, float b) {
+        return Math.round(0.299f * r + 0.587f * g + 0.114f * b);
+    }
+
+    private void normalizeContrast() {
+        int[] histogram = new int[256];
+        for (int luminanceIndex : luminanceData) {
+            histogram[luminanceIndex]++;
+        }
+
+        int[] remap = new int[256];
+        int sum = 0;
+        int j = 0;
+        for (int i = 0; i < histogram.length && !isAborted; i++) {
+            sum += histogram[i];
+            int target = sum * 255 / picSize;
+            for (int k = j + 1; k <= target; k++) {
+                remap[k] = i;
+            }
+            j = target;
+        }
+
+        for (int i = 0; i < luminanceData.length; i++) {
+            luminanceData[i] = remap[luminanceData[i]];
         }
     }
 
@@ -325,6 +409,10 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
             diffKernel[kwidth] = g3 - g2;
         }
 
+        if (isAborted) {
+            return;
+        }
+
         int initX = kwidth - 1;
         int maxX = width - (kwidth - 1);
         int initY = width * (kwidth - 1);
@@ -334,13 +422,13 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
         for (int x = initX; x < maxX; x++) {
             for (int y = initY; y < maxY; y += width) {
                 int index = x + y;
-                float sumX = data[index] * kernel[0];
+                float sumX = luminanceData[index] * kernel[0];
                 float sumY = sumX;
                 int xOffset = 1;
                 int yOffset = width;
                 while (xOffset < kwidth) {
-                    sumY += kernel[xOffset] * (data[index - yOffset] + data[index + yOffset]);
-                    sumX += kernel[xOffset] * (data[index - xOffset] + data[index + xOffset]);
+                    sumY += kernel[xOffset] * (luminanceData[index - yOffset] + luminanceData[index + yOffset]);
+                    sumX += kernel[xOffset] * (luminanceData[index - xOffset] + luminanceData[index + xOffset]);
                     yOffset += width;
                     xOffset++;
                 }
@@ -348,7 +436,10 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
                 yConv[index] = sumY;
                 xConv[index] = sumX;
             }
+        }
 
+        if (isAborted) {
+            return;
         }
 
         for (int x = initX; x < maxX; x++) {
@@ -360,7 +451,10 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
 
                 xGradient[index] = sum;
             }
+        }
 
+        if (isAborted) {
+            return;
         }
 
         for (int x = kwidth; x < width - kwidth; x++) {
@@ -378,12 +472,16 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
 
         }
 
+        if (isAborted) {
+            return;
+        }
+
         initX = kwidth;
         maxX = width - kwidth;
         initY = width * kwidth;
         maxY = width * (height - kwidth);
-        for (int x = initX; x < maxX; x++) {
-            for (int y = initY; y < maxY; y += width) {
+        for (int x = initX; x < maxX && !isAborted; x++) {
+            for (int y = initY; y < maxY && !isAborted; y += width) {
                 int index = x + y;
                 int indexN = index - width;
                 int indexS = index + width;
@@ -475,12 +573,12 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
         // luminance data from the image, and edge intensity from the processing.
         // This is done for memory efficiency, other implementations may wish
         // to separate these functions.
-        Arrays.fill(data, 0);
+        Arrays.fill(luminanceData, 0);
 
         int offset = 0;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (data[offset] == 0 && magnitude[offset] >= high) {
+        for (int y = 0; y < height && !isAborted; y++) {
+            for (int x = 0; x < width && !isAborted; x++) {
+                if (luminanceData[offset] == 0 && magnitude[offset] >= high) {
                     follow(x, y, offset, low);
                 }
                 offset++;
@@ -494,11 +592,11 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
         int y0 = y1 == 0 ? y1 : y1 - 1;
         int y2 = y1 == height - 1 ? y1 : y1 + 1;
 
-        data[i1] = magnitude[i1];
+        luminanceData[i1] = magnitude[i1];
         for (int x = x0; x <= x2; x++) {
             for (int y = y0; y <= y2; y++) {
                 int i2 = x + y * width;
-                if ((y != y1 || x != x1) && data[i2] == 0 && magnitude[i2] >= threshold) {
+                if ((y != y1 || x != x1) && luminanceData[i2] == 0 && magnitude[i2] >= threshold) {
                     follow(x, y, i2, threshold);
                     return;
                 }
@@ -507,69 +605,8 @@ public class CannyEdgesDetectorImpl implements CannyEdgesDetector {
     }
 
     private void thresholdEdges() {
-        for (int i = 0; i < picsize; i++) {
-            data[i] = data[i] > 0 ? -1 : 0xff000000;
-        }
-    }
-
-    private int luminance(float r, float g, float b) {
-        return Math.round(0.299f * r + 0.587f * g + 0.114f * b);
-    }
-
-    private void readLuminance() {
-        int type = sourceImage.getType();
-        if (type == BufferedImage.TYPE_INT_RGB || type == BufferedImage.TYPE_INT_ARGB) {
-            int[] pixels = (int[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
-            for (int i = 0; i < picsize; i++) {
-                int p = pixels[i];
-                int r = (p & 0xff0000) >> 16;
-                int g = (p & 0xff00) >> 8;
-                int b = p & 0xff;
-                data[i] = luminance(r, g, b);
-            }
-        } else if (type == BufferedImage.TYPE_BYTE_GRAY) {
-            byte[] pixels = (byte[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
-            for (int i = 0; i < picsize; i++) {
-                data[i] = (pixels[i] & 0xff);
-            }
-        } else if (type == BufferedImage.TYPE_USHORT_GRAY) {
-            short[] pixels = (short[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
-            for (int i = 0; i < picsize; i++) {
-                data[i] = (pixels[i] & 0xffff) / 256;
-            }
-        } else if (type == BufferedImage.TYPE_3BYTE_BGR) {
-            byte[] pixels = (byte[]) sourceImage.getData().getDataElements(0, 0, width, height, null);
-            int offset = 0;
-            for (int i = 0; i < picsize; i++) {
-                int b = pixels[offset++] & 0xff;
-                int g = pixels[offset++] & 0xff;
-                int r = pixels[offset++] & 0xff;
-                data[i] = luminance(r, g, b);
-            }
-        } else {
-            throw new IllegalArgumentException("Unsupported image type: " + type);
-        }
-    }
-
-    private void normalizeContrast() {
-        int[] histogram = new int[256];
-        for (int i = 0; i < data.length; i++) {
-            histogram[data[i]]++;
-        }
-        int[] remap = new int[256];
-        int sum = 0;
-        int j = 0;
-        for (int i = 0; i < histogram.length; i++) {
-            sum += histogram[i];
-            int target = sum * 255 / picsize;
-            for (int k = j + 1; k <= target; k++) {
-                remap[k] = i;
-            }
-            j = target;
-        }
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] = remap[data[i]];
+        for (int i = 0; i < picSize && !isAborted; i++) {
+            luminanceData[i] = luminanceData[i] > 0 ? -1 : 0xff000000;
         }
     }
 
