@@ -9,7 +9,9 @@ public class AboutWindowInstance {
 
     private static final AboutWindow instance = new AboutWindowImpl(APPLICATION_NAME,
             "by Stefano Reksten - stefano.reksten@gmail.com",
-            "Released under the Apache License v2.0");
+            "Released under the Apache License v2.0",
+            "Uses Drew Noakes' Metadata Extractor",
+            "Uses Tom Gibara's Canny Edge Detect implementation");
 
     public static AboutWindow get() {
         return instance;
