@@ -3,7 +3,7 @@ package com.threeamigos.pixelpeeper.interfaces.edgedetect.flavours;
 import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
 
 /**
- * An interface exposing all parameters the Sobel edge-detection algorithm accepts.
+ * An interface designed to implement the Sobel Edges Detector algorithm.
  *
  * @author Stefano Reksten
  */
