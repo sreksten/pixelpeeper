@@ -153,8 +153,14 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
         int hotspotX = size / 2 + (int) ((double) size / 2 * Math.cos(pointerPreferences.getBigPointerRotation().getRadians()))
                 - 1;
+        if (hotspotX < 0) {
+            hotspotX = 0;
+        }
         int hotspotY = size / 2 + (int) ((double) size / 2 * Math.sin(pointerPreferences.getBigPointerRotation().getRadians()))
                 - 1;
+        if (hotspotY < 0) {
+            hotspotY = 0;
+        }
 
         return Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(hotspotX, hotspotY), "bigPointer");
     }
