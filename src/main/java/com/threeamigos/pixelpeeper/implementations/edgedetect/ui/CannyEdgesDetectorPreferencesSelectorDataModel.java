@@ -16,8 +16,8 @@ public class CannyEdgesDetectorPreferencesSelectorDataModel extends AbstractEdge
 
     private static final float NORMALIZATION_VALUE = 10.0f;
 
-    static final int MIN_THRESHOLD = 1;
-    static final int MAX_THRESHOLD = 100;
+    private static final int MIN_THRESHOLD = 1;
+    private static final int MAX_THRESHOLD = 100;
 
     private final CannyEdgesDetectorPreferences cannyEdgesDetectorPreferences;
 
