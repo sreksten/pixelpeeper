@@ -250,7 +250,7 @@ public class ZXSpectrumPaletteFilterImpl implements ZXSpectrumPaletteFilter {
                 RGB rgb = originalRGB[indexX][indexY];
                 HSL hsl = originalHsl[indexX][indexY];
 
-                DitheredHSL closestColor = mapToClosestPaletteColor(rgb, hsl, ditheredPalette);
+                DitheredHSL closestColor = mapToClosestPaletteColor(hsl, ditheredPalette);
                 destinationHSL[indexX][indexY] = closestColor.getDitheredHSLAtPixel(indexX, indexY);
             }
         }
@@ -302,7 +302,7 @@ public class ZXSpectrumPaletteFilterImpl implements ZXSpectrumPaletteFilter {
         }
     }
 
-    private DitheredHSL mapToClosestPaletteColor(RGB rgb, HSL hsl, List<DitheredHSL> ditheredPalette) {
+    private DitheredHSL mapToClosestPaletteColor(HSL hsl, List<DitheredHSL> ditheredPalette) {
         int hue = hsl.getHue();
         int saturation = hsl.getSaturation();
         int lightness = hsl.getLightness();

@@ -8,6 +8,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ExifTagsPrefer
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements ExifTagsPreferences {
 
@@ -25,11 +26,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     @Override
     public ExifTagVisibility getTagVisibility(ExifTag tag) {
         ExifTagVisibility value = tagsMap.get(tag);
-        if (value == null) {
-            return ExifTagVisibility.NO;
-        } else {
-            return value;
-        }
+        return Objects.requireNonNullElse(value, ExifTagVisibility.NO);
     }
 
     @Override

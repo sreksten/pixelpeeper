@@ -35,9 +35,9 @@ public class NamePatternImpl implements NamePattern {
             }
             ExifMap exifMap = exifMapOpt.get();
             String pattern = namePatternPreferences.getNamePattern();
-            pattern = pattern.replaceAll("\\" + LEFT_BRACKET + "FILENAME" + "\\" + RIGHT_BRACKET, filename);
+            pattern = pattern.replaceAll("\\" + LEFT_BRACKET + "FILENAME" + RIGHT_BRACKET, filename);
             for (ExifTag exifTag : ExifTag.values()) {
-                String occurrence = "\\" + LEFT_BRACKET + exifTag.name() + "\\" + RIGHT_BRACKET;
+                String occurrence = "\\" + LEFT_BRACKET + exifTag.name() + RIGHT_BRACKET;
                 ExifValue value = exifMap.getExifValue(exifTag);
                 if (value != null) {
                     pattern = pattern.replaceAll(occurrence, exifMap.getTagDescriptive(exifTag));
