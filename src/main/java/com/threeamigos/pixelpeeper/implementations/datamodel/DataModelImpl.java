@@ -9,8 +9,8 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.*;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
@@ -234,9 +234,9 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public void calculateEdges() {
-        imageSlices.calculateEdges();
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+    public void startFilterCalculation() {
+        imageSlices.startFilterCalculation();
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
     }
 
     @Override
@@ -260,14 +260,14 @@ public class DataModelImpl implements DataModel {
             toggleAutorotation();
         } else if (CommunicationMessages.DISPOSITION_CHANGED.equals(evt.getPropertyName())) {
             propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
-        } else if (CommunicationMessages.EDGES_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
-            handleEdgesVisibilityChanged();
-        } else if (CommunicationMessages.REQUEST_EDGES_CALCULATION.equals(evt.getPropertyName())) {
-            calculateEdges();
-        } else if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationStarted();
-        } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationCompleted();
+        } else if (CommunicationMessages.FILTER_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
+            handleFilterVisibilityChanged();
+        } else if (CommunicationMessages.REQUEST_FILTER_CALCULATION.equals(evt.getPropertyName())) {
+            startFilterCalculation();
+        } else if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+            handleFilterCalculationStarted();
+        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+            handleFilterCalculationCompleted();
         } else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())
                 || CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED.equals(evt.getPropertyName())
                 || CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED.equals(evt.getPropertyName())) {
@@ -281,16 +281,16 @@ public class DataModelImpl implements DataModel {
         }
     }
 
-    private void handleEdgesVisibilityChanged() {
+    private void handleFilterVisibilityChanged() {
         requestRepaint();
     }
 
-    private void handleEdgeCalculationStarted() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+    private void handleFilterCalculationStarted() {
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
     }
 
-    private void handleEdgeCalculationCompleted() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+    private void handleFilterCalculationCompleted() {
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, null);
     }
 
     private void handleMousePressed(PropertyChangeEvent evt) {

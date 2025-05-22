@@ -6,8 +6,8 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 public class ExifImageReaderInstance {
 
     private static final ExifImageReader instance = new ExifImageReaderImpl(Preferences.IMAGE_HANDLING,
-            ImageReaderFactoryInstance.get(), ExifCacheInstance.get(), Preferences.EDGES_DETECTOR,
-            EdgesDetectorFactoryInstance.get(), MessageHandlerInstance.get());
+            ImageReaderFactoryInstance.get(), ExifCacheInstance.get(), Preferences.FILTER,
+            FilterFactoryInstance.get(), MessageHandlerInstance.get());
 
     public static ExifImageReader get() {
         return instance;

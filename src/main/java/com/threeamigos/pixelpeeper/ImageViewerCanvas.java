@@ -11,8 +11,8 @@ import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ShortcutsWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DragAndDropWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ShortcutsWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.*;
 
 import javax.swing.*;

@@ -4,8 +4,8 @@ import com.threeamigos.common.util.implementations.ui.StringHint;
 import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences.Rotation;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences.Rotation;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
 
 import java.awt.*;

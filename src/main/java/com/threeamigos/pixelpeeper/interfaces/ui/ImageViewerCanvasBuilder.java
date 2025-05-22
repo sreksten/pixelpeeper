@@ -8,8 +8,8 @@ import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
 import com.threeamigos.pixelpeeper.ImageViewerCanvas;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ShortcutsWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DragAndDropWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ShortcutsWindowPreferences;
 
 import javax.swing.*;
 import java.util.Collection;

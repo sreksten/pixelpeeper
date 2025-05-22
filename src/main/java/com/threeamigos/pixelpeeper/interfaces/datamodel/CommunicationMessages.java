@@ -28,9 +28,9 @@ public class CommunicationMessages {
     public static final String ZX_SPECTRUM_LIGHTNESS_WEIGHT_CHANGED = "ZXSpectrumLightnessWeightChanged";
     public static final String ZX_SPECTRUM_SKIN_TONES_MAPPING_CHANGED = "ZXSpectrumMapSkinTonesChanged";
 
-    public static final String EDGES_VISIBILITY_CHANGED = "EdgesVisibilityChanged";
-    public static final String EDGES_TRANSPARENCY_CHANGED = "EdgesTransparencyChanged";
-    public static final String EDGES_DETECTOR_FLAVOUR_CHANGED = "EdgesDetectorFlavourChanged";
+    public static final String FILTER_VISIBILITY_CHANGED = "FilterVisibilityChanged";
+    public static final String FILTER_TRANSPARENCY_CHANGED = "FilterTransparencyChanged";
+    public static final String FILTER_FLAVOR_CHANGED = "FilterFlavorChanged";
 
     public static final String TAG_VISIBILITY_CHANGED = "TagVisibilityChanged";
     public static final String TAGS_VISIBILITY_CHANGED = "TagsVisibilityChanged";
@@ -48,8 +48,8 @@ public class CommunicationMessages {
     public static final String RELATIVE_MOVEMENT_CHANGED = "RelativeMovementChanged";
     public static final String MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED = "MovementAppliedToAllImagesChanged";
     public static final String POSITION_MINIATURE_VISIBILITY_CHANGED = "PositionMiniatureVisibilityChanged";
-    public static final String IMAGE_READER_FLAVOUR_CHANGED = "ImageReaderFlavourChanged";
-    public static final String EXIF_READER_FLAVOUR_CHANGED = "ExifReaderFlavourChanged";
+    public static final String IMAGE_READER_FLAVOR_CHANGED = "ImageReaderFlavorChanged";
+    public static final String EXIF_READER_FLAVOR_CHANGED = "ExifReaderFlavorChanged";
 
     public static final String LAST_PATH_CHANGED = "LastPathChanged";
     public static final String LAST_FILES_CHANGED = "LastFilesChanged";
@@ -57,9 +57,9 @@ public class CommunicationMessages {
     public static final String TAG_TO_ORDER_BY_CHANGED = "TagToOrderByChanged";
     public static final String GROUP_INDEX_CHANGED = "GroupIndexChanged";
 
-    public static final String REQUEST_EDGES_CALCULATION = "RequestEdgesCalculation";
-    public static final String EDGES_CALCULATION_STARTED = "EdgesCalculationStarted";
-    public static final String EDGES_CALCULATION_COMPLETED = "EdgesCalculationCompleted";
+    public static final String REQUEST_FILTER_CALCULATION = "RequestFilterCalculation";
+    public static final String FILTER_CALCULATION_STARTED = "FilterCalculationStarted";
+    public static final String FILTER_CALCULATION_COMPLETED = "FilterCalculationCompleted";
     public static final String GRID_VISIBILITY_CHANGED = "GridVisibilityChange";
     public static final String GRID_SPACING_CHANGED = "GridSizeChanged";
     public static final String DATA_MODEL_CHANGED = "DataModelChanged";

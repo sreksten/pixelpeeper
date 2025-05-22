@@ -7,7 +7,7 @@ public class ImageSlicesInstance {
 
     private static final ImageSlices instance = new ImageSlicesImpl(ExifTagsClassifierInstance.get(),
             InfoRendererFactoryInstance.get(), Preferences.IMAGE_HANDLING,
-            Preferences.DRAWING, Preferences.EDGES_DETECTOR, FontServiceInstance.get());
+            Preferences.DOODLING, Preferences.FILTER, FontServiceInstance.get());
 
     public static ImageSlices get() {
         return instance;

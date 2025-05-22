@@ -3,11 +3,11 @@ package com.threeamigos.pixelpeeper.data;
 import com.threeamigos.common.util.interfaces.PropertyChangeAware;
 import com.threeamigos.pixelpeeper.implementations.helpers.ExifOrientationHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetector;
-import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFactory;
-import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
+import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
+import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -25,7 +25,7 @@ import static com.threeamigos.pixelpeeper.data.ExifValue.*;
  *     <li>Image orientation, orientation correction, dimensions</li>
  *     <li>All {@link ExifTag} associated with this image</li>
  *     <li>A reference to the original file</li>
- *     <li>An optional image containing calculated edges</li>
+ *     <li>An optional image containing the filtered image</li>
  *     <li>The focal length, 35mm equivalent, current zoom level</li>
  * </ul>
  *
@@ -34,7 +34,7 @@ import static com.threeamigos.pixelpeeper.data.ExifValue.*;
 public class PictureData implements PropertyChangeAware {
 
     /**
-     * PropertyChangeSupport is used to alert of edge calculation start and completion,
+     * PropertyChangeSupport is used to alert of filter start and completion,
      * in order for the UI to refresh components.
      */
     private final PropertyChangeSupport propertyChangeSupport;
@@ -69,26 +69,26 @@ public class PictureData implements PropertyChangeAware {
     /**
      * Used to check if we should show image edges or not.
      */
-    private final EdgesDetectorPreferences edgesDetectorPreferences;
+    private final FilterPreferences filterPreferences;
     /**
-     * In case we should show edges, we need an EdgesDetectorFactory in order to get an EdgesDetector.
+     * In case we should apply a filter, we need a FilterFactory to get a Filter.
      */
-    private final EdgesDetectorFactory edgesDetectorFactory;
+    private final FilterFactory filterFactory;
     /**
-     * The EdgesDetector class used to find edges within the image.
+     * The Filter class used to apply some effects to the image.
      */
-    private EdgesDetector detector;
+    private Filter filter;
     /**
-     * The algorithm used to find edges.
+     * The algorithm used to filter the image.
      */
-    private EdgesDetectorFlavour flavour;
-    private boolean edgeCalculationInProgress;
-    private boolean edgeCalculationAborted;
+    private FilterFlavor flavor;
+    private boolean filterCalculationInProgress;
+    private boolean filterCalculationAborted;
     /**
-     * An image that holds the edges ONLY. If showing edges they are drawn over the original image, eventually
-     * using a transparency.
+     * An image that holds the filter results ONLY. If showing results, they are drawn over the original image,
+     * eventually using a transparency.
      */
-    private BufferedImage edgesImage;
+    private BufferedImage filteredImage;
 
     /**
      * Current image (we can rotate or zoom the image so these may differ from the original image data).
@@ -114,15 +114,15 @@ public class PictureData implements PropertyChangeAware {
 
     public PictureData(int orientation, ExifMap exifMap, BufferedImage image, File file,
                        ImageHandlingPreferences imageHandlingPreferences,
-                       EdgesDetectorPreferences edgesDetectorPreferences, EdgesDetectorFactory edgesDetectorFactory) {
+                       FilterPreferences filterPreferences, FilterFactory filterFactory) {
         propertyChangeSupport = new PropertyChangeSupport(this);
 
         this.orientation = orientation;
         this.exifMap = exifMap;
         this.file = file;
         this.filename = file.getName();
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
-        this.edgesDetectorFactory = edgesDetectorFactory;
+        this.filterPreferences = filterPreferences;
+        this.filterFactory = filterFactory;
 
         this.sourceWidth = image.getWidth();
         this.sourceHeight = image.getHeight();
@@ -244,14 +244,14 @@ public class PictureData implements PropertyChangeAware {
      * Returns an image containing the edges found in the original. The algorithm used
      * to calculate them is defined in the EdgesDetectorPreferences.
      */
-    public BufferedImage getEdgesImage() {
-        if (flavour != edgesDetectorPreferences.getEdgesDetectorFlavour()) {
-            edgesImage = null;
+    public BufferedImage getFilteredImage() {
+        if (flavor != filterPreferences.getFilterFlavor()) {
+            filteredImage = null;
         }
-        if (edgesImage == null) {
-            startEdgesCalculation();
+        if (filteredImage == null) {
+            startFilterCalculation();
         }
-        return edgesImage;
+        return filteredImage;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -263,31 +263,31 @@ public class PictureData implements PropertyChangeAware {
     }
 
     /**
-     * Starts the edges detection algorithm in a background thread.
+     * Starts the filter algorithm in a background thread.
      * The operation may be slow, so if the user zooms in or does some other
      * operation that would make the edges invalid (not applicable anymore
-     * for the zoom level, image rotation, and so on) the operation
+     * for the zoom level, image rotation, and so on), the operation
      * may be interrupted.
      */
-    public void startEdgesCalculation() {
+    public void startFilterCalculation() {
         synchronized (this) {
-            if (!edgeCalculationInProgress) {
-                edgeCalculationInProgress = true;
-                edgeCalculationAborted = false;
-                propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
+            if (!filterCalculationInProgress) {
+                filterCalculationInProgress = true;
+                filterCalculationAborted = false;
+                propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, this);
                 Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        detector = edgesDetectorFactory.getEdgesDetector();
-                        detector.setSourceImage(image);
-                        flavour = edgesDetectorPreferences.getEdgesDetectorFlavour();
-                        detector.process();
-                        if (!edgeCalculationAborted) {
-                            edgesImage = detector.getEdgesImage();
-                            propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED,
+                        filter = filterFactory.getFilter();
+                        filter.setSourceImage(image);
+                        flavor = filterPreferences.getFilterFlavor();
+                        filter.process();
+                        if (!filterCalculationAborted) {
+                            filteredImage = filter.getResultingImage();
+                            propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED,
                                     null, this);
                         }
-                        edgeCalculationInProgress = false;
-                        detector = null;
+                        filterCalculationInProgress = false;
+                        filter = null;
                     }
                 });
                 thread.setDaemon(true);
@@ -297,17 +297,17 @@ public class PictureData implements PropertyChangeAware {
     }
 
     /**
-     * If the edges calculation process would produce a result that is
-     * no more relevant for the current zoom level, image rotation etc,
+     * If the filter calculation process produces a result that is
+     * no more relevant for the current zoom level, image rotation, etc,
      * we can interrupt it.
      */
-    public void releaseEdges() {
-        edgesImage = null;
-        flavour = null;
-        if (detector != null) {
-            edgeCalculationAborted = true;
-            detector.abort();
-            while (detector != null) {
+    public void releaseFilters() {
+        filteredImage = null;
+        flavor = null;
+        if (filter != null) {
+            filterCalculationAborted = true;
+            filter.abort();
+            while (filter != null) {
                 try {
                     Thread.sleep(5);
                 } catch (InterruptedException e) {
@@ -322,7 +322,7 @@ public class PictureData implements PropertyChangeAware {
      */
     public void changeZoomLevel(float newZoomLevel) {
         zoomLevel = newZoomLevel;
-        releaseEdges();
+        releaseFilters();
         if (zoomLevel == ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
             width = sourceWidth;
             height = sourceHeight;
@@ -335,8 +335,8 @@ public class PictureData implements PropertyChangeAware {
             graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
             graphics.dispose();
         }
-        if (edgesDetectorPreferences.isShowEdges()) {
-            startEdgesCalculation();
+        if (filterPreferences.isShowResults()) {
+            startFilterCalculation();
         }
     }
 

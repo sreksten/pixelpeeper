@@ -3,8 +3,8 @@ package com.threeamigos.pixelpeeper;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DoodlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

@@ -3,10 +3,10 @@ package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences.Disposition;
+import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavor;
+import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavor;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences.Disposition;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 import javax.swing.*;
@@ -28,8 +28,8 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
     private JCheckBoxMenuItem normalizeForCropFactorMenuItem;
     private JCheckBoxMenuItem normalizeForFocalLengthMenuItem;
 
-    private final Map<ImageReaderFlavour, JMenuItem> imageReadersByFlavour = new EnumMap<>(ImageReaderFlavour.class);
-    private final Map<ExifReaderFlavour, JMenuItem> exifReadersByFlavour = new EnumMap<>(ExifReaderFlavour.class);
+    private final Map<ImageReaderFlavor, JMenuItem> imageReadersByFlavor = new EnumMap<>(ImageReaderFlavor.class);
+    private final Map<ExifReaderFlavor, JMenuItem> exifReadersByFlavor = new EnumMap<>(ExifReaderFlavor.class);
     private final Map<Disposition, JMenuItem> dispositions = new EnumMap<>(Disposition.class);
 
     public ImageHandlingPlugin(ImageHandlingPreferences imageHandlingPreferences) {
@@ -44,23 +44,23 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
 
         JMenu imageReaderMenu = new JMenu("Image reader library");
         imageHandlingMenu.add(imageReaderMenu);
-        for (ImageReaderFlavour flavour : ImageReaderFlavour.values()) {
-            JMenuItem imageReaderItem = addCheckboxMenuItem(imageReaderMenu, flavour.getDescription(),
-                    KeyRegistry.NO_KEY, flavour == imageHandlingPreferences.getImageReaderFlavour(), event -> {
-                        imageHandlingPreferences.setImageReaderFlavour(flavour);
-                        updateImageReaderMenu(flavour);
+        for (ImageReaderFlavor flavor : ImageReaderFlavor.values()) {
+            JMenuItem imageReaderItem = addCheckboxMenuItem(imageReaderMenu, flavor.getDescription(),
+                    KeyRegistry.NO_KEY, flavor == imageHandlingPreferences.getImageReaderFlavor(), event -> {
+                        imageHandlingPreferences.setImageReaderFlavor(flavor);
+                        updateImageReaderMenu(flavor);
                     });
-            imageReadersByFlavour.put(flavour, imageReaderItem);
+            imageReadersByFlavor.put(flavor, imageReaderItem);
         }
         JMenu exifReaderMenu = new JMenu("Exif reader library");
         imageHandlingMenu.add(exifReaderMenu);
-        for (ExifReaderFlavour flavour : ExifReaderFlavour.values()) {
-            JMenuItem exifReaderItem = addCheckboxMenuItem(exifReaderMenu, flavour.getDescription(), KeyRegistry.NO_KEY,
-                    flavour == imageHandlingPreferences.getExifReaderFlavour(), event -> {
-                        imageHandlingPreferences.setExifReaderFlavour(flavour);
-                        updateExifReaderMenu(flavour);
+        for (ExifReaderFlavor flavor : ExifReaderFlavor.values()) {
+            JMenuItem exifReaderItem = addCheckboxMenuItem(exifReaderMenu, flavor.getDescription(), KeyRegistry.NO_KEY,
+                    flavor == imageHandlingPreferences.getExifReaderFlavor(), event -> {
+                        imageHandlingPreferences.setExifReaderFlavor(flavor);
+                        updateExifReaderMenu(flavor);
                     });
-            exifReadersByFlavour.put(flavour, exifReaderItem);
+            exifReadersByFlavor.put(flavor, exifReaderItem);
         }
         autorotationMenuItem = addCheckboxMenuItem(imageHandlingMenu, "Auto rotation", KeyRegistry.AUTOROTATION_KEY,
                 imageHandlingPreferences.isAutorotation(), event -> toggleAutorotation());
@@ -93,15 +93,15 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
                 event -> toggleFocalLengthNormalization());
     }
 
-    private void updateImageReaderMenu(final ImageReaderFlavour flavour) {
-        for (Map.Entry<ImageReaderFlavour, JMenuItem> entry : imageReadersByFlavour.entrySet()) {
-            entry.getValue().setSelected(entry.getKey() == flavour);
+    private void updateImageReaderMenu(final ImageReaderFlavor flavor) {
+        for (Map.Entry<ImageReaderFlavor, JMenuItem> entry : imageReadersByFlavor.entrySet()) {
+            entry.getValue().setSelected(entry.getKey() == flavor);
         }
     }
 
-    private void updateExifReaderMenu(final ExifReaderFlavour flavour) {
-        for (Map.Entry<ExifReaderFlavour, JMenuItem> entry : exifReadersByFlavour.entrySet()) {
-            entry.getValue().setSelected(entry.getKey() == flavour);
+    private void updateExifReaderMenu(final ExifReaderFlavor flavor) {
+        for (Map.Entry<ExifReaderFlavor, JMenuItem> entry : exifReadersByFlavor.entrySet()) {
+            entry.getValue().setSelected(entry.getKey() == flavor);
         }
     }
 

@@ -60,11 +60,11 @@ public interface ImageSlices extends PropertyChangeListener {
     void clearDoodles();
 
     /**
-     * Asks all slices to recalculate edge images
+     * Asks all slices to recalculate filter
      */
-    void calculateEdges();
+    void startFilterCalculation();
 
-    void releaseEdges();
+    void releaseFilter();
 
     void toggleAutorotation();
 

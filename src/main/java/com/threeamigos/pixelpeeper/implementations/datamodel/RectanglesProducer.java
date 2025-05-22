@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel;
 
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences.Disposition;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences.Disposition;
 
 import java.awt.*;
 import java.util.ArrayList;

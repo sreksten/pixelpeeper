@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
 import com.threeamigos.pixelpeeper.data.ExifTag;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.NamePatternPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.NamePatternSelector;
 
 import javax.swing.*;

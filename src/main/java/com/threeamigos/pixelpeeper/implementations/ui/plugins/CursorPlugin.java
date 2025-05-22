@@ -1,7 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.CursorPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 

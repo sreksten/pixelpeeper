@@ -71,7 +71,7 @@ public class Main {
         dataModel.addPropertyChangeListener(ControlsPanelInstance.get());
         ImageSlicesInstance.get().addPropertyChangeListener(imageViewerCanvas);
         UserInputTrackerInstance.get().addPropertyChangeListener(dataModel);
-        EdgesDetectorPluginInstance.get().addPropertyChangeListener(dataModel);
+        FilterPluginInstance.get().addPropertyChangeListener(dataModel);
         ImageHandlingPluginInstance.get().addPropertyChangeListener(dataModel);
         Preferences.IMAGE_HANDLING.addPropertyChangeListener(ControlsPanelInstance.get());
         Preferences.IMAGE_HANDLING.addPropertyChangeListener(imageViewerCanvas);
@@ -84,8 +84,8 @@ public class Main {
         Preferences.GRID.addPropertyChangeListener(GridPluginInstance.get());
         Preferences.EXIF_TAG.addPropertyChangeListener(imageViewerCanvas);
         Preferences.EXIF_TAG.addPropertyChangeListener(ImageSlicesInstance.get());
-        Preferences.EDGES_DETECTOR.addPropertyChangeListener(dataModel);
-        Preferences.EDGES_DETECTOR.addPropertyChangeListener(EdgesDetectorPluginInstance.get());
+        Preferences.FILTER.addPropertyChangeListener(dataModel);
+        Preferences.FILTER.addPropertyChangeListener(FilterPluginInstance.get());
         CursorManagerInstance.get().addPropertyChangeListener(imageViewerCanvas);
 
         setupChainedInputConsumer();
@@ -100,7 +100,7 @@ public class Main {
 
     private List<MainWindowPlugin> getPlugins() {
         List<MainWindowPlugin> plugins = new ArrayList<>();
-        plugins.add(EdgesDetectorPluginInstance.get());
+        plugins.add(FilterPluginInstance.get());
         plugins.add(ImageHandlingPluginInstance.get());
         plugins.add(GridPluginInstance.get());
         plugins.add(CursorPluginInstance.get());
@@ -113,7 +113,7 @@ public class Main {
         chainedInputConsumer.addConsumer(UserInputTrackerInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
         chainedInputConsumer.addConsumer(CursorManagerInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_HIGH);
         chainedInputConsumer.addConsumer(GridPluginInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_MEDIUM);
-        chainedInputConsumer.addConsumer(EdgesDetectorPluginInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
+        chainedInputConsumer.addConsumer(FilterPluginInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
         chainedInputConsumer.addConsumer(ImageHandlingPluginInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
         chainedInputConsumer.addConsumer(ExifTagsPluginInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);
         chainedInputConsumer.addConsumer(DataModelInstance.get().getInputConsumer(), ChainedInputConsumer.PRIORITY_LOW);

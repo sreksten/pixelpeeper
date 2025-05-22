@@ -6,9 +6,9 @@ import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DoodlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
 import java.awt.*;
@@ -25,25 +25,25 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     private final InfoRendererFactory infoRendererFactory;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DoodlingPreferences drawingPreferences;
-    private final EdgesDetectorPreferences edgesDetectorPreferences;
+    private final FilterPreferences filterPreferences;
     private final FontService fontService;
 
     private final PropertyChangeSupport propertyChangeSupport;
 
     private final List<ImageSlice> imageSlices = new ArrayList<>();
-    private final List<ImageSlice> imageSlicesCalculatingEdges = new ArrayList<>();
+    private final List<ImageSlice> imageSlicesCalculatingFilters = new ArrayList<>();
 
     private ImageSlice activeSlice;
     private ImageSlice lastActiveSlice;
 
     public ImageSlicesImpl(ExifTagsClassifier exifTagsClassifier, InfoRendererFactory infoRendererFactory,
                            ImageHandlingPreferences imageHandlingPreferences, DoodlingPreferences drawingPreferences,
-                           EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
+                           FilterPreferences filterPreferences, FontService fontService) {
         this.exifTagsClassifier = exifTagsClassifier;
         this.infoRendererFactory = infoRendererFactory;
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
+        this.filterPreferences = filterPreferences;
         this.fontService = fontService;
 
         propertyChangeSupport = new PropertyChangeSupport(this);
@@ -58,7 +58,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     @Override
     public void add(PictureData pictureData) {
         ImageSlice imageSlice = new ImageSliceImpl(pictureData, exifTagsClassifier, infoRendererFactory,
-                imageHandlingPreferences, drawingPreferences, edgesDetectorPreferences, fontService);
+                imageHandlingPreferences, drawingPreferences, filterPreferences, fontService);
         imageSlice.addPropertyChangeListener(this);
         imageSlices.add(imageSlice);
     }
@@ -259,21 +259,21 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     }
 
     @Override
-    public void calculateEdges() {
-        synchronized (imageSlicesCalculatingEdges) {
-            if (!imageSlicesCalculatingEdges.isEmpty()) {
-                imageSlices.forEach(ImageSlice::releaseEdges);
-                imageSlicesCalculatingEdges.clear();
+    public void startFilterCalculation() {
+        synchronized (imageSlicesCalculatingFilters) {
+            if (!imageSlicesCalculatingFilters.isEmpty()) {
+                imageSlices.forEach(ImageSlice::releaseFilters);
+                imageSlicesCalculatingFilters.clear();
             }
-            imageSlicesCalculatingEdges.addAll(imageSlices);
-            imageSlices.forEach(ImageSlice::startEdgesCalculation);
+            imageSlicesCalculatingFilters.addAll(imageSlices);
+            imageSlices.forEach(ImageSlice::startFilterCalculation);
         }
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, null);
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
     }
 
     @Override
-    public void releaseEdges() {
-        imageSlices.forEach(ImageSlice::releaseEdges);
+    public void releaseFilter() {
+        imageSlices.forEach(ImageSlice::releaseFilters);
     }
 
     @Override
@@ -299,10 +299,10 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+        if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
             // We don't care about this
-        } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationCompleted(evt);
+        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+            handleFilterCalculationCompleted(evt);
         } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName()) ||
@@ -311,10 +311,10 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         }
     }
 
-    private void handleEdgeCalculationCompleted(PropertyChangeEvent evt) {
+    private void handleFilterCalculationCompleted(PropertyChangeEvent evt) {
         ImageSlice imageSlice = (ImageSlice) evt.getNewValue();
-        imageSlicesCalculatingEdges.remove(imageSlice);
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, null);
+        imageSlicesCalculatingFilters.remove(imageSlice);
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, null);
     }
 
     private void handleTagsPreferencesChanged(PropertyChangeEvent evt) {

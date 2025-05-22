@@ -5,7 +5,7 @@ import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.ui.inforenderers.InfoRendererShadow;
 import com.threeamigos.pixelpeeper.implementations.ui.inforenderers.InfoRendererSimpleBorder;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 

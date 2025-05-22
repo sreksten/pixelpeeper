@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ShortcutsWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ShortcutsWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import com.threeamigos.pixelpeeper.interfaces.ui.ShortcutsWindow;
 

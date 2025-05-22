@@ -7,9 +7,9 @@ import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DoodlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
@@ -27,7 +27,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private final ExifTagsClassifier exifTagsClassifier;
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final DoodlingPreferences drawingPreferences;
-    private final EdgesDetectorPreferences edgesDetectorPreferences;
+    private final FilterPreferences filterPreferences;
     private final FontService fontService;
     private final InfoRendererFactory infoRendererFactory;
 
@@ -44,17 +44,17 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private Doodle currentDrawing;
     private final List<Doodle> doodles;
 
-    private boolean edgeCalculationInProgress;
+    private boolean filterCalculationInProgress;
 
     public ImageSliceImpl(PictureData pictureData, ExifTagsClassifier exifTagsClassifier, InfoRendererFactory infoRendererFactory,
                           ImageHandlingPreferences imageHandlingPreferences, DoodlingPreferences drawingPreferences,
-                          EdgesDetectorPreferences edgesDetectorPreferences, FontService fontService) {
+                          FilterPreferences filterPreferences, FontService fontService) {
         this.pictureData = pictureData;
         this.exifTagsClassifier = exifTagsClassifier;
         pictureData.addPropertyChangeListener(this);
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
+        this.filterPreferences = filterPreferences;
         this.fontService = fontService;
         this.infoRendererFactory = infoRendererFactory;
 
@@ -255,8 +255,8 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
                 imageSliceHeight);
         BufferedImage edgesImage = null;
 
-        if (edgesDetectorPreferences.isShowEdges()) {
-            edgesImage = pictureData.getEdgesImage();
+        if (filterPreferences.isShowResults()) {
+            edgesImage = pictureData.getFilteredImage();
             if (edgesImage != null) {
                 edgesImage = edgesImage.getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
                         imageSliceHeight);
@@ -280,26 +280,26 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             pictureY += zoomOffsetY;
         }
 
-        drawDetectedEdges(g2d, edgesImage, subImage, pictureX, pictureY);
+        drawFilteredImage(g2d, edgesImage, subImage, pictureX, pictureY);
         drawSelectedRectangle(g2d, locationX, locationY, locationWidth, locationHeight);
         drawDoodles(g2d, zoomOffsetX, zoomOffsetY);
         drawMiniatureWithPosition(g2d);
         drawInfos(g2d, locationX, locationY, locationHeight);
-        drawEdgeCalculationInProgessNotice(g2d, locationX, locationY);
+        drawFilterCalculationInProgressNotice(g2d, locationX, locationY);
 
         g2d.setClip(previousClip);
     }
 
-    private void drawDetectedEdges(Graphics2D g2d, BufferedImage edgesImage, BufferedImage subImage, int pictureX, int pictureY) {
-        if (!edgesDetectorPreferences.isShowEdges()
-                || edgesDetectorPreferences.getEdgesTransparency() == EdgesDetectorPreferences.TOTAL_EDGES_TRANSPARENCY
+    private void drawFilteredImage(Graphics2D g2d, BufferedImage edgesImage, BufferedImage subImage, int pictureX, int pictureY) {
+        if (!filterPreferences.isShowResults()
+                || filterPreferences.getTransparency() == FilterPreferences.TOTAL_TRANSPARENCY
                 || edgesImage == null) {
             g2d.drawImage(subImage, pictureX, pictureY, null);
-        } else if (edgesDetectorPreferences.getEdgesTransparency() == EdgesDetectorPreferences.NO_EDGES_TRANSPARENCY) {
+        } else if (filterPreferences.getTransparency() == FilterPreferences.NO_TRANSPARENCY) {
             g2d.drawImage(edgesImage, pictureX, pictureY, null);
         } else {
             ImageDrawHelper.drawTransparentImageAtop(g2d, subImage, edgesImage, pictureX, pictureY,
-                    edgesDetectorPreferences.getEdgesTransparency());
+                    filterPreferences.getTransparency());
         }
     }
 
@@ -310,11 +310,11 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         }
     }
 
-    private void drawEdgeCalculationInProgessNotice(Graphics2D g2d, int locationX, int locationY) {
-        if (edgeCalculationInProgress) {
+    private void drawFilterCalculationInProgressNotice(Graphics2D g2d, int locationX, int locationY) {
+        if (filterCalculationInProgress) {
             Font font = fontService.getFont("Arial", Font.BOLD, 24);
             g2d.setFont(font);
-            BorderedStringRenderer.drawString(g2d, "Edge calculation in progress", locationX + 10, locationY + 30,
+            BorderedStringRenderer.drawString(g2d, "Filter calculation in progress", locationX + 10, locationY + 30,
                     Color.BLACK, Color.WHITE);
         }
     }
@@ -402,14 +402,14 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     }
 
     @Override
-    public void startEdgesCalculation() {
-        pictureData.startEdgesCalculation();
+    public void startFilterCalculation() {
+        pictureData.startFilterCalculation();
     }
 
     @Override
-    public void releaseEdges() {
-        pictureData.releaseEdges();
-        edgeCalculationInProgress = false;
+    public void releaseFilters() {
+        pictureData.releaseFilters();
+        filterCalculationInProgress = false;
     }
 
     @Override
@@ -424,10 +424,10 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.EDGES_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationStarted();
-        } else if (CommunicationMessages.EDGES_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleEdgeCalculationCompleted();
+        if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
+            handleFilterCalculationStarted();
+        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
+            handleFilterCalculationCompleted();
         } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
                 CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
@@ -437,14 +437,14 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         }
     }
 
-    private void handleEdgeCalculationStarted() {
-        edgeCalculationInProgress = true;
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_STARTED, null, this);
+    private void handleFilterCalculationStarted() {
+        filterCalculationInProgress = true;
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, this);
     }
 
-    private void handleEdgeCalculationCompleted() {
-        edgeCalculationInProgress = false;
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.EDGES_CALCULATION_COMPLETED, null, this);
+    private void handleFilterCalculationCompleted() {
+        filterCalculationInProgress = false;
+        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, this);
     }
 
     private class Doodle {

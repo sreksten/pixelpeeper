@@ -6,9 +6,9 @@ import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReaderFactory;
-import com.threeamigos.pixelpeeper.interfaces.edgedetect.EdgesDetectorFactory;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.EdgesDetectorPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,20 +20,20 @@ public class ExifImageReaderImpl implements ExifImageReader {
 
     private final ImageHandlingPreferences imageHandlingPreferences;
     private final ImageReaderFactory imageReaderFactory;
-    private final EdgesDetectorPreferences edgesDetectorPreferences;
-    private final EdgesDetectorFactory edgesDetectorFactory;
+    private final FilterPreferences filterPreferences;
+    private final FilterFactory filterFactory;
     private final MessageHandler messageHandler;
 
     private final ExifCache exifCache;
 
     public ExifImageReaderImpl(ImageHandlingPreferences imageHandlingPreferences, ImageReaderFactory imageReaderFactory,
-                               ExifCache exifCache, EdgesDetectorPreferences edgesDetectorPreferences,
-                               EdgesDetectorFactory edgesDetectorFactory, MessageHandler messageHandler) {
+                               ExifCache exifCache, FilterPreferences filterPreferences,
+                               FilterFactory filterFactory, MessageHandler messageHandler) {
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.imageReaderFactory = imageReaderFactory;
         this.exifCache = exifCache;
-        this.edgesDetectorPreferences = edgesDetectorPreferences;
-        this.edgesDetectorFactory = edgesDetectorFactory;
+        this.filterPreferences = filterPreferences;
+        this.filterFactory = filterFactory;
         this.messageHandler = messageHandler;
     }
 
@@ -67,7 +67,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
             BufferedImage bufferedImage = imageReaderFactory.getImageReader().readImage(file);
 
             PictureData pictureData = new PictureData(pictureOrientation, exifMap, bufferedImage, file,
-                    imageHandlingPreferences, edgesDetectorPreferences, edgesDetectorFactory);
+                    imageHandlingPreferences, filterPreferences, filterFactory);
 
             if (imageHandlingPreferences.isAutorotation()) {
                 pictureData.correctOrientation();

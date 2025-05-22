@@ -5,7 +5,7 @@ import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.NamePattern;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.NamePatternPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.NamePatternPreferences;
 
 import java.io.File;
 import java.util.Optional;

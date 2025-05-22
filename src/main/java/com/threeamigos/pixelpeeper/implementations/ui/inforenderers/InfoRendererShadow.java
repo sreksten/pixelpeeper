@@ -4,7 +4,7 @@ import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ExifTagsPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ExifTagsPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRenderer;
 
 import java.awt.*;

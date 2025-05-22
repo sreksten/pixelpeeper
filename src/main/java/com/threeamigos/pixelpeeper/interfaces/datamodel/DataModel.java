@@ -31,9 +31,9 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
     void toggleAutorotation();
 
     /**
-     * Starts the edge-detection algorithm
+     * Starts the filter algorithm
      */
-    void calculateEdges();
+    void startFilterCalculation();
 
     // Graphics part
 

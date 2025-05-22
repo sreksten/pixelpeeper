@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.FileSelector;
 
 public class FileSelectorImpl implements FileSelector {

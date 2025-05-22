@@ -4,8 +4,8 @@ import com.threeamigos.pixelpeeper.implementations.datamodel.imagereaders.Apache
 import com.threeamigos.pixelpeeper.implementations.datamodel.imagereaders.JavaImageIOImageReader;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReader;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReaderFactory;
-import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavour;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavor;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 
 public class ImageReaderFactoryImpl implements ImageReaderFactory {
 
@@ -17,14 +17,14 @@ public class ImageReaderFactoryImpl implements ImageReaderFactory {
 
     @Override
     public ImageReader getImageReader() {
-        ImageReaderFlavour imageReaderFlavour = imageHandlingPreferences.getImageReaderFlavour();
-        if (imageReaderFlavour == ImageReaderFlavour.JAVA) {
+        ImageReaderFlavor imageReaderFlavor = imageHandlingPreferences.getImageReaderFlavor();
+        if (imageReaderFlavor == ImageReaderFlavor.JAVA) {
             return new JavaImageIOImageReader();
-        } else if (imageReaderFlavour == ImageReaderFlavour.APACHE_COMMONS_IMAGING) {
+        } else if (imageReaderFlavor == ImageReaderFlavor.APACHE_COMMONS_IMAGING) {
             return new ApacheCommonsImagingImageReader();
         } else {
-            throw new IllegalArgumentException("No image reader was defined for flavour "
-                    + imageReaderFlavour.getDescription());
+            throw new IllegalArgumentException("No image reader was defined for flavor "
+                    + imageReaderFlavor.getDescription());
         }
     }
 

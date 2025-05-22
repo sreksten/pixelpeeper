@@ -106,14 +106,14 @@ public interface ImageSlice extends PropertyChangeListener {
     void adjustRotation(boolean autorotation);
 
     /**
-     * Asks to recalculate the edge images
+     * Asks to recalculate the filtered images
      */
-    void startEdgesCalculation();
+    void startFilterCalculation();
 
     /**
-     * Asks to clear the edges image and release the memory
+     * Asks to clear the filtered image and release the memory
      */
-    void releaseEdges();
+    void releaseFilters();
 
     // Communication part
 

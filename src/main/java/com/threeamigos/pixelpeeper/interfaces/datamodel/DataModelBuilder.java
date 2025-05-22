@@ -1,8 +1,8 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.ImageHandlingPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.SessionPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
 
 public interface DataModelBuilder {

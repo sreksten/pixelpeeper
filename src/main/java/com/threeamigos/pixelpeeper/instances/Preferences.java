@@ -13,8 +13,8 @@ import com.threeamigos.common.util.interfaces.persistence.file.RootPathProvider;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
 import com.threeamigos.common.util.interfaces.preferences.flavours.MainWindowPreferences;
 import com.threeamigos.pixelpeeper.Main;
-import com.threeamigos.pixelpeeper.implementations.preferences.flavours.*;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.*;
+import com.threeamigos.pixelpeeper.implementations.preferences.flavors.*;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.*;
 
 import java.awt.*;
 
@@ -27,13 +27,13 @@ public class Preferences {
     public static final ExifTagsPreferences EXIF_TAG;
     public static final GridPreferences GRID;
     public static final CursorPreferences CURSOR;
-    public static final EdgesDetectorPreferences EDGES_DETECTOR;
-    public static final CannyEdgesDetectorPreferences CANNY_EDGES_DETECTOR;
-    public static final RomyJonaEdgesDetectorPreferences ROMY_JONA_EDGES_DETECTOR;
-    public static final ZXSpectrumEdgesDetectorPreferences ZX_SPECTRUM_EDGES_DETECTOR;
-    public static final C64EdgesDetectorPreferences C64_EDGES_DETECTOR;
+    public static final FilterPreferences FILTER;
+    public static final CannyEdgesDetectorFilterPreferences CANNY_EDGES_DETECTOR_FILTER;
+    public static final RomyJonaFilterPreferences ROMY_JONA_FILTER;
+    public static final ZXSpectrumPaletteFilterPreferences ZX_SPECTRUM_PALETTE_FILTER;
+    public static final C64PaletteFilterPreferences C64_PALETTE_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
-    public static final DoodlingPreferences DRAWING;
+    public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
     public static final ShortcutsWindowPreferences SHORTCUTS_WINDOW;
 
@@ -43,7 +43,7 @@ public class Preferences {
 
         RootPathProvider rootPathProvider = new RootPathProviderImpl(Main.class, messageHandler);
 
-        // Preferences that can be stored and retrieved in a subsequent run
+        // Preferences that can be stored and retrieved in a later run
 
         Json<com.threeamigos.common.util.interfaces.preferences.Preferences> preferencesJson = new JsonBuilderImpl().registerAdapter(Color.class, new JsonColorAdapter())
                 .build(com.threeamigos.common.util.interfaces.preferences.Preferences.class);
@@ -77,30 +77,30 @@ public class Preferences {
         CURSOR = new CursorPreferencesImpl();
         preferencesCollector.add(CURSOR, "cursor.preferences");
 
-        // Edges Detector and implementations preferences
+        // Edges Detector and other filters implementations preferences
 
-        EDGES_DETECTOR = new EdgesDetectorPreferencesImpl();
-        preferencesCollector.add(EDGES_DETECTOR, "edges_detector.preferences");
+        FILTER = new FilterPreferencesImpl();
+        preferencesCollector.add(FILTER, "filter.preferences");
 
-        CANNY_EDGES_DETECTOR = new CannyEdgesDetectorPreferencesImpl();
-        preferencesCollector.add(CANNY_EDGES_DETECTOR, "canny_edges_detector.preferences");
+        CANNY_EDGES_DETECTOR_FILTER = new CannyEdgesDetectorFilterPreferencesImpl();
+        preferencesCollector.add(CANNY_EDGES_DETECTOR_FILTER, "canny_edges_detector_filter.preferences");
 
-        ROMY_JONA_EDGES_DETECTOR = new RomyJonaEdgesDetectorPreferencesImpl();
-        preferencesCollector.add(ROMY_JONA_EDGES_DETECTOR, "romy_jona_edge_detector.preferences");
+        ROMY_JONA_FILTER = new RomyJonaFilterPreferencesImpl();
+        preferencesCollector.add(ROMY_JONA_FILTER, "romy_jona_filter.preferences");
 
-        ZX_SPECTRUM_EDGES_DETECTOR = new ZXSpectrumEdgesDetectorPreferencesImpl();
-        preferencesCollector.add(ZX_SPECTRUM_EDGES_DETECTOR, "zx_spectrum_edge_detector.preferences");
+        ZX_SPECTRUM_PALETTE_FILTER = new ZXSpectrumPaletteFilterPreferencesImpl();
+        preferencesCollector.add(ZX_SPECTRUM_PALETTE_FILTER, "zx_spectrum_palette_filter.preferences");
 
-        C64_EDGES_DETECTOR = new C64EdgesDetectorPreferencesImpl();
-        preferencesCollector.add(C64_EDGES_DETECTOR, "c64_edge_detector.preferences");
+        C64_PALETTE_FILTER = new C64PaletteFilterPreferencesImpl();
+        preferencesCollector.add(C64_PALETTE_FILTER, "c64_palette_filter.preferences");
 
         // Misc preferences
 
         NAME_PATTERN = new NamePatternPreferencesImpl();
         preferencesCollector.add(NAME_PATTERN, "name_pattern.preferences");
 
-        DRAWING = new DoodlingPreferencesImpl();
-        preferencesCollector.add(DRAWING, "drawing.preferences");
+        DOODLING = new DoodlingPreferencesImpl();
+        preferencesCollector.add(DOODLING, "drawing.preferences");
 
         HINTS = new HintsPreferencesImpl();
         preferencesCollector.add(HINTS, "hints.preferences");

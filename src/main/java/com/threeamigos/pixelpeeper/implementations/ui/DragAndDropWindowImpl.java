@@ -9,7 +9,7 @@ import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
 import com.threeamigos.pixelpeeper.data.ExifMap;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifCache;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavours.DragAndDropWindowPreferences;
+import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DragAndDropWindowPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.DragAndDropWindow;
 import com.threeamigos.pixelpeeper.interfaces.ui.ImageConsumer;
 
