@@ -12,7 +12,7 @@ public interface NamePatternPreferences extends Preferences {
     String NAME_PATTERN_PREFERENCES_DEFAULT = "{FILENAME}";
 
     default String getDescription() {
-        return "Name pattern preferences";
+        return "Name Pattern preferences";
     }
 
     void setNamePattern(String namePattern);

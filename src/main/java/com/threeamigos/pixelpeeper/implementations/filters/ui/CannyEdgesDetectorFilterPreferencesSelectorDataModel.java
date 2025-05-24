@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
 
-public class CannyEdgesDetectorFilterPreferencesSelectorDataModel extends AbstractFilterPreferencesSelectorDataModel
+public class CannyEdgesDetectorFilterPreferencesSelectorDataModel extends FilterPreferencesSelectorDataModel
         implements CannyEdgesDetectorFilterPreferences {
 
     private static final float NORMALIZATION_VALUE = 10.0f;

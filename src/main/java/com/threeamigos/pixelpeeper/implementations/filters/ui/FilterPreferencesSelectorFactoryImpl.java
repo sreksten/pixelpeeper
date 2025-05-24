@@ -16,6 +16,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final RomyJonaFilterPreferences romyJonaFilterPreferences;
     private final ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences;
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
+    private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
     private final ExceptionHandler exceptionHandler;
@@ -25,6 +26,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 RomyJonaFilterPreferences romyJonaFilterPreferences,
                                                 ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
                                                 C64PaletteFilterPreferences c64PaletteFilterPreferences,
+                                                Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
                                                 DataModel dataModel,
                                                 ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
@@ -32,6 +34,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
         this.romyJonaFilterPreferences = romyJonaFilterPreferences;
         this.zxSpectrumPaletteFilterPreferences = zxSpectrumPaletteFilterPreferences;
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
+        this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
         this.exceptionHandler = exceptionHandler;
@@ -50,13 +53,17 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                 return new SobelFilterPreferencesSelectorImpl(filterPreferences, dataModel,
                         exifImageReader, exceptionHandler);
             case ZX_SPECTRUM_PALETTE:
-                return new ZXSpectrumFilterPreferencesSelectorImpl(filterPreferences,
+                return new ZXSpectrumPaletteFilterPreferencesSelectorImpl(filterPreferences,
                         zxSpectrumPaletteFilterPreferences, dataModel,
                         exifImageReader, exceptionHandler);
             case C64_PALETTE:
-                return new C64FilterPreferencesSelectorImpl(filterPreferences,
+                return new C64PaletteFilterPreferencesSelectorImpl(filterPreferences,
                         c64PaletteFilterPreferences, dataModel,
                         exifImageReader, exceptionHandler);
+                case WINDOWS_3_11_PALETTE:
+                    return new Windows311PaletteFilterPreferencesSelectorImpl(filterPreferences,
+                            windows311PaletteFilterPreferences, dataModel,
+                            exifImageReader, exceptionHandler);
             default:
                 throw new IllegalArgumentException();
         }

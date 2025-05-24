@@ -8,9 +8,10 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferen
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Properties;
 
-public class CannyFilterPreferencesSelectorImpl extends AbstractFilterPreferencesSelectorImpl {
+public class CannyFilterPreferencesSelectorImpl extends FilterPreferencesSelectorImpl {
 
     private static final String LOW_THRESHOLD = "Low threshold";
     private static final String HIGH_THRESHOLD = "High threshold";
@@ -20,24 +21,29 @@ public class CannyFilterPreferencesSelectorImpl extends AbstractFilterPreference
 
     private Dimension flavorDimension;
 
+    private final CannyEdgesDetectorFilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel;
+
     public CannyFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
                                               CannyEdgesDetectorFilterPreferences cannyEdgesDetectorFilterPreferences, DataModel dataModel,
                                               ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
         super(filterPreferences, dataModel, exifImageReader, exceptionHandler);
 
-        preferencesSelectorDataModel = new CannyEdgesDetectorFilterPreferencesSelectorDataModel(dataModel,
+        filterPreferencesSelectorDataModel = new CannyEdgesDetectorFilterPreferencesSelectorDataModel(dataModel,
                 filterPreferences, cannyEdgesDetectorFilterPreferences, testImageCanvas);
-        preferencesSelectorDataModel.setSourceImage(testImage);
-        preferencesSelectorDataModel.startFilterCalculation();
+        filterPreferencesSelectorDataModel.setSourceImage(testImage);
+        filterPreferencesSelectorDataModel.startFilterCalculation();
+    }
+
+    @Override
+    protected CannyEdgesDetectorFilterPreferencesSelectorDataModel getFilterPreferencesSelectorDataModel() {
+        return filterPreferencesSelectorDataModel;
     }
 
     String getPreferencesDescription() {
-        return "Canny Edge Detector Preferences";
+        return "Canny Edge Detector preferences";
     }
 
     JPanel createFlavorPanel(Component component) {
-
-        CannyEdgesDetectorFilterPreferencesSelectorDataModel downcastDatamodel = (CannyEdgesDetectorFilterPreferencesSelectorDataModel) preferencesSelectorDataModel;
 
         Properties thresholdSliderLabelTable = new Properties();
         thresholdSliderLabelTable.put(1, new JLabel("0.1"));
@@ -54,35 +60,35 @@ public class CannyFilterPreferencesSelectorImpl extends AbstractFilterPreference
         gaussianKernelWidthSliderLabelTable.put(16, new JLabel("16"));
         gaussianKernelWidthSliderLabelTable.put(32, new JLabel("32"));
 
-        flavorDimension = getMaxDimension(component.getGraphics(), LOW_THRESHOLD, HIGH_THRESHOLD,
-                GAUSSIAN_KERNEL_RADIUS, GAUSSIAN_KERNEL_WIDTH, CONTRAST_NORMALIZED, TRANSPARENCY);
+        flavorDimension = getMaxDimension(component.getGraphics(), java.util.List.of(LOW_THRESHOLD, HIGH_THRESHOLD,
+                GAUSSIAN_KERNEL_RADIUS, GAUSSIAN_KERNEL_WIDTH, CONTRAST_NORMALIZED, TRANSPARENCY));
 
         JPanel flavorPanel = new JPanel();
         flavorPanel.setLayout(new BoxLayout(flavorPanel, BoxLayout.PAGE_AXIS));
 
-        createSliderPanel(flavorPanel, flavorDimension, LOW_THRESHOLD, downcastDatamodel.lowThresholdSlider,
-                thresholdSliderLabelTable, downcastDatamodel.lowThresholdText);
+        createSliderPanel(flavorPanel, flavorDimension, LOW_THRESHOLD, filterPreferencesSelectorDataModel.lowThresholdSlider,
+                thresholdSliderLabelTable, filterPreferencesSelectorDataModel.lowThresholdText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
-        createSliderPanel(flavorPanel, flavorDimension, HIGH_THRESHOLD, downcastDatamodel.highThresholdSlider,
-                thresholdSliderLabelTable, downcastDatamodel.highThresholdText);
+        createSliderPanel(flavorPanel, flavorDimension, HIGH_THRESHOLD, filterPreferencesSelectorDataModel.highThresholdSlider,
+                thresholdSliderLabelTable, filterPreferencesSelectorDataModel.highThresholdText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, GAUSSIAN_KERNEL_RADIUS,
-                downcastDatamodel.gaussianKernelRadiusSlider, gaussianKernelRadiusSliderLabelTable,
-                downcastDatamodel.gaussianKernelRadiusText);
+                filterPreferencesSelectorDataModel.gaussianKernelRadiusSlider, gaussianKernelRadiusSliderLabelTable,
+                filterPreferencesSelectorDataModel.gaussianKernelRadiusText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, GAUSSIAN_KERNEL_WIDTH,
-                downcastDatamodel.gaussianKernelWidthSlider, gaussianKernelWidthSliderLabelTable,
-                downcastDatamodel.gaussianKernelWidthText);
+                filterPreferencesSelectorDataModel.gaussianKernelWidthSlider, gaussianKernelWidthSliderLabelTable,
+                filterPreferencesSelectorDataModel.gaussianKernelWidthText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
-        createCheckboxPanel(flavorPanel, CONTRAST_NORMALIZED, downcastDatamodel.contrastNormalizedCheckbox);
+        createCheckboxPanel(flavorPanel, CONTRAST_NORMALIZED, filterPreferencesSelectorDataModel.contrastNormalizedCheckbox);
 
         return flavorPanel;
     }
@@ -90,5 +96,4 @@ public class CannyFilterPreferencesSelectorImpl extends AbstractFilterPreference
     Dimension getFlavorDimension() {
         return flavorDimension;
     }
-
 }

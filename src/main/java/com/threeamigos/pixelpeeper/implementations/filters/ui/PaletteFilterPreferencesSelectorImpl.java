@@ -4,15 +4,14 @@ import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
-import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ZXSpectrumPaletteFilterPreferences;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Properties;
 
-public class ZXSpectrumFilterPreferencesSelectorImpl extends AbstractFilterPreferencesSelectorImpl {
+abstract class PaletteFilterPreferencesSelectorImpl extends FilterPreferencesSelectorImpl {
 
-    private static final String COLOR_CLASH_ENABLED = "Color Clash";
     private static final String SATURATION_THRESHOLD = "Min saturation before grayscale mapping";
     private static final String LIGHTNESS_MIN_THRESHOLD = "Min lightness before black mapping";
     private static final String LIGHTNESS_MAX_THRESHOLD = "Max lightness before white mapping";
@@ -24,25 +23,16 @@ public class ZXSpectrumFilterPreferencesSelectorImpl extends AbstractFilterPrefe
 
     private Dimension flavorDimension;
 
-    public ZXSpectrumFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
-                                                   ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
-                                                   DataModel dataModel, ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
+    public PaletteFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
+                                                          DataModel dataModel, ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
         super(filterPreferences, dataModel, exifImageReader, exceptionHandler);
-
-        preferencesSelectorDataModel = new ZXSpectrumPaletteFilterPreferencesSelectorDataModel(dataModel,
-                filterPreferences, zxSpectrumPaletteFilterPreferences, testImageCanvas);
-        preferencesSelectorDataModel.setSourceImage(testImage);
-        preferencesSelectorDataModel.startFilterCalculation();
     }
 
-    String getPreferencesDescription() {
-        return "ZX Spectrum Edge Detector Preferences";
-    }
+    protected abstract PaletteFilterPreferencesSelectorDataModel getFilterPreferencesSelectorDataModel();
 
     JPanel createFlavorPanel(Component component) {
 
-        ZXSpectrumPaletteFilterPreferencesSelectorDataModel downcastDatamodel =
-                (ZXSpectrumPaletteFilterPreferencesSelectorDataModel) preferencesSelectorDataModel;
+        PaletteFilterPreferencesSelectorDataModel paletteFilterPreferencesDataModel = getFilterPreferencesSelectorDataModel();
 
         Properties saturationThresholdSliderLabelTable = new Properties();
         saturationThresholdSliderLabelTable.put(1, new JLabel("0"));
@@ -74,68 +64,84 @@ public class ZXSpectrumFilterPreferencesSelectorImpl extends AbstractFilterPrefe
         lightnessWeightSliderLabelTable.put(50, new JLabel("0.5"));
         lightnessWeightSliderLabelTable.put(100, new JLabel("1.0"));
 
-        flavorDimension = getMaxDimension(component.getGraphics(), COLOR_CLASH_ENABLED,
-                SATURATION_THRESHOLD, LIGHTNESS_MIN_THRESHOLD, LIGHTNESS_MAX_THRESHOLD,
-                HUE_WEIGHT, SATURATION_WEIGHT, LIGHTNESS_WEIGHT, SKIN_TONES_MAPPING_ENABLED);
+        flavorDimension = getMaxDimension(component.getGraphics(), getAllLabels());
 
         JPanel flavorPanel = new JPanel();
         flavorPanel.setLayout(new BoxLayout(flavorPanel, BoxLayout.PAGE_AXIS));
 
-        createCheckboxPanel(flavorPanel, COLOR_CLASH_ENABLED, downcastDatamodel.colorClashEnabledCheckbox);
-
-        flavorPanel.add(Box.createVerticalStrut(SPACING));
+        addPreComponents(flavorPanel);
 
         createSliderPanel(flavorPanel, flavorDimension, SATURATION_THRESHOLD,
-                downcastDatamodel.saturationThresholdSlider,
+                paletteFilterPreferencesDataModel.saturationThresholdSlider,
                 saturationThresholdSliderLabelTable,
-                downcastDatamodel.saturationThresholdText);
+                paletteFilterPreferencesDataModel.saturationThresholdText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, LIGHTNESS_MIN_THRESHOLD,
-                downcastDatamodel.lightnessMinThresholdSlider,
+                paletteFilterPreferencesDataModel.lightnessMinThresholdSlider,
                 lightnessMinThresholdSliderLabelTable,
-                downcastDatamodel.lightnessMinThresholdText);
+                paletteFilterPreferencesDataModel.lightnessMinThresholdText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, LIGHTNESS_MAX_THRESHOLD,
-                downcastDatamodel.lightnessMaxThresholdSlider,
+                paletteFilterPreferencesDataModel.lightnessMaxThresholdSlider,
                 lightnessMaxThresholdSliderLabelTable,
-                downcastDatamodel.lightnessMaxThresholdText);
+                paletteFilterPreferencesDataModel.lightnessMaxThresholdText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         flavorPanel.add(new JLabel(COLOR_MAPPING));
 
         createSliderPanel(flavorPanel, flavorDimension, HUE_WEIGHT,
-                downcastDatamodel.hueWeightSlider,
+                paletteFilterPreferencesDataModel.hueWeightSlider,
                 hueWeightSliderLabelTable,
-                downcastDatamodel.hueWeightText);
+                paletteFilterPreferencesDataModel.hueWeightText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, SATURATION_WEIGHT,
-                downcastDatamodel.saturationWeightSlider,
+                paletteFilterPreferencesDataModel.saturationWeightSlider,
                 saturationWeightSliderLabelTable,
-                downcastDatamodel.saturationWeightText);
+                paletteFilterPreferencesDataModel.saturationWeightText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(flavorPanel, flavorDimension, LIGHTNESS_WEIGHT,
-                downcastDatamodel.lightnessWeightSlider,
+                paletteFilterPreferencesDataModel.lightnessWeightSlider,
                 lightnessWeightSliderLabelTable,
-                downcastDatamodel.lightnessWeightText);
+                paletteFilterPreferencesDataModel.lightnessWeightText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
-        createCheckboxPanel(flavorPanel, SKIN_TONES_MAPPING_ENABLED, downcastDatamodel.skinTonesMappingEnabledCheckbox);
+        createCheckboxPanel(flavorPanel, SKIN_TONES_MAPPING_ENABLED, paletteFilterPreferencesDataModel.skinTonesMappingEnabledCheckbox);
+
+        addPostComponents(flavorPanel);
 
         return flavorPanel;
     }
 
+    protected java.util.List<String> getAllLabels() {
+        java.util.List<String> allLabels = new ArrayList<>();
+        allLabels.add(SATURATION_THRESHOLD);
+        allLabels.add(LIGHTNESS_MIN_THRESHOLD);
+        allLabels.add(LIGHTNESS_MAX_THRESHOLD);
+        allLabels.add(HUE_WEIGHT);
+        allLabels.add(SATURATION_WEIGHT);
+        allLabels.add(LIGHTNESS_WEIGHT);
+        allLabels.add(SKIN_TONES_MAPPING_ENABLED);
+        return allLabels;
+    }
+
     Dimension getFlavorDimension() {
         return flavorDimension;
+    }
+
+    protected void addPreComponents(JPanel panel) {
+    }
+
+    protected void addPostComponents(JPanel panel) {
     }
 
 }

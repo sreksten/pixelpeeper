@@ -39,7 +39,7 @@ public interface ImageHandlingPreferences extends Preferences {
     ExifReaderFlavor METADATA_READER_FLAVOR_DEFAULT = ExifReaderFlavor.DREW_NOAKES;
 
     default String getDescription() {
-        return "Image handling preferences";
+        return "Image Handling preferences";
     }
 
     void setAutorotation(boolean autorotation);

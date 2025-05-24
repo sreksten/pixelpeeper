@@ -32,6 +32,7 @@ public class Preferences {
     public static final RomyJonaFilterPreferences ROMY_JONA_FILTER;
     public static final ZXSpectrumPaletteFilterPreferences ZX_SPECTRUM_PALETTE_FILTER;
     public static final C64PaletteFilterPreferences C64_PALETTE_FILTER;
+    public static final Windows311PaletteFilterPreferences WINDOWS_3_11_PALETTE_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
@@ -93,6 +94,9 @@ public class Preferences {
 
         C64_PALETTE_FILTER = new C64PaletteFilterPreferencesImpl();
         preferencesCollector.add(C64_PALETTE_FILTER, "c64_palette_filter.preferences");
+
+        WINDOWS_3_11_PALETTE_FILTER = new Windows311PaletteFilterPreferencesImpl();
+        preferencesCollector.add(WINDOWS_3_11_PALETTE_FILTER, "windows_311_palette_filter.preferences");
 
         // Misc preferences
 

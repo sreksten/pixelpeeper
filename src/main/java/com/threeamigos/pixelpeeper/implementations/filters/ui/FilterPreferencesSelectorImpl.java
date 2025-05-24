@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreferencesSelector {
+abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelector {
 
     protected static final int SPACING = 5;
 
@@ -49,11 +49,9 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
     private final boolean isShowResultsAtStart;
 
-    protected AbstractFilterPreferencesSelectorDataModel preferencesSelectorDataModel;
-
-    protected AbstractFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
-                                                    DataModel dataModel, ExifImageReader exifImageReader,
-                                                    ExceptionHandler exceptionHandler) {
+    protected FilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
+                                            DataModel dataModel, ExifImageReader exifImageReader,
+                                            ExceptionHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
@@ -77,8 +75,12 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         isShowResultsAtStart = filterPreferences.isShowResults();
     }
 
+    protected abstract FilterPreferencesSelectorDataModel getFilterPreferencesSelectorDataModel();
+
     @Override
     public final void selectParameters(Component parentComponent) {
+
+        FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
 
         String[] options = {OK_OPTION, CANCEL_OPTION};
 
@@ -91,7 +93,7 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         dialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                preferencesSelectorDataModel.abstractCancelSelection();
+                filterPreferencesSelectorDataModel.abstractCancelSelection();
                 dialog.setVisible(false);
             }
         });
@@ -102,15 +104,15 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         dialog.setVisible(true);
 
         if (CANCEL_OPTION.equals(optionPane.getValue())) {
-            preferencesSelectorDataModel.abstractCancelSelection();
+            filterPreferencesSelectorDataModel.abstractCancelSelection();
             if (isShowResultsAtStart) {
                 dataModel.startFilterCalculation();
             }
             filterPreferences.setShowResults(isShowResultsAtStart);
             dataModel.requestRepaint();
         } else if (OK_OPTION.equals(optionPane.getValue())) {
-            preferencesSelectorDataModel.abstractAcceptSelection();
-            if (preferencesSelectorDataModel.isAnyCalculationParameterModified()) {
+            filterPreferencesSelectorDataModel.abstractAcceptSelection();
+            if (filterPreferencesSelectorDataModel.isAnyCalculationParameterModified()) {
                 dataModel.startFilterCalculation();
             }
             dataModel.requestRepaint();
@@ -137,6 +139,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
     private JPanel createSlidersPanel(Component component) {
 
+        FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+
         Properties transparencySliderLabelTable = new Properties();
         transparencySliderLabelTable.put(FilterPreferences.NO_TRANSPARENCY,
                 new JLabel(String.valueOf(FilterPreferences.NO_TRANSPARENCY)));
@@ -152,8 +156,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         slidersPanel.add(Box.createVerticalStrut(SPACING));
 
         createSliderPanel(slidersPanel, getFlavorDimension(), TRANSPARENCY,
-                preferencesSelectorDataModel.transparencySlider, transparencySliderLabelTable,
-                preferencesSelectorDataModel.transparencyText);
+                filterPreferencesSelectorDataModel.transparencySlider, transparencySliderLabelTable,
+                filterPreferencesSelectorDataModel.transparencyText);
 
         slidersPanel.add(Box.createVerticalStrut(SPACING));
 
@@ -168,6 +172,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
     private JPanel createPreviewPanel() {
 
+        FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+
         JPanel previewPanel = new JPanel();
         previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.PAGE_AXIS));
 
@@ -178,8 +184,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         JButton recalculateButton = new JButton("Apply to images");
         recalculateButton.addActionListener(e -> {
             filterPreferences.setShowResults(true);
-            if (preferencesSelectorDataModel.isAnyCalculationParameterModified()) {
-                preferencesSelectorDataModel.abstractAcceptSelection();
+            if (filterPreferencesSelectorDataModel.isAnyCalculationParameterModified()) {
+                filterPreferencesSelectorDataModel.abstractAcceptSelection();
                 dataModel.startFilterCalculation();
             } else {
                 dataModel.requestRepaint();
@@ -195,6 +201,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
     private JPanel createImagePanel() {
 
+        FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+
         JPanel imagePanel = new JPanel();
         imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.PAGE_AXIS));
         imagePanel.setBorder(BorderFactory.createTitledBorder("Preview"));
@@ -204,8 +212,8 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         JButton loadFromFirstImage = new JButton("Load from first image");
         loadFromFirstImage.addActionListener(e -> {
             if (dataModel.hasLoadedImages()) {
-                preferencesSelectorDataModel.setSourceImage(scaleImage(dataModel.getLoadedImages().iterator().next().getImage()));
-                preferencesSelectorDataModel.startFilterCalculation();
+                filterPreferencesSelectorDataModel.setSourceImage(scaleImage(dataModel.getLoadedImages().iterator().next().getImage()));
+                filterPreferencesSelectorDataModel.startFilterCalculation();
                 dialog.repaint();
             }
         });
@@ -257,18 +265,20 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
     private void createActionsPanel(JPanel parent) {
 
+        FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
         JButton resetToPrevious = new JButton("Reset to previous");
-        resetToPrevious.addActionListener(e -> preferencesSelectorDataModel.abstractReset());
+        resetToPrevious.addActionListener(e -> filterPreferencesSelectorDataModel.abstractReset());
 
         panel.add(resetToPrevious);
 
         panel.add(Box.createHorizontalStrut(10));
 
         JButton resetToDefault = new JButton("Reset to default");
-        resetToDefault.addActionListener(e -> preferencesSelectorDataModel.abstractResetToDefault());
+        resetToDefault.addActionListener(e -> filterPreferencesSelectorDataModel.abstractResetToDefault());
 
         panel.add(resetToDefault);
 
@@ -294,7 +304,7 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         return image;
     }
 
-    protected Dimension getMaxDimension(Graphics graphics, String... strings) {
+    protected Dimension getMaxDimension(Graphics graphics, List<String> strings) {
         Graphics2D g2d = (Graphics2D) graphics;
         Font font = g2d.getFont();
         FontRenderContext context = g2d.getFontRenderContext();
@@ -324,11 +334,13 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
 
         @Override
         public void accept(List<File> files) {
+
             Optional<BufferedImage> optImage = files.stream().map(this::loadCropAndResizeImage)
                     .filter(Objects::nonNull).findFirst();
             if (optImage.isPresent()) {
-                preferencesSelectorDataModel.setSourceImage(optImage.get());
-                preferencesSelectorDataModel.startFilterCalculation();
+                FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+                filterPreferencesSelectorDataModel.setSourceImage(optImage.get());
+                filterPreferencesSelectorDataModel.startFilterCalculation();
                 repaint();
             }
         }
@@ -341,9 +353,10 @@ abstract class AbstractFilterPreferencesSelectorImpl implements FilterPreference
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, preferencesSelectorDataModel.getSourceImage(),
-                    preferencesSelectorDataModel.getFilteredImage(), 0, 0,
-                    preferencesSelectorDataModel.getTransparency());
+            FilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel = getFilterPreferencesSelectorDataModel();
+            ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, filterPreferencesSelectorDataModel.getSourceImage(),
+                    filterPreferencesSelectorDataModel.getFilteredImage(), 0, 0,
+                    filterPreferencesSelectorDataModel.getTransparency());
         }
 
         private BufferedImage loadCropAndResizeImage(File file) {

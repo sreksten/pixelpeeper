@@ -16,7 +16,7 @@ public interface DragAndDropWindowPreferences extends SecondaryWindowPreferences
     void setOpenImmediately(boolean openImmediately);
 
     default String getDescription() {
-        return "Drag and drop window preferences";
+        return "Drag-and-drop Window preferences";
     }
 
 }

@@ -13,6 +13,7 @@ public class FilterFactoryInstance {
                     Preferences.ROMY_JONA_FILTER,
                     Preferences.ZX_SPECTRUM_PALETTE_FILTER,
                     Preferences.C64_PALETTE_FILTER,
+                    Preferences.WINDOWS_3_11_PALETTE_FILTER,
                     new SwingMessageHandler());
 
     public static FilterFactory get() {

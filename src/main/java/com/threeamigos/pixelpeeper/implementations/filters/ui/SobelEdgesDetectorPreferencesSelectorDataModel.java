@@ -9,7 +9,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferen
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
 
-public class SobelEdgesDetectorPreferencesSelectorDataModel extends AbstractFilterPreferencesSelectorDataModel {
+public class SobelEdgesDetectorPreferencesSelectorDataModel extends FilterPreferencesSelectorDataModel {
 
     SobelEdgesDetectorPreferencesSelectorDataModel(DataModel dataModel,
                                                    FilterPreferences filterPreferences, Component component) {

@@ -8,18 +8,25 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferen
 import javax.swing.*;
 import java.awt.*;
 
-public class SobelFilterPreferencesSelectorImpl extends AbstractFilterPreferencesSelectorImpl {
+public class SobelFilterPreferencesSelectorImpl extends FilterPreferencesSelectorImpl {
 
     private Dimension flavorDimension;
+
+    private final SobelEdgesDetectorPreferencesSelectorDataModel filterPreferencesSelectorDataModel;
 
     public SobelFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
                                               DataModel dataModel, ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
         super(filterPreferences, dataModel, exifImageReader, exceptionHandler);
 
-        preferencesSelectorDataModel = new SobelEdgesDetectorPreferencesSelectorDataModel(dataModel,
+        filterPreferencesSelectorDataModel = new SobelEdgesDetectorPreferencesSelectorDataModel(dataModel,
                 filterPreferences, testImageCanvas);
-        preferencesSelectorDataModel.setSourceImage(testImage);
-        preferencesSelectorDataModel.startFilterCalculation();
+        filterPreferencesSelectorDataModel.setSourceImage(testImage);
+        filterPreferencesSelectorDataModel.startFilterCalculation();
+    }
+
+    @Override
+    public SobelEdgesDetectorPreferencesSelectorDataModel getFilterPreferencesSelectorDataModel() {
+        return filterPreferencesSelectorDataModel;
     }
 
     String getPreferencesDescription() {

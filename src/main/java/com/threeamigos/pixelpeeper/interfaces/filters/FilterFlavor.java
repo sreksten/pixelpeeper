@@ -32,7 +32,11 @@ public enum FilterFlavor {
     /**
      * A quick hack to render an image using Commodore 64 colors
      */
-    C64_PALETTE("C64 palette");
+    C64_PALETTE("C64 palette"),
+    /**
+     * A quick hack to render an image using Windows 3.11 colors
+     */
+    WINDOWS_3_11_PALETTE("Windows 3.11 palette");
 
     private final String description;
 
@@ -53,6 +57,7 @@ public enum FilterFlavor {
         list.add(SOBEL_EDGES_DETECTOR);
         list.add(ZX_SPECTRUM_PALETTE);
         list.add(C64_PALETTE);
+        list.add(WINDOWS_3_11_PALETTE);
         return list;
     }
 }

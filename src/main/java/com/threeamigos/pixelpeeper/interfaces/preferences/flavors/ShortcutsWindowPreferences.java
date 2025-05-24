@@ -5,7 +5,7 @@ import com.threeamigos.common.util.interfaces.preferences.flavours.SecondaryWind
 public interface ShortcutsWindowPreferences extends SecondaryWindowPreferences {
 
     default String getDescription() {
-        return "Shortcuts window preferences";
+        return "Shortcuts Window preferences";
     }
 
 }

@@ -19,14 +19,14 @@ public class CommunicationMessages {
     public static final String CANNY_GAUSSIAN_KERNEL_WIDTH_CHANGED = "CannyGaussianKernelWidthChanged";
     public static final String CANNY_CONTRAST_NORMALIZED_CHANGED = "CannyContrastNormalizedChanged";
 
-    public static final String ZX_SPECTRUM_COLOR_CLASH_CHANGED = "ZXSpectrumColorClashChanged";
-    public static final String ZX_SPECTRUM_SATURATION_THRESHOLD_CHANGED = "ZXSpectrumSaturationThresholdChanged";
-    public static final String ZX_SPECTRUM_LIGHTNESS_MIN_THRESHOLD_CHANGED = "ZXSpectrumLightnessMinThresholdChanged";
-    public static final String ZX_SPECTRUM_LIGHTNESS_MAX_THRESHOLD_CHANGED = "ZXSpectrumLightnessMaxThresholdChanged";
-    public static final String ZX_SPECTRUM_HUE_WEIGHT_CHANGED = "ZXSpectrumHueWeightChanged";
-    public static final String ZX_SPECTRUM_SATURATION_WEIGHT_CHANGED = "ZXSpectrumSaturationWeightChanged";
-    public static final String ZX_SPECTRUM_LIGHTNESS_WEIGHT_CHANGED = "ZXSpectrumLightnessWeightChanged";
-    public static final String ZX_SPECTRUM_SKIN_TONES_MAPPING_CHANGED = "ZXSpectrumMapSkinTonesChanged";
+    public static final String PALETTE_FILTER_COLOR_CLASH_CHANGED = "PaletteFilterColorClashChanged";
+    public static final String PALETTE_FILTER_SATURATION_THRESHOLD_CHANGED = "PaletteFilterSaturationThresholdChanged";
+    public static final String PALETTE_FILTER_LIGHTNESS_MIN_THRESHOLD_CHANGED = "PaletteFilterLightnessMinThresholdChanged";
+    public static final String PALETTE_FILTER_LIGHTNESS_MAX_THRESHOLD_CHANGED = "PaletteFilterLightnessMaxThresholdChanged";
+    public static final String PALETTE_FILTER_HUE_WEIGHT_CHANGED = "PaletteFilterHueWeightChanged";
+    public static final String PALETTE_FILTER_SATURATION_WEIGHT_CHANGED = "PaletteFilterSaturationWeightChanged";
+    public static final String PALETTE_FILTER_LIGHTNESS_WEIGHT_CHANGED = "PaletteFilterLightnessWeightChanged";
+    public static final String PALETTE_FILTER_SKIN_TONES_MAPPING_CHANGED = "PaletteFilterMapSkinTonesChanged";
 
     public static final String FILTER_VISIBILITY_CHANGED = "FilterVisibilityChanged";
     public static final String FILTER_TRANSPARENCY_CHANGED = "FilterTransparencyChanged";

@@ -21,7 +21,7 @@ public interface ExifTagsPreferences extends Preferences {
     int BORDER_THICKNESS_MAX = BORDER_THICKNESS_LARGE;
 
     default String getDescription() {
-        return "Exif tags preferences";
+        return "Exif Tags preferences";
     }
 
     boolean isTagsVisible();

@@ -13,6 +13,7 @@ public class FilterFactoryImpl implements FilterFactory {
     private final RomyJonaFilterPreferences romyJonaFilterPreferences;
     private final ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences;
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
+    private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
     private final ExceptionHandler exceptionHandler;
 
     public FilterFactoryImpl(FilterPreferences filterPreferences,
@@ -20,12 +21,14 @@ public class FilterFactoryImpl implements FilterFactory {
                              RomyJonaFilterPreferences romyJonaFilterPreferences,
                              ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
                              C64PaletteFilterPreferences c64PaletteFilterPreferences,
+                             Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
                              ExceptionHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
         this.romyJonaFilterPreferences = romyJonaFilterPreferences;
         this.zxSpectrumPaletteFilterPreferences = zxSpectrumPaletteFilterPreferences;
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
+        this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -42,6 +45,8 @@ public class FilterFactoryImpl implements FilterFactory {
                 return new ZXSpectrumPaletteFilterImpl(zxSpectrumPaletteFilterPreferences, exceptionHandler);
             case C64_PALETTE:
                 return new C64PaletteFilterImpl(c64PaletteFilterPreferences, exceptionHandler);
+            case WINDOWS_3_11_PALETTE:
+                return new Windows311PaletteFilterImpl(windows311PaletteFilterPreferences, exceptionHandler);
             default:
                 throw new IllegalArgumentException();
         }

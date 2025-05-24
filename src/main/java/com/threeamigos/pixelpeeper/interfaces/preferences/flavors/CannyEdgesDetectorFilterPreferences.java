@@ -16,7 +16,7 @@ public interface CannyEdgesDetectorFilterPreferences extends Preferences {
     boolean CONTRAST_NORMALIZED_DEFAULT = false;
 
     default String getDescription() {
-        return "Canny Edges Detector preferences";
+        return "Canny Edges Detector Filter preferences";
     }
 
     float getLowThreshold();

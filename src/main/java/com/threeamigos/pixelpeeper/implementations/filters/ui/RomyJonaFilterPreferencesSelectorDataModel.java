@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
 
-public class RomyJonaFilterPreferencesSelectorDataModel extends AbstractFilterPreferencesSelectorDataModel
+public class RomyJonaFilterPreferencesSelectorDataModel extends FilterPreferencesSelectorDataModel
         implements RomyJonaFilterPreferences {
 
     private final RomyJonaFilterPreferences romyJonaFilterPreferences;

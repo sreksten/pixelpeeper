@@ -5,7 +5,7 @@ import com.threeamigos.common.util.interfaces.preferences.Preferences;
 /**
  * Preferences for the fake RomyJona edges-detection algorithm. Actually, since
  * Canny has a lot of parameters and Sobel has none, this class is added just to
- * test the host-capabilities of the edge-detector parameters preference window.
+ * test the host-capabilities of the filter parameters preferences window.
  *
  * @author Stefano Reksten
  */
@@ -15,7 +15,7 @@ public interface RomyJonaFilterPreferences extends Preferences {
     boolean A_NASTRO_PREFERENCES_DEFAULT = true;
 
     default String getDescription() {
-        return "Romy Jona filter preferences";
+        return "Romy Jona Filter preferences";
     }
 
     void setPuppamento(int puppamento);

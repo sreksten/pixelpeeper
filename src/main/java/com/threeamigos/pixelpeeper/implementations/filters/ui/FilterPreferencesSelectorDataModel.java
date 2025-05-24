@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-abstract class AbstractFilterPreferencesSelectorDataModel extends BasicPropertyChangeAware
+abstract class FilterPreferencesSelectorDataModel extends BasicPropertyChangeAware
         implements FilterPreferences, ChangeListener {
 
     protected final DataModel dataModel;
@@ -28,8 +28,8 @@ abstract class AbstractFilterPreferencesSelectorDataModel extends BasicPropertyC
 
     final JSlider transparencySlider;
 
-    AbstractFilterPreferencesSelectorDataModel(DataModel dataModel,
-                                               FilterPreferences filterPreferences, Component component) {
+    FilterPreferencesSelectorDataModel(DataModel dataModel,
+                                       FilterPreferences filterPreferences, Component component) {
         this.dataModel = dataModel;
         this.filterPreferences = filterPreferences;
         this.component = component;

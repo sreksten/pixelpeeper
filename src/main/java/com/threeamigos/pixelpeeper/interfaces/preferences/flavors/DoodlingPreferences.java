@@ -21,6 +21,10 @@ public interface DoodlingPreferences extends Preferences {
     int BRUSH_SIZE_MAX = 50;
     int BRUSH_SIZE_DEFAULT = 20;
 
+    default String getDescription() {
+        return "Doodling preferences";
+    }
+
     void setTransparency(int transparency);
 
     int getTransparency();

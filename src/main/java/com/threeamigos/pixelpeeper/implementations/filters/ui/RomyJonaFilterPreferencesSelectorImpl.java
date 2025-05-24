@@ -10,48 +10,53 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Properties;
 
-public class RomyJonaFilterPreferencesSelectorImpl extends AbstractFilterPreferencesSelectorImpl {
+public class RomyJonaFilterPreferencesSelectorImpl extends FilterPreferencesSelectorImpl {
 
     private static final String PUPPAMENTO = "Puppamento";
     private static final String A_NASTRO = "A nastro";
 
     private Dimension flavorDimension;
 
+    private final RomyJonaFilterPreferencesSelectorDataModel filterPreferencesSelectorDataModel;
+
     public RomyJonaFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
                                                  RomyJonaFilterPreferences romyJonaFilterPreferences, DataModel dataModel,
                                                  ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
         super(filterPreferences, dataModel, exifImageReader, exceptionHandler);
 
-        preferencesSelectorDataModel = new RomyJonaFilterPreferencesSelectorDataModel(dataModel,
+        filterPreferencesSelectorDataModel = new RomyJonaFilterPreferencesSelectorDataModel(dataModel,
                 filterPreferences, romyJonaFilterPreferences, testImageCanvas);
-        preferencesSelectorDataModel.setSourceImage(testImage);
-        preferencesSelectorDataModel.startFilterCalculation();
+        filterPreferencesSelectorDataModel.setSourceImage(testImage);
+        filterPreferencesSelectorDataModel.startFilterCalculation();
+    }
+
+    @Override
+    public RomyJonaFilterPreferencesSelectorDataModel getFilterPreferencesSelectorDataModel() {
+        return filterPreferencesSelectorDataModel;
     }
 
     String getPreferencesDescription() {
-        return "Romy Jona Edge Detector Preferences";
+        return "Romy Jona Filter preferences";
     }
 
     JPanel createFlavorPanel(Component component) {
-
-        RomyJonaFilterPreferencesSelectorDataModel downcastDatamodel = (RomyJonaFilterPreferencesSelectorDataModel) preferencesSelectorDataModel;
 
         Properties puppamentoSliderLabelTable = new Properties();
         puppamentoSliderLabelTable.put(1, new JLabel("1"));
         puppamentoSliderLabelTable.put(2, new JLabel("2"));
         puppamentoSliderLabelTable.put(3, new JLabel("3"));
 
-        flavorDimension = getMaxDimension(component.getGraphics(), PUPPAMENTO, A_NASTRO, TRANSPARENCY);
+        flavorDimension = getMaxDimension(component.getGraphics(), java.util.List.of(PUPPAMENTO, A_NASTRO, TRANSPARENCY));
 
         JPanel flavorPanel = new JPanel();
         flavorPanel.setLayout(new BoxLayout(flavorPanel, BoxLayout.PAGE_AXIS));
 
-        createSliderPanel(flavorPanel, flavorDimension, PUPPAMENTO, downcastDatamodel.puppamentoSlider,
-                puppamentoSliderLabelTable, downcastDatamodel.puppamentoText);
+        createSliderPanel(flavorPanel, flavorDimension, PUPPAMENTO, filterPreferencesSelectorDataModel.puppamentoSlider,
+                puppamentoSliderLabelTable, filterPreferencesSelectorDataModel.puppamentoText);
 
         flavorPanel.add(Box.createVerticalStrut(SPACING));
 
-        createCheckboxPanel(flavorPanel, A_NASTRO, downcastDatamodel.aNastroCheckbox);
+        createCheckboxPanel(flavorPanel, A_NASTRO, filterPreferencesSelectorDataModel.aNastroCheckbox);
 
         return flavorPanel;
     }
