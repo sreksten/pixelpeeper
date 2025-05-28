@@ -19,6 +19,15 @@ public class CommunicationMessages {
     public static final String CANNY_GAUSSIAN_KERNEL_WIDTH_CHANGED = "CannyGaussianKernelWidthChanged";
     public static final String CANNY_CONTRAST_NORMALIZED_CHANGED = "CannyContrastNormalizedChanged";
 
+    public static final String ZX_SPECTRUM_COLOR_CLASH_CHANGED = "ZXSpectrumColorClashChanged";
+    public static final String ZX_SPECTRUM_SATURATION_THRESHOLD_CHANGED = "ZXSpectrumSaturationThresholdChanged";
+    public static final String ZX_SPECTRUM_LIGHTNESS_MIN_THRESHOLD_CHANGED = "ZXSpectrumLightnessMinThresholdChanged";
+    public static final String ZX_SPECTRUM_LIGHTNESS_MAX_THRESHOLD_CHANGED = "ZXSpectrumLightnessMaxThresholdChanged";
+    public static final String ZX_SPECTRUM_HUE_WEIGHT_CHANGED = "ZXSpectrumHueWeightChanged";
+    public static final String ZX_SPECTRUM_SATURATION_WEIGHT_CHANGED = "ZXSpectrumSaturationWeightChanged";
+    public static final String ZX_SPECTRUM_LIGHTNESS_WEIGHT_CHANGED = "ZXSpectrumLightnessWeightChanged";
+    public static final String ZX_SPECTRUM_SKIN_TONES_MAPPING_CHANGED = "ZXSpectrumMapSkinTonesChanged";
+
     public static final String EDGES_VISIBILITY_CHANGED = "EdgesVisibilityChanged";
     public static final String EDGES_TRANSPARENCY_CHANGED = "EdgesTransparencyChanged";
     public static final String EDGES_DETECTOR_FLAVOUR_CHANGED = "EdgesDetectorFlavourChanged";

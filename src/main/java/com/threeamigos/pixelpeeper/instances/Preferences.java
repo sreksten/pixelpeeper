@@ -30,6 +30,8 @@ public class Preferences {
     public static final EdgesDetectorPreferences EDGES_DETECTOR;
     public static final CannyEdgesDetectorPreferences CANNY_EDGES_DETECTOR;
     public static final RomyJonaEdgesDetectorPreferences ROMY_JONA_EDGES_DETECTOR;
+    public static final ZXSpectrumEdgesDetectorPreferences ZX_SPECTRUM_EDGES_DETECTOR;
+    public static final C64EdgesDetectorPreferences C64_EDGES_DETECTOR;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DRAWING;
     public static final HintsPreferences HINTS;
@@ -85,6 +87,12 @@ public class Preferences {
 
         ROMY_JONA_EDGES_DETECTOR = new RomyJonaEdgesDetectorPreferencesImpl();
         preferencesCollector.add(ROMY_JONA_EDGES_DETECTOR, "romy_jona_edge_detector.preferences");
+
+        ZX_SPECTRUM_EDGES_DETECTOR = new ZXSpectrumEdgesDetectorPreferencesImpl();
+        preferencesCollector.add(ZX_SPECTRUM_EDGES_DETECTOR, "zx_spectrum_edge_detector.preferences");
+
+        C64_EDGES_DETECTOR = new C64EdgesDetectorPreferencesImpl();
+        preferencesCollector.add(C64_EDGES_DETECTOR, "c64_edge_detector.preferences");
 
         // Misc preferences
 

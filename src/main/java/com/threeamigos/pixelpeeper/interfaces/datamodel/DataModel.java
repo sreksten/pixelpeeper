@@ -5,6 +5,7 @@ import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
+import com.threeamigos.pixelpeeper.data.PictureData;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
@@ -139,6 +140,11 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
      * Tells us if the application has loaded any images yet.
      */
     boolean hasLoadedImages();
+
+    /**
+     * Returns loaded images
+     */
+    Collection<PictureData> getLoadedImages();
 
     // Communication part
 

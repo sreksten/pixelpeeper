@@ -200,6 +200,10 @@ public class DataModelImpl implements DataModel {
         return imageSlices.isNotEmpty();
     }
 
+    public Collection<PictureData> getLoadedImages() {
+        return imageSlices.getLoadedImages();
+    }
+
     @Override
     public void move(int deltaX, int deltaY) {
         if (isDrawing) {

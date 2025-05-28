@@ -24,7 +24,15 @@ public enum EdgesDetectorFlavour {
     /**
      * Implements the Sobel edge-detection algorithm
      */
-    SOBEL_EDGES_DETECTOR("Sobel Edges Detector");
+    SOBEL_EDGES_DETECTOR("Sobel Edges Detector"),
+    /**
+     * A quick hack to render an image using Sinclair ZX Spectrum colors
+     */
+    ZX_SPECTRUM_EDGES_DETECTOR("ZX Spectrum Edges Detector"),
+    /**
+     * A quick hack to render an image using Commodore 64 colors
+     */
+    C64_EDGES_DETECTOR("C64 Edges Detector");
 
     private final String description;
 
@@ -43,6 +51,8 @@ public enum EdgesDetectorFlavour {
             list.add(ROMY_JONA_EDGES_DETECTOR);
         }
         list.add(SOBEL_EDGES_DETECTOR);
+        list.add(ZX_SPECTRUM_EDGES_DETECTOR);
+        list.add(C64_EDGES_DETECTOR);
         return list;
     }
 }

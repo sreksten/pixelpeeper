@@ -4,6 +4,7 @@ import com.threeamigos.pixelpeeper.data.PictureData;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 
 /**
  * Tracks the image slices we see on screen
@@ -23,6 +24,11 @@ public interface ImageSlices extends PropertyChangeListener {
      * @param pictureData a picture to be tracked
      */
     void add(PictureData pictureData);
+
+    /**
+     * Returns all loaded images
+     */
+    Collection<PictureData> getLoadedImages();
 
     void sort();
 

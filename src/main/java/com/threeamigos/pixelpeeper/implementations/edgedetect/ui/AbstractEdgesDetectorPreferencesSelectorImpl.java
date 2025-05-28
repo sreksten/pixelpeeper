@@ -39,6 +39,8 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
     final SourceImageCanvas testImageCanvas;
 
+    JDialog dialog;
+
     protected final EdgesDetectorPreferences edgesDetectorPreferences;
     protected BufferedImage testImage;
     private final DataModel dataModel;
@@ -83,7 +85,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
         JOptionPane optionPane = new JOptionPane(createPreferencesPanel(parentComponent), -1,
                 JOptionPane.OK_CANCEL_OPTION, null, options, options[1]);
 
-        JDialog dialog = optionPane.createDialog(parentComponent, getPreferencesDescription());
+        dialog = optionPane.createDialog(parentComponent, getPreferencesDescription());
 
         dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         dialog.addWindowListener(new WindowAdapter() {
@@ -194,8 +196,20 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
     private JPanel createImagePanel() {
 
         JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.PAGE_AXIS));
         imagePanel.setBorder(BorderFactory.createTitledBorder("Preview"));
         imagePanel.add(testImageCanvas);
+        imagePanel.add(Box.createHorizontalStrut(SPACING));
+
+        JButton loadFromFirstImage = new JButton("Load from first image");
+        loadFromFirstImage.addActionListener(e -> {
+            if (dataModel.hasLoadedImages()) {
+                preferencesSelectorDataModel.setSourceImage(scaleImage(dataModel.getLoadedImages().iterator().next().getImage()));
+                preferencesSelectorDataModel.startEdgesCalculation();
+                dialog.repaint();
+            }
+        });
+        imagePanel.add(loadFromFirstImage);
 
         return imagePanel;
     }
@@ -262,6 +276,24 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
 
     }
 
+    private BufferedImage scaleImage(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (width > 256 || height > 256) {
+            int minDimension = Math.min(width, height);
+            image = image.getSubimage((width - minDimension) / 2, (height - minDimension) / 2, minDimension,
+                    minDimension);
+            BufferedImage scaledImage = new BufferedImage(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+                    SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, image.getType());
+            Graphics2D g2d = scaledImage.createGraphics();
+            g2d.drawImage(image, 0, 0, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
+                    null);
+            g2d.dispose();
+            image = scaledImage;
+        }
+        return image;
+    }
+
     protected Dimension getMaxDimension(Graphics graphics, String... strings) {
         Graphics2D g2d = (Graphics2D) graphics;
         Font font = g2d.getFont();
@@ -318,22 +350,7 @@ abstract class AbstractEdgesDetectorPreferencesSelectorImpl implements EdgesDete
             try {
                 PictureData pictureData = exifImageReader.readImage(file);
                 if (pictureData != null) {
-                    BufferedImage image = pictureData.getImage();
-                    int width = image.getWidth();
-                    int height = image.getHeight();
-                    if (width > 256 || height > 256) {
-                        int minDimension = Math.min(width, height);
-                        image = image.getSubimage((width - minDimension) / 2, (height - minDimension) / 2, minDimension,
-                                minDimension);
-                        BufferedImage scaledImage = new BufferedImage(SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
-                                SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, image.getType());
-                        Graphics2D g2d = scaledImage.createGraphics();
-                        g2d.drawImage(image, 0, 0, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT, SOURCE_IMAGE_CANVAS_SIZE_DEFAULT,
-                                null);
-                        g2d.dispose();
-                        image = scaledImage;
-                    }
-                    return image;
+                    return scaleImage(pictureData.getImage());
                 }
             } catch (Exception e) {
                 exceptionHandler.handleException(e);

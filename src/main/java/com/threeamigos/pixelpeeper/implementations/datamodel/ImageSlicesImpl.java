@@ -64,6 +64,11 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     }
 
     @Override
+    public Collection<PictureData> getLoadedImages() {
+        return imageSlices.stream().map(ImageSlice::getPictureData).collect(Collectors.toList());
+    }
+
+    @Override
     public void sort() {
         imageSlices.sort(Comparator.comparing(i -> i.getPictureData().getFilename()));
     }
