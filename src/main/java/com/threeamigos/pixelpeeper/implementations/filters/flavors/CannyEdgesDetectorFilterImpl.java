@@ -296,7 +296,7 @@ public class CannyEdgesDetectorFilterImpl implements CannyEdgesDetectorFilter {
         }
         writeEdges(luminanceData);
         if (isAborted) {
-            edgesImage = null;
+            filteredImage = null;
         }
     }
 
