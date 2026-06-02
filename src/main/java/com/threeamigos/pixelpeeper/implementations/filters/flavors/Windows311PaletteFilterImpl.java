@@ -1,14 +1,12 @@
 package com.threeamigos.pixelpeeper.implementations.filters.flavors;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.filters.flavors.Windows311PaletteFilter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.Windows311PaletteFilterPreferences;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Windows311PaletteFilterImpl extends PaletteFilterImpl implements Windows311PaletteFilter {
 
@@ -53,7 +51,7 @@ public class Windows311PaletteFilterImpl extends PaletteFilterImpl implements Wi
     private List<DitheredHSL> mixedPalette;
 
     public Windows311PaletteFilterImpl(Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
-                                ExceptionHandler exceptionHandler) {
+                                       ThrowableHandler exceptionHandler) {
         super(windows311PaletteFilterPreferences, exceptionHandler);
         this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
     }
@@ -101,7 +99,7 @@ public class Windows311PaletteFilterImpl extends PaletteFilterImpl implements Wi
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                exceptionHandler.handleException(e);
+                exceptionHandler.exception(e);
             }
         });
 

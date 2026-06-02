@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.ui;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.pixelpeeper.interfaces.filters.ui.FilterPreferencesSelector;
@@ -19,7 +19,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
-    private final ExceptionHandler exceptionHandler;
+    private final ThrowableHandler exceptionHandler;
 
     public FilterPreferencesSelectorFactoryImpl(FilterPreferences filterPreferences,
                                                 CannyEdgesDetectorFilterPreferences cannyEdgesDetectorFilterPreferences,
@@ -28,7 +28,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 C64PaletteFilterPreferences c64PaletteFilterPreferences,
                                                 Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
                                                 DataModel dataModel,
-                                                ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
+                                                ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
         this.romyJonaFilterPreferences = romyJonaFilterPreferences;

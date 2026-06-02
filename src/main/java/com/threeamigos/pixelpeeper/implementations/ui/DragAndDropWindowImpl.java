@@ -63,7 +63,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
             assert inputStream != null;
             backgroundImage = ImageIO.read(inputStream);
         } catch (IOException e) {
-            messageHandler.handleException(e);
+            messageHandler.exception(e);
             backgroundImage = null;
         }
 
@@ -178,7 +178,7 @@ public class DragAndDropWindowImpl extends JFrame implements DragAndDropWindow {
             proxifiedObject.accept(files, groupingPanel.getExifTagToGroupBy(), groupingPanel.getTolerance(),
                     groupingPanel.getExifTagToOrderBy());
         } else {
-            messageHandler.handleErrorMessage("The Drag and Drop window has no related object to transmit files to.");
+            messageHandler.error("The Drag and Drop window has no related object to transmit files to.");
         }
     }
 

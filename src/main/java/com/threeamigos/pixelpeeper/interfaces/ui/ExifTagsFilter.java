@@ -21,10 +21,10 @@ import java.util.Collection;
  *      The grouping operation should try to put as many files as it can within a certain group. While this is
  *      easy for certain tags (camera manufacturer and model), other settings can be trickier; for example,
  *      the focal length when images were taken using a zoom lens.<br/>
- *      In this case the component should try to group as many files as possible considering their proximity. E.g.
+ *      In this case the component should try to group as many files as possible considering their proximity. E.g.,
  *      images with a focal length of 49mm and 55mm could be grouped with images with a focal length of 50mm.
  *      This should be done considering a given tolerance (for example, plus or minus 5mm).</li>
- *     <li>An EXIF tag should be given in order to sort images within the same group.</li>
+ *     <li>An EXIF tag should be given to sort images within the same group.</li>
  * </ul>
  *
  * @author Stefano Reksten
@@ -40,7 +40,7 @@ public interface ExifTagsFilter {
      * Filters a collection of files by their EXIF tags
      *
      * @param component parent component if this interface is implemented by a UI
-     * @param files     original colection of files
+     * @param files     original collection of files
      * @return filtered files
      */
     Collection<File> filterByTags(Component component, Collection<File> files);

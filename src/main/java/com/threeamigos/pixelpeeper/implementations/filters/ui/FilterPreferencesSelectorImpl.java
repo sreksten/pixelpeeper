@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.ui;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
@@ -45,13 +45,13 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
     protected BufferedImage testImage;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
-    private final ExceptionHandler exceptionHandler;
+    private final ThrowableHandler exceptionHandler;
 
     private final boolean isShowResultsAtStart;
 
     protected FilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
                                             DataModel dataModel, ExifImageReader exifImageReader,
-                                            ExceptionHandler exceptionHandler) {
+                                            ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
@@ -67,7 +67,7 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
             width = testImage.getWidth();
             height = testImage.getHeight();
         } catch (IOException e) {
-            exceptionHandler.handleException(e);
+            exceptionHandler.exception(e);
         }
         testImageCanvas = new SourceImageCanvas();
         testImageCanvas.setSize(width, height);
@@ -366,7 +366,7 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
                     return scaleImage(pictureData.getImage());
                 }
             } catch (Exception e) {
-                exceptionHandler.handleException(e);
+                exceptionHandler.exception(e);
             }
             return null;
         }

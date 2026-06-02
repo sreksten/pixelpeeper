@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.implementations.filters.flavors.*;
 import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
@@ -14,7 +14,7 @@ public class FilterFactoryImpl implements FilterFactory {
     private final ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences;
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
-    private final ExceptionHandler exceptionHandler;
+    private final ThrowableHandler exceptionHandler;
 
     public FilterFactoryImpl(FilterPreferences filterPreferences,
                              CannyEdgesDetectorFilterPreferences cannyEdgesDetectorFilterPreferences,
@@ -22,7 +22,7 @@ public class FilterFactoryImpl implements FilterFactory {
                              ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
                              C64PaletteFilterPreferences c64PaletteFilterPreferences,
                              Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
-                             ExceptionHandler exceptionHandler) {
+                             ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
         this.romyJonaFilterPreferences = romyJonaFilterPreferences;

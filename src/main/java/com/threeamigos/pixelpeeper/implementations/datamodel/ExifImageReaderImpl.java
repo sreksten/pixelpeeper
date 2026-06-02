@@ -40,12 +40,12 @@ public class ExifImageReaderImpl implements ExifImageReader {
     public PictureData readImage(File file) {
 
         if (!file.exists()) {
-            messageHandler.handleErrorMessage("File " + file.getName() + " was not found.");
+            messageHandler.error("File " + file.getName() + " was not found.");
             return null;
         }
 
         if (!file.canRead()) {
-            messageHandler.handleErrorMessage("File " + file.getName() + " cannot be read.");
+            messageHandler.error("File " + file.getName() + " cannot be read.");
             return null;
         }
 
@@ -76,7 +76,7 @@ public class ExifImageReaderImpl implements ExifImageReader {
             return pictureData;
 
         } catch (Exception e) {
-            messageHandler.handleException(e);
+            messageHandler.exception(e);
         }
 
         return null;

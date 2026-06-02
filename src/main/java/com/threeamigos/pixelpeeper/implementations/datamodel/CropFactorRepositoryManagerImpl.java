@@ -36,8 +36,7 @@ public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryMana
     }
 
     private void handleError(String error) {
-        messageHandler
-                .handleErrorMessage("Crop factor repository was invalid and has been cleared. Error was: " + error);
+        messageHandler.error("Crop factor repository was invalid and has been cleared. Error was: " + error);
     }
 
     @Override
@@ -45,7 +44,7 @@ public class CropFactorRepositoryManagerImpl implements CropFactorRepositoryMana
         if (invalidAtLoad || statusTracker.hasChanged()) {
             PersistResult persistResult = persister.save(cropFactorRepository);
             if (!persistResult.isSuccessful()) {
-                messageHandler.handleErrorMessage(persistResult.getError());
+                messageHandler.error(persistResult.getError());
             }
         }
     }

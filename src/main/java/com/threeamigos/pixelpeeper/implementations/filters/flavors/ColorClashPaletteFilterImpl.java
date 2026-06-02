@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.filters.flavors;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ColorClashPaletteFilterPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.PaletteFilterPreferences;
 
@@ -11,7 +12,7 @@ abstract class ColorClashPaletteFilterImpl extends PaletteFilterImpl {
 
     private final ColorClashPaletteFilterPreferences colorClashPaletteFilterPreferences;
 
-    ColorClashPaletteFilterImpl(ColorClashPaletteFilterPreferences paletteFilterPreferences, ExceptionHandler exceptionHandler) {
+    ColorClashPaletteFilterImpl(ColorClashPaletteFilterPreferences paletteFilterPreferences, ThrowableHandler exceptionHandler) {
         super(paletteFilterPreferences, exceptionHandler);
         this.colorClashPaletteFilterPreferences = paletteFilterPreferences;
     }

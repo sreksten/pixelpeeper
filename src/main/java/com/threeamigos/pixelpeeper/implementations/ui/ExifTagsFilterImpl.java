@@ -52,7 +52,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
         groupingPanel.mapFilesToTags(files);
 
         if (groupingPanel.isTagsMapEmpty()) {
-            messageHandler.handleWarnMessage("Did not find any image with Exif tags.");
+            messageHandler.warn("Did not find any image with Exif tags.");
             return Collections.emptyList();
         }
 
@@ -62,7 +62,7 @@ public class ExifTagsFilterImpl implements ExifTagsFilter {
         tagsToFilterBy = tagsClassifier.getUncommonTagsToValues(GroupingPanel.getGroupableTags());
 
         if (tagsToFilterBy.isEmpty()) {
-            messageHandler.handleWarnMessage("Images do not have different tags to filter by.");
+            messageHandler.warn("Images do not have different tags to filter by.");
             return Collections.emptyList();
         }
 

@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.ui;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
@@ -12,7 +12,7 @@ public class Windows311PaletteFilterPreferencesSelectorImpl extends PaletteFilte
 
     public Windows311PaletteFilterPreferencesSelectorImpl(FilterPreferences filterPreferences,
                                                           Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
-                                                          DataModel dataModel, ExifImageReader exifImageReader, ExceptionHandler exceptionHandler) {
+                                                          DataModel dataModel, ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         super(filterPreferences, dataModel, exifImageReader, exceptionHandler);
 
         filterPreferencesSelectorDataModel = new Windows311PaletteFilterPreferencesSelectorDataModel(dataModel,

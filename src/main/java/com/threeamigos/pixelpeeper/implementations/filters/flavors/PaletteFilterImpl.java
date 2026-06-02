@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.flavors;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.PaletteFilterPreferences;
 
 import java.awt.image.BufferedImage;
@@ -13,9 +13,9 @@ abstract class PaletteFilterImpl {
     protected boolean isAborted;
 
     protected final PaletteFilterPreferences paletteFilterPreferences;
-    protected final ExceptionHandler exceptionHandler;
+    protected final ThrowableHandler exceptionHandler;
 
-    PaletteFilterImpl(PaletteFilterPreferences paletteFilterPreferences, ExceptionHandler exceptionHandler) {
+    PaletteFilterImpl(PaletteFilterPreferences paletteFilterPreferences, ThrowableHandler exceptionHandler) {
         this.paletteFilterPreferences = paletteFilterPreferences;
         this.exceptionHandler = exceptionHandler;
     }

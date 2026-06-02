@@ -162,12 +162,12 @@ public class DrewNoakesExifReader implements ExifReader {
     private void printAllTags(Metadata metadata) {
         for (Directory directory : metadata.getDirectories()) {
             for (Tag tag : directory.getTags()) {
-                messageHandler.handleInfoMessage(String.format("[%s] - %s [%s] = %s%n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
+                messageHandler.info(String.format("[%s] - %s [%s] = %s%n", directory.getName(), tag.getTagName(), tag.getTagTypeHex(),
                         tag.getDescription()));
             }
             if (directory.hasErrors()) {
                 for (String error : directory.getErrors()) {
-                    messageHandler.handleErrorMessage(String.format("ERROR: %s%n", error));
+                    messageHandler.error(String.format("ERROR: %s%n", error));
                 }
             }
         }

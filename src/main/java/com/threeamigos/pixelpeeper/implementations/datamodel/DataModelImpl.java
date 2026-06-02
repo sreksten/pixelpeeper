@@ -98,7 +98,7 @@ public class DataModelImpl implements DataModel {
                             exifTagsFilter.getTagToOrderBy(), 0);
                 }
             } else {
-                messageHandler.handleErrorMessage("Selected file is not a directory.");
+                messageHandler.error("Selected file is not a directory.");
             }
         }
     }

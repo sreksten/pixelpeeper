@@ -78,7 +78,7 @@ public class CropFactorProviderImpl implements CropFactorProvider {
             try {
                 return Float.parseFloat(cropString);
             } catch (NumberFormatException e) {
-                messageHandler.handleErrorMessage("Wrong crop factor: " + cropFactorTextField.getText());
+                messageHandler.error("Wrong crop factor: " + cropFactorTextField.getText());
             }
         }
         return null;

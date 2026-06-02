@@ -79,7 +79,7 @@ public class FileRenamerImpl implements FileRenamer, PropertyChangeListener {
         @Override
         protected void done() {
             progressMonitor.close();
-            messageHandler.handleWarnMessage(String.format("%d files renamed", renamedFiles));
+            messageHandler.warn(String.format("%d files renamed", renamedFiles));
         }
     }
 }

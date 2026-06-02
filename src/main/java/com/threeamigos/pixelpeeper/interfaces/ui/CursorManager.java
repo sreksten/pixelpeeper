@@ -17,7 +17,7 @@ import java.beans.PropertyChangeListener;
  *     <li>{@link HintsProducer} to provide the end user with some hints on how to change the cursor's aspect
  *     or what the various cursor images mean)</li>
  * </ul>
- * A general behaviour may be the UI registering itself to receive notifications about the cursor variations,
+ * A general behavior may be the UI registering itself to receive notifications about the cursor variations,
  * and the CursorManager registering itself to some preferences about the cursor appearance.
  *
  * @author Stefano Reksten

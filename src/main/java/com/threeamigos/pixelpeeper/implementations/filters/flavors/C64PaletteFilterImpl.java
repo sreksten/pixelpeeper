@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.flavors;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.filters.flavors.C64PaletteFilter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.C64PaletteFilterPreferences;
 
@@ -53,7 +53,7 @@ public class C64PaletteFilterImpl extends ColorClashPaletteFilterImpl implements
     private List<DitheredHSL> mixedPalette;
 
     public C64PaletteFilterImpl(C64PaletteFilterPreferences c64PaletteFilterPreferences,
-                                ExceptionHandler exceptionHandler) {
+                                ThrowableHandler exceptionHandler) {
         super(c64PaletteFilterPreferences, exceptionHandler);
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
     }
@@ -122,7 +122,7 @@ public class C64PaletteFilterImpl extends ColorClashPaletteFilterImpl implements
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                exceptionHandler.handleException(e);
+                exceptionHandler.exception(e);
             }
         });
 

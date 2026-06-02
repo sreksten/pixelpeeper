@@ -1,6 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.filters.flavors;
 
-import com.threeamigos.common.util.interfaces.messagehandler.ExceptionHandler;
+import com.threeamigos.common.util.interfaces.messagehandler.ThrowableHandler;
 import com.threeamigos.pixelpeeper.interfaces.filters.flavors.ZXSpectrumPaletteFilter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ZXSpectrumPaletteFilterPreferences;
 
@@ -48,7 +48,7 @@ public class ZXSpectrumPaletteFilterImpl extends ColorClashPaletteFilterImpl imp
     private List<DitheredHSL> mixedPaletteHighLuminosity;
 
     public ZXSpectrumPaletteFilterImpl(ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
-                                       ExceptionHandler exceptionHandler) {
+                                       ThrowableHandler exceptionHandler) {
         super(zxSpectrumPaletteFilterPreferences, exceptionHandler);
         this.zxSpectrumPaletteFilterPreferences = zxSpectrumPaletteFilterPreferences;
     }
@@ -97,7 +97,7 @@ public class ZXSpectrumPaletteFilterImpl extends ColorClashPaletteFilterImpl imp
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                exceptionHandler.handleException(e);
+                exceptionHandler.exception(e);
             }
         });
 
