@@ -35,6 +35,7 @@ public class DataModelImpl implements DataModel {
     private final ExifImageReader imageReader;
     private final ExifTagsClassifier tagsClassifier;
     private final ExifTagsFilter exifTagsFilter;
+    private final DoodlesPersistenceService doodlesPersistenceService;
     private final PropertyChangeSupport propertyChangeSupport;
 
     private boolean isDrawing;
@@ -49,6 +50,7 @@ public class DataModelImpl implements DataModel {
         imageReader = builder.getExifImageReader();
         tagsClassifier = builder.getExifTagsClassifier();
         exifTagsFilter = builder.getExifTagsFilter();
+        doodlesPersistenceService = builder.getDoodlesPersistenceService();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -152,6 +154,8 @@ public class DataModelImpl implements DataModel {
             Collection<File> files = groupedFiles.getCurrentFiles();
 
             if (!files.isEmpty()) {
+                imageSlices.persistDoodles(doodlesPersistenceService);
+
                 imageSlices.clear();
                 Map<File, PictureData> loadedPictures = new HashMap<>();
                 files.parallelStream().forEach(file -> {
@@ -166,6 +170,7 @@ public class DataModelImpl implements DataModel {
                     PictureData pictureData = loadedPictures.get(file);
                     if (pictureData != null) {
                         imageSlices.add(pictureData);
+                        imageSlices.loadDoodlesForLastSlice(doodlesPersistenceService);
                     }
                 }
                 imageSlices.sort();

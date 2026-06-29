@@ -15,6 +15,7 @@ public class DataModelBuilderImpl implements DataModelBuilder,
         DataModelBuilder.StepExifImageReader,
         DataModelBuilder.StepExifTagsClassifier,
         DataModelBuilder.StepExifTagsFilter,
+        DataModelBuilder.StepDoodlesPersistenceService,
         DataModelBuilder.StepBuild {
 
     public static StepMessageHandler builder() {
@@ -29,6 +30,7 @@ public class DataModelBuilderImpl implements DataModelBuilder,
     private ExifImageReader exifImageReader;
     private ExifTagsClassifier exifTagsClassifier;
     private ExifTagsFilter exifTagsFilter;
+    private DoodlesPersistenceService doodlesPersistenceService;
 
     @Override
     public StepSessionPreferences withMessageHandler(MessageHandler messageHandler) {
@@ -73,8 +75,14 @@ public class DataModelBuilderImpl implements DataModelBuilder,
     }
 
     @Override
-    public StepBuild withExifTagsFilter(ExifTagsFilter exifTagsFilter) {
+    public StepDoodlesPersistenceService withExifTagsFilter(ExifTagsFilter exifTagsFilter) {
         this.exifTagsFilter = exifTagsFilter;
+        return this;
+    }
+
+    @Override
+    public StepBuild withDoodlesPersistenceService(DoodlesPersistenceService doodlesPersistenceService) {
+        this.doodlesPersistenceService = doodlesPersistenceService;
         return this;
     }
 
@@ -113,6 +121,10 @@ public class DataModelBuilderImpl implements DataModelBuilder,
 
     public ExifTagsFilter getExifTagsFilter() {
         return exifTagsFilter;
+    }
+
+    public DoodlesPersistenceService getDoodlesPersistenceService() {
+        return doodlesPersistenceService;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 import com.threeamigos.pixelpeeper.data.PictureData;
+import com.threeamigos.pixelpeeper.implementations.datamodel.DoodlesPersistenceService;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
@@ -58,6 +59,18 @@ public interface ImageSlices extends PropertyChangeListener {
     void undoLastDoodle();
 
     void clearDoodles();
+
+    /**
+     * For each loaded image: if it has doodles, saves them to a sidecar file;
+     * if it has no doodles but a sidecar exists, deletes it.
+     */
+    void persistDoodles(DoodlesPersistenceService persistenceService);
+
+    /**
+     * For the most recently added image slice, attempts to load its doodles
+     * from the sidecar file if one exists.
+     */
+    void loadDoodlesForLastSlice(DoodlesPersistenceService persistenceService);
 
     /**
      * Asks all slices to recalculate filter

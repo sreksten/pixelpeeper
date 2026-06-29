@@ -1,5 +1,6 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
+import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
 
 import java.awt.*;
@@ -78,6 +79,22 @@ public interface ImageSlice extends PropertyChangeListener {
      * Deletes all doodles.
      */
     void clearDoodles();
+
+    /**
+     * Returns true if this slice currently has at least one doodle.
+     */
+    boolean hasDoodles();
+
+    /**
+     * Returns a serializable representation of all current doodles, ready for persistence.
+     */
+    ImageDoodlesData getDoodlesData();
+
+    /**
+     * Replaces the current doodles with the ones described in {@code doodlesData}.
+     * Called after an image is loaded and a sidecar file was found.
+     */
+    void loadDoodlesData(ImageDoodlesData doodlesData);
 
     /**
      * To clear the image shifting when loading a new image. Image is centered on

@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
+import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
@@ -13,6 +14,7 @@ import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -255,6 +257,31 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         if (lastActiveSlice != null) {
             lastActiveSlice.clearDoodles();
             requestRepaint();
+        }
+    }
+
+    @Override
+    public void persistDoodles(DoodlesPersistenceService persistenceService) {
+        for (ImageSlice slice : imageSlices) {
+            File imageFile = slice.getPictureData().getFile();
+            if (slice.hasDoodles()) {
+                persistenceService.saveDoodles(imageFile, slice.getDoodlesData());
+            } else if (persistenceService.sidecarExists(imageFile)) {
+                persistenceService.deleteSidecar(imageFile);
+            }
+        }
+    }
+
+    @Override
+    public void loadDoodlesForLastSlice(DoodlesPersistenceService persistenceService) {
+        if (imageSlices.isEmpty()) {
+            return;
+        }
+        ImageSlice lastSlice = imageSlices.get(imageSlices.size() - 1);
+        File imageFile = lastSlice.getPictureData().getFile();
+        ImageDoodlesData doodlesData = persistenceService.loadDoodles(imageFile);
+        if (doodlesData != null) {
+            lastSlice.loadDoodlesData(doodlesData);
         }
     }
 

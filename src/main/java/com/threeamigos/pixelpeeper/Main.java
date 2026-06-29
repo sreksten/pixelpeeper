@@ -149,6 +149,9 @@ public class Main {
 
         jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+                ImageSlicesInstance.get().persistDoodles(DoodlesPersistenceServiceInstance.get())));
+
         return jframe;
     }
 

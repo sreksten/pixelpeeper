@@ -1,6 +1,7 @@
 package com.threeamigos.pixelpeeper.interfaces.datamodel;
 
 import com.threeamigos.common.util.interfaces.messagehandler.MessageHandler;
+import com.threeamigos.pixelpeeper.implementations.datamodel.DoodlesPersistenceService;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
@@ -36,7 +37,11 @@ public interface DataModelBuilder {
     }
 
     interface StepExifTagsFilter {
-        StepBuild withExifTagsFilter(ExifTagsFilter exifTagsFilter);
+        StepDoodlesPersistenceService withExifTagsFilter(ExifTagsFilter exifTagsFilter);
+    }
+
+    interface StepDoodlesPersistenceService {
+        StepBuild withDoodlesPersistenceService(DoodlesPersistenceService doodlesPersistenceService);
     }
 
     interface StepBuild {
@@ -58,4 +63,6 @@ public interface DataModelBuilder {
     ExifTagsClassifier getExifTagsClassifier();
 
     ExifTagsFilter getExifTagsFilter();
+
+    DoodlesPersistenceService getDoodlesPersistenceService();
 }

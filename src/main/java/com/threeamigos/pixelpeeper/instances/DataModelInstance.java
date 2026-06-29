@@ -14,6 +14,7 @@ public class DataModelInstance {
             .withExifImageReader(ExifImageReaderInstance.get())
             .withExifTagsClassifier(ExifTagsClassifierInstance.get())
             .withExifTagsFilter(ExifTagsFilterInstance.get())
+            .withDoodlesPersistenceService(DoodlesPersistenceServiceInstance.get())
             .build();
 
     public static DataModel get() {

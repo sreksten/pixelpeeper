@@ -2,6 +2,9 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.common.util.ui.effects.text.BorderedStringRenderer;
+import com.threeamigos.pixelpeeper.data.DoodleData;
+import com.threeamigos.pixelpeeper.data.DoodlePointData;
+import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
@@ -450,6 +453,31 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     }
 
     @Override
+    public boolean hasDoodles() {
+        return !doodles.isEmpty();
+    }
+
+    @Override
+    public ImageDoodlesData getDoodlesData() {
+        ImageDoodlesData data = new ImageDoodlesData();
+        data.doodles = new ArrayList<>();
+        for (Doodle doodle : doodles) {
+            data.doodles.add(doodle.toData());
+        }
+        return data;
+    }
+
+    @Override
+    public void loadDoodlesData(ImageDoodlesData doodlesData) {
+        doodles.clear();
+        if (doodlesData != null && doodlesData.doodles != null) {
+            for (DoodleData dd : doodlesData.doodles) {
+                doodles.add(new Doodle(dd));
+            }
+        }
+    }
+
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         propertyChangeSupport.addPropertyChangeListener(pcl);
     }
@@ -495,6 +523,33 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             brushSize = drawingPreferences.getBrushSize();
             transparency = drawingPreferences.getTransparency();
             points = new ArrayList<>();
+        }
+
+        Doodle(DoodleData data) {
+            this.color = new Color(data.red, data.green, data.blue, data.alpha);
+            this.brushSize = data.brushSize;
+            this.transparency = data.transparency;
+            this.points = new ArrayList<>();
+            if (data.points != null) {
+                for (DoodlePointData p : data.points) {
+                    this.points.add(new Point(p.x, p.y));
+                }
+            }
+        }
+
+        DoodleData toData() {
+            DoodleData data = new DoodleData();
+            data.red = color.getRed();
+            data.green = color.getGreen();
+            data.blue = color.getBlue();
+            data.alpha = color.getAlpha();
+            data.brushSize = brushSize;
+            data.transparency = transparency;
+            data.points = new ArrayList<>();
+            for (Point p : points) {
+                data.points.add(new DoodlePointData(p.x, p.y));
+            }
+            return data;
         }
 
         void addVertex(int x, int y) {
