@@ -23,10 +23,14 @@ public class InfoRendererSimpleBorder extends AbstractInfoRenderer implements In
         // No implementation
     }
 
-    public void render(Graphics g, int x, int y) {
+    public void render(Graphics g, int x, int y, int minY) {
         Graphics2D g2d = (Graphics2D) g;
         x = x + HSPACING;
         y = y - VSPACING - FILENAME_FONT_HEIGHT;
+
+        if (y < minY) {
+            return;
+        }
 
         if (exifTagsPreferences.isTagsVisible()) {
             g2d.setFont(getExifTagFont());
@@ -36,6 +40,9 @@ public class InfoRendererSimpleBorder extends AbstractInfoRenderer implements In
             }
             for (ExifTag exifTag : exifTags) {
                 if (isVisible(exifTag)) {
+                    if (y - TAG_FONT_HEIGHT < minY) {
+                        break;
+                    }
                     info(exifTag, g2d, x, y);
                     y -= TAG_FONT_HEIGHT + VSPACING;
                 }

@@ -363,7 +363,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         if (infoRenderer == null) {
             infoRenderer = infoRendererFactory.getInfoRenderer(pictureData, exifTagsClassifier);
         }
-        infoRenderer.render(g2d, locationX, locationY + locationHeight - 1);
+        infoRenderer.render(g2d, locationX, locationY + locationHeight - 1, locationY);
     }
 
     private void drawDoodles(Graphics2D g2d, int zoomOffsetX, int zoomOffsetY) {

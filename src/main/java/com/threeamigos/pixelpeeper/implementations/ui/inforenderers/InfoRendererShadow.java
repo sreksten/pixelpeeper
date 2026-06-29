@@ -16,6 +16,7 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
 
     private Image image;
     private int realY;
+    private int minY;
     private Graphics2D g2d;
 
     public InfoRendererShadow(FontService fontService, PictureData pictureData,
@@ -27,21 +28,23 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         this.image = null;
     }
 
-    public void render(Graphics g2d, int x, int y) {
+    public void render(Graphics g2d, int x, int y, int minY) {
         this.g2d = (Graphics2D) g2d;
 
-        if (image == null) {
-            image = buildImage();
+        if (image == null || this.minY != minY) {
+            this.minY = minY;
+            image = buildImage(y, minY);
             realY = y - image.getHeight(null);
         }
         g2d.drawImage(image, x, realY, null);
     }
 
-    private Image buildImage() {
+    private Image buildImage(int y, int minY) {
+        int availableHeight = y - minY;
         int textsWidth = calculateWidth(g2d);
-        int textsHeight = calculateHeight();
+        int textsHeight = calculateHeight(availableHeight);
 
-        BufferedImage texts = createTextsImage(textsWidth, textsHeight);
+        BufferedImage texts = createTextsImage(textsWidth, textsHeight, availableHeight);
         int borderThickness = exifTagsPreferences.getBorderThickness();
         short[][] shadowMatrix = buildShadowMatrix(borderThickness, borderThickness);
         final int shadowMatrixWidth = shadowMatrix[0].length;
@@ -68,18 +71,22 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         return width;
     }
 
-    private int calculateHeight() {
+    private int calculateHeight(int availableHeight) {
         float height = getFilenameFont().getLineMetrics(pictureData.getFilename(),
                 g2d.getFontRenderContext()).getHeight();
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                height += VSPACING + TAG_FONT_HEIGHT;
+                float candidate = height + VSPACING + TAG_FONT_HEIGHT;
+                if (candidate > availableHeight) {
+                    break;
+                }
+                height = candidate;
             }
         }
         return (int) height;
     }
 
-    private BufferedImage createTextsImage(int width, int height) {
+    private BufferedImage createTextsImage(int width, int height, int availableHeight) {
         BufferedImage textsImage = new BufferedImage(width, height, TYPE_INT_ARGB);
         Graphics2D graphics = textsImage.createGraphics();
         graphics.setColor(getFilenameColor());
@@ -89,7 +96,11 @@ public class InfoRendererShadow extends AbstractInfoRenderer implements InfoRend
         graphics.setFont(getExifTagFont());
         for (ExifTag exifTag : tagsToCheck) {
             if (isVisible(exifTag)) {
-                y += TAG_FONT_HEIGHT + VSPACING;
+                int nextY = y + TAG_FONT_HEIGHT + VSPACING;
+                if (nextY > availableHeight) {
+                    break;
+                }
+                y = nextY;
                 graphics.setColor(getExifTagColor(exifTag));
                 graphics.drawString(getCompleteTag(exifTag), 0, y);
             }

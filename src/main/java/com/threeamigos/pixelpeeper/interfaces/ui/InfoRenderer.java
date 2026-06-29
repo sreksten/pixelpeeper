@@ -33,8 +33,9 @@ public interface InfoRenderer {
      *
      * @param graphics Graphics to render unto
      * @param x        initial x coordinate
-     * @param y        initial y coordinate
+     * @param y        bottom y coordinate of the slice (tags grow upward from here)
+     * @param minY     top y coordinate of the slice (no drawing above this line)
      */
-    void render(Graphics graphics, int x, int y);
+    void render(Graphics graphics, int x, int y, int minY);
 
 }
