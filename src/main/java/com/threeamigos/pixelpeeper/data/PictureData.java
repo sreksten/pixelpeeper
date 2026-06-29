@@ -128,7 +128,7 @@ public class PictureData implements PropertyChangeAware {
         this.sourceHeight = image.getHeight();
         this.sourceImage = image;
 
-        this.zoomLevel = ImageHandlingPreferences.MAX_ZOOM_LEVEL;
+        this.zoomLevel = ImageHandlingPreferences.FULL_ZOOM_LEVEL;
 
         if (imageHandlingPreferences.isAutorotation()) {
             correctOrientation();
@@ -318,22 +318,33 @@ public class PictureData implements PropertyChangeAware {
     }
 
     /**
-     * Changes the zoom level to the percentage specified, up to 100%.
+     * Changes the zoom level to the percentage specified, from 10% to 800%.
+     * For zoom < 100% the whole image is pre-scaled (it is smaller, safe to allocate).
+     * For zoom > 100% the sourceImage is reused as backing store; the visible region
+     * is extracted and scaled on the fly in paint(), avoiding huge memory allocations.
      */
     public void changeZoomLevel(float newZoomLevel) {
         zoomLevel = newZoomLevel;
         releaseFilters();
-        if (zoomLevel == ImageHandlingPreferences.MAX_ZOOM_LEVEL) {
+        if (zoomLevel == ImageHandlingPreferences.FULL_ZOOM_LEVEL) {
             width = sourceWidth;
             height = sourceHeight;
             image = sourceImage;
-        } else {
-            width = (int) (sourceWidth * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
-            height = (int) (sourceHeight * zoomLevel / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+        } else if (zoomLevel < ImageHandlingPreferences.FULL_ZOOM_LEVEL) {
+            // Shrink: pre-scale the whole image (smaller than source, fits in memory)
+            width = (int) (sourceWidth * zoomLevel / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
+            height = (int) (sourceHeight * zoomLevel / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
             image = new BufferedImage(width, height, sourceImage.getType());
             Graphics2D graphics = image.createGraphics();
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             graphics.drawImage(sourceImage, 0, 0, width - 1, height - 1, 0, 0, sourceWidth - 1, sourceHeight - 1, null);
             graphics.dispose();
+        } else {
+            // Magnify: store virtual dimensions for pan/boundary calculations but keep
+            // sourceImage as the backing store — no costly full-resolution scaled copy.
+            width = (int) (sourceWidth * zoomLevel / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
+            height = (int) (sourceHeight * zoomLevel / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
+            image = sourceImage;
         }
         if (filterPreferences.isShowResults()) {
             startFilterCalculation();

@@ -131,13 +131,25 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
     }
 
     private void zoomIn() {
-        imageHandlingPreferences
-                .setZoomLevel(imageHandlingPreferences.getZoomLevel() + (int) ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+        int current = imageHandlingPreferences.getZoomLevel();
+        int[] steps = ImageHandlingPreferences.ZOOM_STEPS;
+        for (int i = 0; i < steps.length - 1; i++) {
+            if (steps[i] == current) {
+                imageHandlingPreferences.setZoomLevel(steps[i + 1]);
+                return;
+            }
+        }
     }
 
     private void zoomOut() {
-        imageHandlingPreferences
-                .setZoomLevel(imageHandlingPreferences.getZoomLevel() - (int) ImageHandlingPreferences.ZOOM_LEVEL_STEP);
+        int current = imageHandlingPreferences.getZoomLevel();
+        int[] steps = ImageHandlingPreferences.ZOOM_STEPS;
+        for (int i = steps.length - 1; i > 0; i--) {
+            if (steps[i] == current) {
+                imageHandlingPreferences.setZoomLevel(steps[i - 1]);
+                return;
+            }
+        }
     }
 
     private void updateDispositionMenu(final Disposition disposition) {

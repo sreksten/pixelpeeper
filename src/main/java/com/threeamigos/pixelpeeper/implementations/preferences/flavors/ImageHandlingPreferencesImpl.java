@@ -169,7 +169,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 		if (exifReaderFlavor == null) {
 			throw new IllegalArgumentException("Invalid metadata reader flavor");
 		}
-		if (zoomLevel < 10 || zoomLevel > 100) {
+		if (zoomLevel < (int) MIN_ZOOM_LEVEL || zoomLevel > (int) MAX_ZOOM_LEVEL) {
 			throw new IllegalArgumentException("Invalid zoom level");
 		}
 	}

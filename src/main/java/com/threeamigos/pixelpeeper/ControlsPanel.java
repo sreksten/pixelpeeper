@@ -13,6 +13,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 
@@ -148,21 +149,60 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         buildZoomLabel();
         controlsBox.add(zoomLabel);
 
-        zoomSlider = new JSlider(SwingConstants.HORIZONTAL, (int) ImageHandlingPreferences.MIN_ZOOM_LEVEL,
-                (int) ImageHandlingPreferences.MAX_ZOOM_LEVEL, imageHandlingPreferences.getZoomLevel());
-        zoomSlider.setMajorTickSpacing(10);
-        zoomSlider.setMinorTickSpacing(5);
+        int initialIndex = zoomValueToIndex(imageHandlingPreferences.getZoomLevel());
+        zoomSlider = new JSlider(SwingConstants.HORIZONTAL, 0,
+                ImageHandlingPreferences.ZOOM_STEPS.length - 1, initialIndex);
+        zoomSlider.setMajorTickSpacing(1);
+        zoomSlider.setSnapToTicks(true);
         zoomSlider.setPaintTicks(true);
+
+        // Custom tick labels:
+        //   - 10%–90%: plain label (shrink region)
+        //   - 100%:    bold label — the natural/full-size anchor
+        //   - 200%–800%: dark-orange label — visually distinct magnification region
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        for (int i = 0; i < ImageHandlingPreferences.ZOOM_STEPS.length; i++) {
+            int zoom = ImageHandlingPreferences.ZOOM_STEPS[i];
+            JLabel label;
+            if (zoom == 100) {
+                label = new JLabel("<html><b>100%</b></html>");
+            } else if (zoom > 100) {
+                label = new JLabel("<html><font color='#CC6600'>" + zoom + "%</font></html>");
+            } else {
+                label = new JLabel(zoom + "%");
+            }
+            labelTable.put(i, label);
+        }
+        zoomSlider.setLabelTable(labelTable);
+        zoomSlider.setPaintLabels(true);
+
         zoomSlider.addChangeListener(this);
-        zoomSlider.setMaximumSize(new Dimension(400, 20));
-        zoomSlider.setPreferredSize(new Dimension(400, 20));
+        zoomSlider.setMaximumSize(new Dimension(500, 50));
+        zoomSlider.setPreferredSize(new Dimension(500, 50));
         controlsBox.add(zoomSlider);
+    }
+
+    private int zoomValueToIndex(int zoomValue) {
+        for (int i = 0; i < ImageHandlingPreferences.ZOOM_STEPS.length; i++) {
+            if (ImageHandlingPreferences.ZOOM_STEPS[i] == zoomValue) {
+                return i;
+            }
+        }
+        return ImageHandlingPreferences.ZOOM_STEPS.length - 1;
+    }
+
+    private int indexToZoomValue(int index) {
+        if (index < 0) return ImageHandlingPreferences.ZOOM_STEPS[0];
+        if (index >= ImageHandlingPreferences.ZOOM_STEPS.length) {
+            return ImageHandlingPreferences.ZOOM_STEPS[ImageHandlingPreferences.ZOOM_STEPS.length - 1];
+        }
+        return ImageHandlingPreferences.ZOOM_STEPS[index];
     }
 
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == zoomSlider) {
-            imageHandlingPreferences.setZoomLevel(zoomSlider.getValue());
+            imageHandlingPreferences.setZoomLevel(indexToZoomValue(zoomSlider.getValue()));
             buildZoomLabel();
         } else if (e.getSource() == transparencySlider) {
             drawingPreferences.setTransparency(transparencySlider.getValue());
@@ -182,13 +222,14 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
     }
 
     private void buildZoomLabel() {
-        zoomLabel.setText(String.format("Zoom %d", imageHandlingPreferences.getZoomLevel()));
+        zoomLabel.setText(String.format("Zoom %d%%", imageHandlingPreferences.getZoomLevel()));
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
-            zoomSlider.setValue(imageHandlingPreferences.getZoomLevel());
+            zoomSlider.setValue(zoomValueToIndex(imageHandlingPreferences.getZoomLevel()));
+            buildZoomLabel();
         } else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
             Optional<ExifValue> exifValueOpt = dataModel.getCurrentExifValue();
             if (exifValueOpt.isPresent()) {

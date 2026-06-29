@@ -9,7 +9,7 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavor;
  * <ul>
  *     <li>Autorotation: should the image be automatically rotated to show it properly or not (a picture may be
  *     taken with the camera tilted to one side)</li>
- *     <li>Zoom level from 10% to 100%</li>
+ *     <li>Zoom level from 10% to 800%</li>
  *     <li>Normalization for crop factor (images will be zoomed relative to the camera crop factor)</li>
  *     <li>Normalization for focal length (images will be zoomed relative to the focal length)</li>
  *     <li>Movement in percentage when images are of different size</li>
@@ -27,9 +27,10 @@ public interface ImageHandlingPreferences extends Preferences {
     boolean AUTOROTATION_DEFAULT = true;
     Disposition DISPOSITION_DEFAULT = Disposition.VERTICAL;
     float MIN_ZOOM_LEVEL = 10.0f;
+    float FULL_ZOOM_LEVEL = 100.0f;
+    float MAX_ZOOM_LEVEL = 800.0f;
     float ZOOM_LEVEL_DEFAULT = 100.0f;
-    float MAX_ZOOM_LEVEL = 100.0f;
-    float ZOOM_LEVEL_STEP = 10.0f;
+    int[] ZOOM_STEPS = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 400, 800};
     boolean NORMALIZED_FOR_CROP_DEFAULT = false;
     boolean NORMALIZED_FOR_FOCAL_LENGTH_DEFAULT = false;
     boolean MOVEMENT_IN_PERCENTAGE_DEFAULT = true;

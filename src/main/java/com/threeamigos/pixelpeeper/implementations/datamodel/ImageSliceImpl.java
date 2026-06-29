@@ -162,7 +162,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         }
 
         int futurePictureWidth = (int) (pictureData.getOriginalWidth() * zoomLevel
-                / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+                / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
         if (futurePictureWidth < location.width) {
             imageOffsetX = 0;
         } else {
@@ -175,7 +175,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             }
         }
         int futurePictureHeight = (int) (pictureData.getOriginalHeight() * zoomLevel
-                / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+                / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
         if (futurePictureHeight < location.height) {
             imageOffsetY = 0;
         } else {
@@ -233,6 +233,15 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             g2d.drawRect(locationX, locationY, locationWidth - 1, locationHeight - 1);
         }
 
+        // imageOffsetX/Y and pictureWidth/Height are in "virtual scaled space"
+        // (i.e., what the image dimensions would be if fully scaled).
+        // For zoom <= 100%: pictureData.getImage() is a pre-scaled copy, coordinates map 1:1.
+        // For zoom > 100%: pictureData.getImage() IS the sourceImage; we must convert
+        //   virtual coordinates back to source coordinates before calling getSubimage().
+
+        float currentZoom = pictureData.getZoomLevel();
+        boolean isMagnified = currentZoom > ImageHandlingPreferences.FULL_ZOOM_LEVEL;
+
         int imageSliceWidth = Math.min(locationWidth, pictureWidth);
         int imageSliceStartX = (int) imageOffsetX;
         if (imageSliceStartX < 0) {
@@ -251,15 +260,41 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             imageSliceStartY = pictureHeight - imageSliceHeight;
         }
 
-        BufferedImage subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
-                imageSliceHeight);
+        BufferedImage subImage;
+        if (isMagnified) {
+            // Convert virtual scaled coordinates back to source pixel coordinates
+            float scale = currentZoom / ImageHandlingPreferences.FULL_ZOOM_LEVEL;
+            int srcX = (int) (imageSliceStartX / scale);
+            int srcY = (int) (imageSliceStartY / scale);
+            int srcW = Math.max(1, (int) Math.ceil(imageSliceWidth / scale));
+            int srcH = Math.max(1, (int) Math.ceil(imageSliceHeight / scale));
+            // Clamp to source bounds
+            srcX = Math.min(srcX, pictureData.getOriginalWidth() - srcW);
+            srcY = Math.min(srcY, pictureData.getOriginalHeight() - srcH);
+            subImage = pictureData.getImage().getSubimage(srcX, srcY, srcW, srcH);
+        } else {
+            subImage = pictureData.getImage().getSubimage(imageSliceStartX, imageSliceStartY,
+                    imageSliceWidth, imageSliceHeight);
+        }
+
         BufferedImage edgesImage = null;
 
         if (filterPreferences.isShowResults()) {
             edgesImage = pictureData.getFilteredImage();
             if (edgesImage != null) {
-                edgesImage = edgesImage.getSubimage(imageSliceStartX, imageSliceStartY, imageSliceWidth,
-                        imageSliceHeight);
+                if (isMagnified) {
+                    float scale = currentZoom / ImageHandlingPreferences.FULL_ZOOM_LEVEL;
+                    int srcX = (int) (imageSliceStartX / scale);
+                    int srcY = (int) (imageSliceStartY / scale);
+                    int srcW = Math.max(1, (int) Math.ceil(imageSliceWidth / scale));
+                    int srcH = Math.max(1, (int) Math.ceil(imageSliceHeight / scale));
+                    srcX = Math.min(srcX, edgesImage.getWidth() - srcW);
+                    srcY = Math.min(srcY, edgesImage.getHeight() - srcH);
+                    edgesImage = edgesImage.getSubimage(srcX, srcY, srcW, srcH);
+                } else {
+                    edgesImage = edgesImage.getSubimage(imageSliceStartX, imageSliceStartY,
+                            imageSliceWidth, imageSliceHeight);
+                }
             }
         }
 
@@ -280,7 +315,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
             pictureY += zoomOffsetY;
         }
 
-        drawFilteredImage(g2d, edgesImage, subImage, pictureX, pictureY);
+        drawFilteredImage(g2d, edgesImage, subImage, pictureX, pictureY, imageSliceWidth, imageSliceHeight);
         drawSelectedRectangle(g2d, locationX, locationY, locationWidth, locationHeight);
         drawDoodles(g2d, zoomOffsetX, zoomOffsetY);
         drawMiniatureWithPosition(g2d);
@@ -290,16 +325,18 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         g2d.setClip(previousClip);
     }
 
-    private void drawFilteredImage(Graphics2D g2d, BufferedImage edgesImage, BufferedImage subImage, int pictureX, int pictureY) {
+    private void drawFilteredImage(Graphics2D g2d, BufferedImage edgesImage, BufferedImage subImage,
+                                   int pictureX, int pictureY, int drawWidth, int drawHeight) {
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (!filterPreferences.isShowResults()
                 || filterPreferences.getTransparency() == FilterPreferences.TOTAL_TRANSPARENCY
                 || edgesImage == null) {
-            g2d.drawImage(subImage, pictureX, pictureY, null);
+            g2d.drawImage(subImage, pictureX, pictureY, drawWidth, drawHeight, null);
         } else if (filterPreferences.getTransparency() == FilterPreferences.NO_TRANSPARENCY) {
-            g2d.drawImage(edgesImage, pictureX, pictureY, null);
+            g2d.drawImage(edgesImage, pictureX, pictureY, drawWidth, drawHeight, null);
         } else {
-            ImageDrawHelper.drawTransparentImageAtop(g2d, subImage, edgesImage, pictureX, pictureY,
-                    filterPreferences.getTransparency());
+            ImageDrawHelper.drawTransparentImageAtop(g2d, subImage, edgesImage,
+                    pictureX, pictureY, drawWidth, drawHeight, filterPreferences.getTransparency());
         }
     }
 
@@ -494,7 +531,7 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
         }
 
         private int adapt(int coordinate) {
-            return (int) (coordinate * getZoomLevel() / ImageHandlingPreferences.MAX_ZOOM_LEVEL);
+            return (int) (coordinate * getZoomLevel() / ImageHandlingPreferences.FULL_ZOOM_LEVEL);
         }
 
         private int getScreenCenteringX() {
