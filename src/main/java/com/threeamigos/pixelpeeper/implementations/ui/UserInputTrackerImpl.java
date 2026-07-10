@@ -1,61 +1,46 @@
 package com.threeamigos.pixelpeeper.implementations.ui;
 
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.common.util.interfaces.ui.UserInputTracker;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.MouseDraggedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.MousePressedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.MouseReleasedEvent;
+import jakarta.annotation.Nonnull;
 
-public class UserInputTrackerImpl implements UserInputTracker {
+import java.awt.event.MouseEvent;
 
-	private final PropertyChangeSupport propertyChangeSupport;
+public class UserInputTrackerImpl {
 
-	private MouseEvent oldEvent;
+    private MouseEvent oldEvent;
 
-	public UserInputTrackerImpl() {
-		propertyChangeSupport = new PropertyChangeSupport(this);
-	}
+    public @Nonnull InputConsumer getInputConsumer() {
+        return new InputAdapter() {
 
-	public InputConsumer getInputConsumer() {
-		return new InputAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    EventBus.get().publish(new MousePressedEvent(e));
+                    oldEvent = e;
+                }
+            }
 
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_PRESSED, null, e);
-					oldEvent = e;
-				}
-			}
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    EventBus.get().publish(new MouseReleasedEvent());
+                    oldEvent = null;
+                }
+            }
 
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_RELEASED, null, null);
-					oldEvent = null;
-				}
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				if (oldEvent == null) {
-					oldEvent = e;
-				}
-				propertyChangeSupport.firePropertyChange(CommunicationMessages.MOUSE_DRAGGED, oldEvent, e);
-				oldEvent = e;
-			}
-		};
-	}
-
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.addPropertyChangeListener(pcl);
-	}
-
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener pcl) {
-		propertyChangeSupport.removePropertyChangeListener(pcl);
-	}
-
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (oldEvent == null) {
+                    oldEvent = e;
+                }
+                EventBus.get().publish(new MouseDraggedEvent(oldEvent, e));
+                oldEvent = e;
+            }
+        };
+    }
 }

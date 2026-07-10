@@ -1,6 +1,5 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ColorClashPaletteFilterPreferences;
 
 abstract class ColorClashPaletteFilterPreferencesImpl extends PaletteFilterPreferencesImpl
@@ -17,8 +16,6 @@ abstract class ColorClashPaletteFilterPreferencesImpl extends PaletteFilterPrefe
     public void setColorClashEnabled(boolean colorClashEnabled) {
         boolean oldColorClashEnabled = this.colorClashEnabled;
         this.colorClashEnabled = colorClashEnabled;
-        firePropertyChange(CommunicationMessages.PALETTE_FILTER_COLOR_CLASH_CHANGED, oldColorClashEnabled,
-                colorClashEnabled);
     }
 
     @Override

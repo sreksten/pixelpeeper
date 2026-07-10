@@ -3,25 +3,27 @@ package com.threeamigos.pixelpeeper.implementations.ui;
 import com.threeamigos.common.util.implementations.ui.StringHint;
 import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerImageUpdateEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerRotationChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerSizeChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerVisibilityChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences.Rotation;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
+import jakarta.annotation.Nonnull;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CursorManagerImpl implements CursorManager, PropertyChangeListener {
+public class CursorManagerImpl implements CursorManager {
 
     private static final Map<Integer, Rotation> keyCodesToRotation = new HashMap<>();
 
@@ -38,15 +40,25 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
 
     private final CursorPreferences pointerPreferences;
 
-    private final PropertyChangeSupport propertyChangeSupport;
-
     private boolean dragging;
     private Cursor cursor;
 
     public CursorManagerImpl(CursorPreferences bigPointerPreferences) {
         this.pointerPreferences = bigPointerPreferences;
 
-        propertyChangeSupport = new PropertyChangeSupport(this);
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(BigPointerVisibilityChangedEvent.class, e -> {
+            updateCursor();
+            eventBus.publish(new BigPointerImageUpdateEvent());
+        });
+        eventBus.subscribe(BigPointerSizeChangedEvent.class, e -> {
+            updateCursor();
+            eventBus.publish(new BigPointerImageUpdateEvent());
+        });
+        eventBus.subscribe(BigPointerRotationChangedEvent.class, e -> {
+            updateCursor();
+            eventBus.publish(new BigPointerImageUpdateEvent());
+        });
 
         updateCursor();
     }
@@ -103,15 +115,7 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
                 cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
             }
         }
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null, this);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
+        EventBus.get().publish(new BigPointerImageUpdateEvent());
     }
 
     private Cursor createArrowCursor() {
@@ -248,17 +252,6 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.BIG_POINTER_VISIBILITY_CHANGED.equals(evt.getPropertyName())
-                || CommunicationMessages.BIG_POINTER_SIZE_CHANGED.equals(evt.getPropertyName())
-                || CommunicationMessages.BIG_POINTER_ROTATION_CHANGED.equals(evt.getPropertyName())) {
-            updateCursor();
-            propertyChangeSupport.firePropertyChange(CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST, null,
-                    this);
-        }
-    }
-
-    @Override
     public int getMaxCursorSize() {
         Dimension maxDimension = Toolkit.getDefaultToolkit().getBestCursorSize(1024, 1024);
         int minDimension = maxDimension.width;
@@ -269,7 +262,7 @@ public class CursorManagerImpl implements CursorManager, PropertyChangeListener 
     }
 
     @Override
-    public Collection<Hint<String>> getHints() {
+    public @Nonnull Collection<Hint<String>> getHints() {
         Collection<Hint<String>> hints = new ArrayList<>();
         hints.add(new StringHint("Press 5 on the numeric keypad to hide or show a bigger pointer."));
         hints.add(new StringHint(

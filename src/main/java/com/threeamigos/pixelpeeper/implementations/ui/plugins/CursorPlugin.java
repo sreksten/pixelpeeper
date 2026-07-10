@@ -1,17 +1,17 @@
 package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerSizeChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.BigPointerVisibilityChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CursorPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.CursorManager;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CursorPlugin extends AbstractMainWindowPlugin implements PropertyChangeListener {
+public class CursorPlugin extends AbstractMainWindowPlugin {
 
     private final CursorPreferences bigPointerPreferences;
     private final CursorManager cursorManager;
@@ -23,6 +23,12 @@ public class CursorPlugin extends AbstractMainWindowPlugin implements PropertyCh
         super();
         this.bigPointerPreferences = bigPointerPreferences;
         this.cursorManager = cursorManager;
+
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(BigPointerVisibilityChangedEvent.class,
+                e -> bigPointerVisibleMenuItem.setSelected(bigPointerPreferences.isBigPointerVisible()));
+        eventBus.subscribe(BigPointerSizeChangedEvent.class,
+                e -> updateBigPointerSizeMenu(bigPointerPreferences.getBigPointerSize()));
     }
 
     @Override
@@ -44,17 +50,6 @@ public class CursorPlugin extends AbstractMainWindowPlugin implements PropertyCh
             bigPointerBySize.put(pointerSize, pointerSizeItem);
         }
 
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_VISIBILITY_CHANGED)) {
-            bigPointerVisibleMenuItem.setSelected(bigPointerPreferences.isBigPointerVisible());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_SIZE_CHANGED)) {
-            updateBigPointerSizeMenu(bigPointerPreferences.getBigPointerSize());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.BIG_POINTER_ROTATION_CHANGED)) {
-            // Do nothing here
-        }
     }
 
     private void updateBigPointerSizeMenu(final int pointerSize) {

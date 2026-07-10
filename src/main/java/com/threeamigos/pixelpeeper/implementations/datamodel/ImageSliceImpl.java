@@ -6,8 +6,9 @@ import com.threeamigos.pixelpeeper.data.DoodleData;
 import com.threeamigos.pixelpeeper.data.DoodlePointData;
 import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.SliceFilterCalculationCompletedEvent;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
@@ -18,13 +19,10 @@ import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
+public class ImageSliceImpl implements ImageSlice {
 
     private final PictureData pictureData;
     private final ExifTagsClassifier exifTagsClassifier;
@@ -34,7 +32,6 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     private final FontService fontService;
     private final InfoRendererFactory infoRendererFactory;
 
-    private final PropertyChangeSupport propertyChangeSupport;
     private InfoRenderer infoRenderer;
 
     private Rectangle location;
@@ -54,7 +51,12 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
                           FilterPreferences filterPreferences, FontService fontService) {
         this.pictureData = pictureData;
         this.exifTagsClassifier = exifTagsClassifier;
-        pictureData.addPropertyChangeListener(this);
+        pictureData.setFilterCallbacks(
+                () -> filterCalculationInProgress = true,
+                () -> {
+                    filterCalculationInProgress = false;
+                    EventBus.get().publish(new SliceFilterCalculationCompletedEvent(this));
+                });
         this.imageHandlingPreferences = imageHandlingPreferences;
         this.drawingPreferences = drawingPreferences;
         this.filterPreferences = filterPreferences;
@@ -63,8 +65,6 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
 
         currentDrawing = new Doodle();
         doodles = new ArrayList<>();
-
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
     @Override
@@ -478,38 +478,13 @@ public class ImageSliceImpl implements ImageSlice, PropertyChangeListener {
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
+    public void resetTagsDisplay() {
+        infoRenderer.reset();
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleFilterCalculationStarted();
-        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleFilterCalculationCompleted();
-        } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName())) {
-            infoRenderer.reset();
-        } else if (CommunicationMessages.TAGS_RENDERING_CHANGED.equals(evt.getPropertyName())) {
-            infoRenderer = null;
-        }
-    }
-
-    private void handleFilterCalculationStarted() {
-        filterCalculationInProgress = true;
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, this);
-    }
-
-    private void handleFilterCalculationCompleted() {
-        filterCalculationInProgress = false;
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, this);
+    public void rebuildTagsRenderer() {
+        infoRenderer = null;
     }
 
     private class Doodle {

@@ -1,7 +1,9 @@
 package com.threeamigos.pixelpeeper;
 
 import com.threeamigos.pixelpeeper.data.ExifValue;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.DataModelChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.ZoomLevelChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
@@ -10,8 +12,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Optional;
  *
  * @author Stefano Reksten
  */
-public class ControlsPanel extends JPanel implements ChangeListener, PropertyChangeListener {
+public class ControlsPanel extends JPanel implements ChangeListener {
 
     private static final long serialVersionUID = 1L;
 
@@ -52,6 +52,8 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
+        subscribeToEvents();
+
         Box controlsBox = Box.createHorizontalBox();
         controlsBox.add(Box.createGlue());
 
@@ -66,6 +68,29 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
         createZoomControls(controlsBox);
 
         add(controlsBox);
+    }
+
+    private void subscribeToEvents() {
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(ZoomLevelChangedEvent.class, e -> {
+            zoomSlider.setValue(zoomValueToIndex(imageHandlingPreferences.getZoomLevel()));
+            buildZoomLabel();
+        });
+        eventBus.subscribe(DataModelChangedEvent.class, e -> {
+            Optional<ExifValue> exifValueOpt = dataModel.getCurrentExifValue();
+            if (exifValueOpt.isPresent()) {
+                ExifValue exifValue = exifValueOpt.get();
+                previousGroupButton.setEnabled(true);
+                groupLabel.setText(
+                        "Grouping by " + exifValue.getExifTag().getDescription() + " - " + exifValue.getDescription()
+                                + " (" + (dataModel.getCurrentGroup() + 1) + " of " + dataModel.getGroupsCount() + ")");
+                nextGroupButton.setEnabled(true);
+            } else {
+                previousGroupButton.setEnabled(false);
+                groupLabel.setText("Grouping not active");
+                nextGroupButton.setEnabled(false);
+            }
+        });
     }
 
     private void createSeparator(Box box) {
@@ -223,28 +248,6 @@ public class ControlsPanel extends JPanel implements ChangeListener, PropertyCha
 
     private void buildZoomLabel() {
         zoomLabel.setText(String.format("Zoom %d%%", imageHandlingPreferences.getZoomLevel()));
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())) {
-            zoomSlider.setValue(zoomValueToIndex(imageHandlingPreferences.getZoomLevel()));
-            buildZoomLabel();
-        } else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
-            Optional<ExifValue> exifValueOpt = dataModel.getCurrentExifValue();
-            if (exifValueOpt.isPresent()) {
-                ExifValue exifValue = exifValueOpt.get();
-                previousGroupButton.setEnabled(true);
-                groupLabel.setText(
-                        "Grouping by " + exifValue.getExifTag().getDescription() + " - " + exifValue.getDescription()
-                                + " (" + (dataModel.getCurrentGroup() + 1) + " of " + dataModel.getGroupsCount() + ")");
-                nextGroupButton.setEnabled(true);
-            } else {
-                previousGroupButton.setEnabled(false);
-                groupLabel.setText("Grouping not active");
-                nextGroupButton.setEnabled(false);
-            }
-        }
     }
 
     private ColoredButton createColoredButton(Color color) {

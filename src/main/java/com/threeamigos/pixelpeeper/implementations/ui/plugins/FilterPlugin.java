@@ -1,8 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.FilterVisibilityChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.RequestFilterCalculationEvent;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
 import com.threeamigos.pixelpeeper.interfaces.filters.ui.FilterPreferencesSelectorFactory;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
@@ -10,26 +12,26 @@ import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class FilterPlugin extends AbstractMainWindowPlugin implements PropertyChangeListener {
+public class FilterPlugin extends AbstractMainWindowPlugin {
 
     private final FilterPreferences filterPreferences;
     private final FilterPreferencesSelectorFactory filterPreferencesSelectorFactory;
 
     private JMenuItem showFilterResultsMenuItem;
-    private final Map<FilterFlavor, JMenuItem> filterFlavorMenuItemsByFlavor = new EnumMap<>(
-            FilterFlavor.class);
+    private final Map<FilterFlavor, JMenuItem> filterFlavorMenuItemsByFlavor = new EnumMap<>(FilterFlavor.class);
 
     public FilterPlugin(FilterPreferences filterPreferences,
                         FilterPreferencesSelectorFactory filterPreferencesSelectorFactory) {
         super();
         this.filterPreferences = filterPreferences;
         this.filterPreferencesSelectorFactory = filterPreferencesSelectorFactory;
+
+        EventBus.get().subscribe(FilterVisibilityChangedEvent.class,
+                e -> showFilterResultsMenuItem.setSelected(filterPreferences.isShowResults()));
     }
 
     @Override
@@ -57,7 +59,7 @@ public class FilterPlugin extends AbstractMainWindowPlugin implements PropertyCh
             entry.getValue().setSelected(filterPreferences.getFilterFlavor() == entry.getKey());
         }
         if (filterPreferences.isShowResults()) {
-            firePropertyChange(CommunicationMessages.REQUEST_FILTER_CALCULATION, null, null);
+            EventBus.get().publish(new RequestFilterCalculationEvent());
         }
     }
 
@@ -84,12 +86,5 @@ public class FilterPlugin extends AbstractMainWindowPlugin implements PropertyCh
                 }
             }
         };
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(CommunicationMessages.FILTER_VISIBILITY_CHANGED)) {
-            showFilterResultsMenuItem.setSelected(filterPreferences.isShowResults());
-        }
     }
 }

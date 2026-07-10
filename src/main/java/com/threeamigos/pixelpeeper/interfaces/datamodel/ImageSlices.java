@@ -4,7 +4,6 @@ import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.datamodel.DoodlesPersistenceService;
 
 import java.awt.*;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
@@ -12,7 +11,7 @@ import java.util.Collection;
  *
  * @author Stefano Reksten
  */
-public interface ImageSlices extends PropertyChangeListener {
+public interface ImageSlices {
 
     /**
      * Prepares to load new images
@@ -82,11 +81,5 @@ public interface ImageSlices extends PropertyChangeListener {
     void toggleAutorotation();
 
     void paint(Graphics2D graphics);
-
-    // Communication part
-
-    void addPropertyChangeListener(PropertyChangeListener listener);
-
-    void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

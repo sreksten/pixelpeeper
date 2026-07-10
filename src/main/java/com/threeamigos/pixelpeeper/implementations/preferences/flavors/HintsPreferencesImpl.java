@@ -2,7 +2,6 @@ package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.common.util.interfaces.preferences.flavours.HintsPreferences;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 
 public class HintsPreferencesImpl extends BasicPropertyChangeAware implements HintsPreferences {
 
@@ -18,8 +17,6 @@ public class HintsPreferencesImpl extends BasicPropertyChangeAware implements Hi
     public void setHintsVisibleAtStartup(boolean hintsVisibleAtStartup) {
         boolean oldHintsVisibleAtStartup = this.hintsVisibleAtStartup;
         this.hintsVisibleAtStartup = hintsVisibleAtStartup;
-        firePropertyChange(CommunicationMessages.HINTS_VISIBILITY_AT_STARTUP_CHANGED, oldHintsVisibleAtStartup,
-                hintsVisibleAtStartup);
     }
 
     @Override
@@ -31,7 +28,6 @@ public class HintsPreferencesImpl extends BasicPropertyChangeAware implements Hi
     public void setLastHintIndex(int lastHintIndex) {
         int oldLastHintIndex = this.lastHintIndex;
         this.lastHintIndex = lastHintIndex;
-        firePropertyChange(CommunicationMessages.HINTS_INDEX_CHANGED, oldLastHintIndex, lastHintIndex);
     }
 
     @Override

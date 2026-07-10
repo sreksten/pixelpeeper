@@ -5,7 +5,6 @@ import java.awt.Toolkit;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.common.util.interfaces.preferences.flavours.WindowPreferences;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 
 public abstract class AbstractWindowPreferencesImpl extends BasicPropertyChangeAware implements WindowPreferences {
 
@@ -21,7 +20,6 @@ public abstract class AbstractWindowPreferencesImpl extends BasicPropertyChangeA
 	public void setX(int x) {
 		int oldX = this.x;
 		this.x = x;
-		firePropertyChange(CommunicationMessages.WINDOW_X_POSITION_CHANGED, oldX, x);
 	}
 
 	public int getY() {
@@ -31,7 +29,6 @@ public abstract class AbstractWindowPreferencesImpl extends BasicPropertyChangeA
 	public void setY(int y) {
 		int oldY = this.y;
 		this.y = y;
-		firePropertyChange(CommunicationMessages.WINDOW_Y_POSITION_CHANGED, oldY, y);
 	}
 
 	public int getWidth() {
@@ -41,7 +38,6 @@ public abstract class AbstractWindowPreferencesImpl extends BasicPropertyChangeA
 	public void setWidth(int width) {
 		int oldWidth = this.width;
 		this.width = width;
-		firePropertyChange(CommunicationMessages.WINDOW_WIDTH_CHANGED, oldWidth, width);
 	}
 
 	public int getHeight() {
@@ -51,7 +47,6 @@ public abstract class AbstractWindowPreferencesImpl extends BasicPropertyChangeA
 	public void setHeight(int height) {
 		int oldHeight = this.height;
 		this.height = height;
-		firePropertyChange(CommunicationMessages.WINDOW_HEIGHT_CHANGED, oldHeight, height);
 	}
 
 	public void loadDefaultValues() {

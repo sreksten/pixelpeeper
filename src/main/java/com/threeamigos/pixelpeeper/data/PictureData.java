@@ -2,7 +2,6 @@ package com.threeamigos.pixelpeeper.data;
 
 import com.threeamigos.common.util.interfaces.PropertyChangeAware;
 import com.threeamigos.pixelpeeper.implementations.helpers.ExifOrientationHelper;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
@@ -12,7 +11,6 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingP
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collection;
 
@@ -33,11 +31,8 @@ import static com.threeamigos.pixelpeeper.data.ExifValue.*;
  */
 public class PictureData implements PropertyChangeAware {
 
-    /**
-     * PropertyChangeSupport is used to alert of filter start and completion,
-     * in order for the UI to refresh components.
-     */
-    private final PropertyChangeSupport propertyChangeSupport;
+    private Runnable onFilterStarted;
+    private Runnable onFilterCompleted;
     /**
      * The orientation of the image as stored on file, and as such, immutable.
      */
@@ -115,8 +110,6 @@ public class PictureData implements PropertyChangeAware {
     public PictureData(int orientation, ExifMap exifMap, BufferedImage image, File file,
                        ImageHandlingPreferences imageHandlingPreferences,
                        FilterPreferences filterPreferences, FilterFactory filterFactory) {
-        propertyChangeSupport = new PropertyChangeSupport(this);
-
         this.orientation = orientation;
         this.exifMap = exifMap;
         this.file = file;
@@ -254,12 +247,17 @@ public class PictureData implements PropertyChangeAware {
         return filteredImage;
     }
 
+    public void setFilterCallbacks(Runnable onStarted, Runnable onCompleted) {
+        this.onFilterStarted = onStarted;
+        this.onFilterCompleted = onCompleted;
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
+        // No-op: filter events are delivered via callbacks set in setFilterCallbacks()
     }
 
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
+        // No-op: filter events are delivered via callbacks set in setFilterCallbacks()
     }
 
     /**
@@ -274,21 +272,18 @@ public class PictureData implements PropertyChangeAware {
             if (!filterCalculationInProgress) {
                 filterCalculationInProgress = true;
                 filterCalculationAborted = false;
-                propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, this);
-                Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        filter = filterFactory.getFilter();
-                        filter.setSourceImage(image);
-                        flavor = filterPreferences.getFilterFlavor();
-                        filter.process();
-                        if (!filterCalculationAborted) {
-                            filteredImage = filter.getResultingImage();
-                            propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED,
-                                    null, this);
-                        }
-                        filterCalculationInProgress = false;
-                        filter = null;
+                if (onFilterStarted != null) onFilterStarted.run();
+                Thread thread = new Thread(() -> {
+                    filter = filterFactory.getFilter();
+                    filter.setSourceImage(image);
+                    flavor = filterPreferences.getFilterFlavor();
+                    filter.process();
+                    if (!filterCalculationAborted) {
+                        filteredImage = filter.getResultingImage();
+                        if (onFilterCompleted != null) onFilterCompleted.run();
                     }
+                    filterCalculationInProgress = false;
+                    filter = null;
                 });
                 thread.setDaemon(true);
                 thread.start();

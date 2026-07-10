@@ -1,7 +1,10 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.FilterFlavorChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.FilterTransparencyChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.FilterVisibilityChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
 
@@ -15,7 +18,7 @@ public class FilterPreferencesImpl extends BasicPropertyChangeAware implements F
 	public void setShowResults(boolean showFilterResults) {
 		boolean oldShowEdges = this.showFilterResults;
 		this.showFilterResults = showFilterResults;
-		firePropertyChange(CommunicationMessages.FILTER_VISIBILITY_CHANGED, oldShowEdges, showFilterResults);
+		EventBus.get().publish(new FilterVisibilityChangedEvent(showFilterResults));
 	}
 
 	@Override
@@ -27,7 +30,7 @@ public class FilterPreferencesImpl extends BasicPropertyChangeAware implements F
 	public void setTransparency(int transparency) {
 		int oldTransparency = this.transparency;
 		this.transparency = transparency;
-		firePropertyChange(CommunicationMessages.FILTER_TRANSPARENCY_CHANGED, oldTransparency, transparency);
+		EventBus.get().publish(new FilterTransparencyChangedEvent());
 	}
 
 	@Override
@@ -39,8 +42,7 @@ public class FilterPreferencesImpl extends BasicPropertyChangeAware implements F
 	public void setFilterFlavor(FilterFlavor filterFlavor) {
 		FilterFlavor oldFilterFlavor = this.filterFlavor;
 		this.filterFlavor = filterFlavor;
-		firePropertyChange(CommunicationMessages.FILTER_FLAVOR_CHANGED, oldFilterFlavor,
-				filterFlavor);
+		EventBus.get().publish(new FilterFlavorChangedEvent());
 	}
 
 	@Override

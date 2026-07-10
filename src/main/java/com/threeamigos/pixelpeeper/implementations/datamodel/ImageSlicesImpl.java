@@ -3,7 +3,8 @@ package com.threeamigos.pixelpeeper.implementations.datamodel;
 import com.threeamigos.common.util.interfaces.ui.FontService;
 import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.*;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlices;
@@ -13,15 +14,12 @@ import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingP
 import com.threeamigos.pixelpeeper.interfaces.ui.InfoRendererFactory;
 
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
+public class ImageSlicesImpl implements ImageSlices {
 
     private final ExifTagsClassifier exifTagsClassifier;
     private final InfoRendererFactory infoRendererFactory;
@@ -29,8 +27,6 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     private final DoodlingPreferences drawingPreferences;
     private final FilterPreferences filterPreferences;
     private final FontService fontService;
-
-    private final PropertyChangeSupport propertyChangeSupport;
 
     private final List<ImageSlice> imageSlices = new ArrayList<>();
     private final List<ImageSlice> imageSlicesCalculatingFilters = new ArrayList<>();
@@ -48,7 +44,15 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         this.filterPreferences = filterPreferences;
         this.fontService = fontService;
 
-        propertyChangeSupport = new PropertyChangeSupport(this);
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(TagVisibilityChangedEvent.class,          e -> imageSlices.forEach(ImageSlice::resetTagsDisplay));
+        eventBus.subscribe(TagsVisibilityChangedEvent.class,         e -> imageSlices.forEach(ImageSlice::resetTagsDisplay));
+        eventBus.subscribe(TagsVisibilityOverrideChangedEvent.class, e -> imageSlices.forEach(ImageSlice::resetTagsDisplay));
+        eventBus.subscribe(TagsRenderingChangedEvent.class,          e -> imageSlices.forEach(ImageSlice::rebuildTagsRenderer));
+        eventBus.subscribe(SliceFilterCalculationCompletedEvent.class, e -> {
+            imageSlicesCalculatingFilters.remove(e.imageSlice);
+            EventBus.get().publish(new FilterCalculationCompletedEvent());
+        });
     }
 
     @Override
@@ -61,7 +65,6 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
     public void add(PictureData pictureData) {
         ImageSlice imageSlice = new ImageSliceImpl(pictureData, exifTagsClassifier, infoRendererFactory,
                 imageHandlingPreferences, drawingPreferences, filterPreferences, fontService);
-        imageSlice.addPropertyChangeListener(this);
         imageSlices.add(imageSlice);
     }
 
@@ -295,7 +298,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
             imageSlicesCalculatingFilters.addAll(imageSlices);
             imageSlices.forEach(ImageSlice::startFilterCalculation);
         }
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
+        EventBus.get().publish(new FilterCalculationStartedEvent());
     }
 
     @Override
@@ -314,43 +317,7 @@ public class ImageSlicesImpl implements ImageSlices, PropertyChangeListener {
         imageSlices.forEach(slice -> slice.paint(graphics));
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            // We don't care about this
-        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleFilterCalculationCompleted(evt);
-        } else if (CommunicationMessages.TAG_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_VISIBILITY_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED.equals(evt.getPropertyName()) ||
-                CommunicationMessages.TAGS_RENDERING_CHANGED.equals(evt.getPropertyName())) {
-            handleTagsPreferencesChanged(evt);
-        }
-    }
-
-    private void handleFilterCalculationCompleted(PropertyChangeEvent evt) {
-        ImageSlice imageSlice = (ImageSlice) evt.getNewValue();
-        imageSlicesCalculatingFilters.remove(imageSlice);
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, null);
-    }
-
-    private void handleTagsPreferencesChanged(PropertyChangeEvent evt) {
-        for (ImageSlice imageSlice : imageSlices) {
-            imageSlice.propertyChange(evt);
-        }
-    }
-
     private void requestRepaint() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+        EventBus.get().publish(new RepaintRequestEvent());
     }
 }

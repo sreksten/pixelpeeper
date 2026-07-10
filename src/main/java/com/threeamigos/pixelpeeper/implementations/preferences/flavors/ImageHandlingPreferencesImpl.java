@@ -1,7 +1,8 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.*;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavor;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavor;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
@@ -23,7 +24,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setAutorotation(boolean autorotation) {
 		boolean oldAutorotation = this.autorotation;
 		this.autorotation = autorotation;
-		firePropertyChange(CommunicationMessages.AUTOROTATION_CHANGED, oldAutorotation, autorotation);
+		EventBus.get().publish(new AutorotationChangedEvent(autorotation));
 	}
 
 	@Override
@@ -35,7 +36,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setDisposition(Disposition disposition) {
 		Disposition oldDisposition = this.disposition;
 		this.disposition = disposition;
-		firePropertyChange(CommunicationMessages.DISPOSITION_CHANGED, oldDisposition, disposition);
+		EventBus.get().publish(new DispositionChangedEvent());
 	}
 
 	@Override
@@ -52,7 +53,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 			zoomLevel = (int) MAX_ZOOM_LEVEL;
 		}
 		this.zoomLevel = zoomLevel;
-		firePropertyChange(CommunicationMessages.ZOOM_LEVEL_CHANGED, oldZoomLevel, zoomLevel);
+		EventBus.get().publish(new ZoomLevelChangedEvent(zoomLevel));
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setNormalizedForCrop(boolean normalizedForCrop) {
 		boolean oldNormalizedForCrop = this.normalizedForCrop;
 		this.normalizedForCrop = normalizedForCrop;
-		firePropertyChange(CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED, oldNormalizedForCrop, normalizedForCrop);
+		EventBus.get().publish(new NormalizedForCropChangedEvent());
 	}
 
 	@Override
@@ -76,8 +77,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setNormalizedForFocalLength(boolean normalizedForFocalLength) {
 		boolean oldNormalizedForFocalLength = this.normalizedForFocalLength;
 		this.normalizedForFocalLength = normalizedForFocalLength;
-		firePropertyChange(CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED, oldNormalizedForFocalLength,
-				normalizedForFocalLength);
+		EventBus.get().publish(new NormalizedForFocalLengthChangedEvent());
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setRelativeMovement(boolean relativeMovement) {
 		boolean oldRelativeMovement = this.relativeMovement;
 		this.relativeMovement = relativeMovement;
-		firePropertyChange(CommunicationMessages.RELATIVE_MOVEMENT_CHANGED, oldRelativeMovement, relativeMovement);
+		EventBus.get().publish(new RelativeMovementChangedEvent());
 	}
 
 	@Override
@@ -101,8 +101,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setMovementAppliedToAllImages(boolean movementAppliesToAllImages) {
 		boolean oldMovementAppliedToAllImages = this.movementAppliedToAllImages;
 		this.movementAppliedToAllImages = movementAppliesToAllImages;
-		firePropertyChange(CommunicationMessages.MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED, oldMovementAppliedToAllImages,
-				movementAppliesToAllImages);
+		EventBus.get().publish(new MovementAppliedToAllImagesChangedEvent());
 	}
 
 	@Override
@@ -114,8 +113,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setPositionMiniatureVisible(boolean positionMiniatureVisible) {
 		boolean oldPositionMiniatureVisible = this.positionMiniatureVisible;
 		this.positionMiniatureVisible = positionMiniatureVisible;
-		firePropertyChange(CommunicationMessages.POSITION_MINIATURE_VISIBILITY_CHANGED, oldPositionMiniatureVisible,
-				positionMiniatureVisible);
+		EventBus.get().publish(new PositionMiniatureVisibilityChangedEvent());
 	}
 
 	public boolean isPositionMiniatureVisible() {
@@ -126,8 +124,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setImageReaderFlavor(ImageReaderFlavor imageReaderFlavor) {
 		ImageReaderFlavor oldImageReaderFlavor = this.imageReaderFlavor;
 		this.imageReaderFlavor = imageReaderFlavor;
-		firePropertyChange(CommunicationMessages.IMAGE_READER_FLAVOR_CHANGED, oldImageReaderFlavor,
-				imageReaderFlavor);
+		EventBus.get().publish(new ImageReaderFlavorChangedEvent());
 	}
 
 	@Override
@@ -139,7 +136,7 @@ public class ImageHandlingPreferencesImpl extends BasicPropertyChangeAware imple
 	public void setExifReaderFlavor(ExifReaderFlavor exifReaderFlavor) {
 		ExifReaderFlavor oldExifReaderFlavor = this.exifReaderFlavor;
 		this.exifReaderFlavor = exifReaderFlavor;
-		firePropertyChange(CommunicationMessages.EXIF_READER_FLAVOR_CHANGED, oldExifReaderFlavor, exifReaderFlavor);
+		EventBus.get().publish(new ExifReaderFlavorChangedEvent());
 	}
 
 	@Override

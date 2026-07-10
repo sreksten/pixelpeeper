@@ -8,7 +8,6 @@ import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.data.PictureData;
 
 import java.awt.*;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
@@ -19,14 +18,14 @@ import java.util.Optional;
  * @author Stefano Reksten
  */
 
-public interface DataModel extends PropertyChangeListener, PropertyChangeAware, HintsProducer<String> {
+public interface DataModel extends HintsProducer<String> {
 
     // Preferences part
 
     /**
      * Sets or unsets the autorotation feature. If this is active, when an image is loaded that has not
      * a correct orientation, it will be translated to an equivalent image that can be seen without the
-     * end user being force to tilt his/her head.
+     * end user being forced to tilt his/her head.
      */
     void toggleAutorotation();
 
@@ -83,7 +82,7 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
     void loadLastFiles();
 
     /**
-     * Loads some user selected files.
+     * Loads some user-selected files.
      */
     void loadFiles(Collection<File> files);
 
@@ -103,7 +102,7 @@ public interface DataModel extends PropertyChangeListener, PropertyChangeAware, 
                    int preferredGroupIndex);
 
     /**
-     * Given a directory, the application browse all files searching for images.
+     * Given a directory, the application browses all files searching for images.
      */
     void browseDirectory(File directory, Component component);
 

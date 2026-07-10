@@ -1,8 +1,9 @@
 package com.threeamigos.pixelpeeper.implementations.ui.plugins;
 
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.*;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ExifReaderFlavor;
 import com.threeamigos.pixelpeeper.interfaces.preferences.ImageReaderFlavor;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
@@ -12,12 +13,10 @@ import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements PropertyChangeListener {
+public class ImageHandlingPlugin extends AbstractMainWindowPlugin {
 
     private final ImageHandlingPreferences imageHandlingPreferences;
 
@@ -35,6 +34,20 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
     public ImageHandlingPlugin(ImageHandlingPreferences imageHandlingPreferences) {
         super();
         this.imageHandlingPreferences = imageHandlingPreferences;
+
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(AutorotationChangedEvent.class,
+                e -> autorotationMenuItem.setSelected(imageHandlingPreferences.isAutorotation()));
+        eventBus.subscribe(NormalizedForCropChangedEvent.class,
+                e -> normalizeForCropFactorMenuItem.setSelected(imageHandlingPreferences.isNormalizedForCrop()));
+        eventBus.subscribe(NormalizedForFocalLengthChangedEvent.class,
+                e -> normalizeForFocalLengthMenuItem.setSelected(imageHandlingPreferences.isNormalizedForFocalLength()));
+        eventBus.subscribe(RelativeMovementChangedEvent.class,
+                e -> relativeMovementMenuItem.setSelected(imageHandlingPreferences.isRelativeMovement()));
+        eventBus.subscribe(MovementAppliedToAllImagesChangedEvent.class,
+                e -> moveAllImagesMenuItem.setSelected(imageHandlingPreferences.isMovementAppliedToAllImages()));
+        eventBus.subscribe(PositionMiniatureVisibilityChangedEvent.class,
+                e -> showPositionMiniatureMenuItem.setSelected(imageHandlingPreferences.isPositionMiniatureVisible()));
     }
 
     @Override
@@ -195,20 +208,4 @@ public class ImageHandlingPlugin extends AbstractMainWindowPlugin implements Pro
         };
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(CommunicationMessages.AUTOROTATION_CHANGED)) {
-            autorotationMenuItem.setSelected(imageHandlingPreferences.isAutorotation());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED)) {
-            normalizeForCropFactorMenuItem.setSelected(imageHandlingPreferences.isNormalizedForCrop());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED)) {
-            normalizeForFocalLengthMenuItem.setSelected(imageHandlingPreferences.isNormalizedForFocalLength());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.RELATIVE_MOVEMENT_CHANGED)) {
-            relativeMovementMenuItem.setSelected(imageHandlingPreferences.isRelativeMovement());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.MOVEMENT_APPLIED_TO_ALL_IMAGES_CHANGED)) {
-            moveAllImagesMenuItem.setSelected(imageHandlingPreferences.isMovementAppliedToAllImages());
-        } else if (evt.getPropertyName().equals(CommunicationMessages.POSITION_MINIATURE_VISIBILITY_CHANGED)) {
-            showPositionMiniatureMenuItem.setSelected(imageHandlingPreferences.isPositionMiniatureVisible());
-        }
-    }
 }

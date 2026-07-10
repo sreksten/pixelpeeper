@@ -3,7 +3,11 @@ package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifTagVisibility;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.TagVisibilityChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.TagsRenderingChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.TagsVisibilityChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.TagsVisibilityOverrideChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ExifTagsPreferences;
 
 import java.util.EnumMap;
@@ -20,7 +24,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     @Override
     public void setTagVisibility(ExifTag tag, ExifTagVisibility tagVisibility) {
         tagsMap.put(tag, tagVisibility);
-        firePropertyChange(CommunicationMessages.TAG_VISIBILITY_CHANGED, tag, tagVisibility);
+        EventBus.get().publish(new TagVisibilityChangedEvent(tag, tagVisibility));
     }
 
     @Override
@@ -38,7 +42,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     public void setTagsVisible(boolean tagsVisible) {
         boolean oldTagsVisible = this.tagsVisible;
         this.tagsVisible = tagsVisible;
-        firePropertyChange(CommunicationMessages.TAGS_VISIBILITY_CHANGED, oldTagsVisible, tagsVisible);
+        EventBus.get().publish(new TagsVisibilityChangedEvent());
     }
 
     @Override
@@ -50,8 +54,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     public void setOverridingTagsVisibility(boolean overridingTagsVisibility) {
         boolean oldOverridingTagsVisibility = this.overridingTagsVisibility;
         this.overridingTagsVisibility = overridingTagsVisibility;
-        firePropertyChange(CommunicationMessages.TAGS_VISIBILITY_OVERRIDE_CHANGED, oldOverridingTagsVisibility,
-                overridingTagsVisibility);
+        EventBus.get().publish(new TagsVisibilityOverrideChangedEvent());
     }
 
     @Override
@@ -73,7 +76,7 @@ public class ExifTagPreferencesImpl extends BasicPropertyChangeAware implements 
     public void setBorderThickness(int borderThickness) {
         int oldBorderThickness = this.borderThickness;
         this.borderThickness = borderThickness;
-        firePropertyChange(CommunicationMessages.TAGS_RENDERING_CHANGED, oldBorderThickness, borderThickness);
+        EventBus.get().publish(new TagsRenderingChangedEvent());
     }
 
     @Override

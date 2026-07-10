@@ -7,8 +7,9 @@ import com.threeamigos.common.util.interfaces.ui.HintsDisplayer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.common.util.ui.draganddrop.DragAndDropSupportHelper;
 import com.threeamigos.pixelpeeper.data.ExifTag;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.*;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.FileRenamer;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DragAndDropWindowPreferences;
@@ -19,8 +20,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +31,7 @@ import java.util.Map;
  *
  * @author Stefano Reksten
  */
-public class ImageViewerCanvas extends JPanel implements ImageConsumer, PropertyChangeListener, MainWindow {
+public class ImageViewerCanvas extends JPanel implements ImageConsumer, MainWindow {
 
     private static final long serialVersionUID = 1L;
 
@@ -91,7 +90,41 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
 
         DragAndDropSupportHelper.addJavaFileListSupport(this, builder.getMessageHandler());
 
+        subscribeToEvents();
+
         addMenus();
+    }
+
+    private void subscribeToEvents() {
+        EventBus.get().subscribe(BigPointerImageUpdateEvent.class, e -> updateCursor());
+        EventBus.get().subscribe(DataModelChangedEvent.class,      e -> reframeDataModel());
+
+        // All events that simply need a repaint
+        EventBus.get().subscribe(RepaintRequestEvent.class,                      e -> repaint());
+        EventBus.get().subscribe(FilterCalculationStartedEvent.class,            e -> repaint());
+        EventBus.get().subscribe(FilterCalculationCompletedEvent.class,          e -> repaint());
+        EventBus.get().subscribe(GridVisibilityChangedEvent.class,               e -> repaint());
+        EventBus.get().subscribe(GridSpacingChangedEvent.class,                  e -> repaint());
+        EventBus.get().subscribe(BigPointerVisibilityChangedEvent.class,         e -> repaint());
+        EventBus.get().subscribe(BigPointerSizeChangedEvent.class,               e -> repaint());
+        EventBus.get().subscribe(BigPointerRotationChangedEvent.class,           e -> repaint());
+        EventBus.get().subscribe(FilterVisibilityChangedEvent.class,             e -> repaint());
+        EventBus.get().subscribe(FilterTransparencyChangedEvent.class,           e -> repaint());
+        EventBus.get().subscribe(FilterFlavorChangedEvent.class,                 e -> repaint());
+        EventBus.get().subscribe(AutorotationChangedEvent.class,                 e -> repaint());
+        EventBus.get().subscribe(DispositionChangedEvent.class,                  e -> repaint());
+        EventBus.get().subscribe(ZoomLevelChangedEvent.class,                    e -> repaint());
+        EventBus.get().subscribe(NormalizedForCropChangedEvent.class,            e -> repaint());
+        EventBus.get().subscribe(NormalizedForFocalLengthChangedEvent.class,     e -> repaint());
+        EventBus.get().subscribe(RelativeMovementChangedEvent.class,             e -> repaint());
+        EventBus.get().subscribe(MovementAppliedToAllImagesChangedEvent.class,   e -> repaint());
+        EventBus.get().subscribe(PositionMiniatureVisibilityChangedEvent.class,  e -> repaint());
+        EventBus.get().subscribe(ImageReaderFlavorChangedEvent.class,            e -> repaint());
+        EventBus.get().subscribe(ExifReaderFlavorChangedEvent.class,             e -> repaint());
+        EventBus.get().subscribe(TagsVisibilityChangedEvent.class,               e -> repaint());
+        EventBus.get().subscribe(TagsVisibilityOverrideChangedEvent.class,       e -> repaint());
+        EventBus.get().subscribe(TagsRenderingChangedEvent.class,                e -> repaint());
+        EventBus.get().subscribe(TagVisibilityChangedEvent.class,                e -> repaint());
     }
 
     private void addMenus() {
@@ -204,17 +237,6 @@ public class ImageViewerCanvas extends JPanel implements ImageConsumer, Property
             decorator.paint(g2d);
         }
         requestFocus();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.BIG_POINTER_IMAGE_UPDATE_REQUEST.equals(evt.getPropertyName())) {
-            updateCursor();
-        } else if (CommunicationMessages.DATA_MODEL_CHANGED.equals(evt.getPropertyName())) {
-            reframeDataModel();
-        } else {
-            repaint();
-        }
     }
 
     private InputConsumer getInputConsumer() {

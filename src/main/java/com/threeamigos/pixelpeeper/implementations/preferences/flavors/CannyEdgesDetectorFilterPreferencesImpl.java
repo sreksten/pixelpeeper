@@ -1,7 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.CannyEdgesDetectorFilterPreferences;
 
 public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChangeAware
@@ -22,7 +21,6 @@ public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChange
 	public void setLowThreshold(float lowThreshold) {
 		float oldLowThreshold = this.lowThreshold;
 		this.lowThreshold = lowThreshold;
-		firePropertyChange(CommunicationMessages.CANNY_LOW_THRESHOLD_CHANGED, oldLowThreshold, lowThreshold);
 	}
 
 	@Override
@@ -34,7 +32,6 @@ public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChange
 	public void setHighThreshold(float highThreshold) {
 		float oldHighThreshold = this.highThreshold;
 		this.highThreshold = highThreshold;
-		firePropertyChange(CommunicationMessages.CANNY_HIGH_THRESHOLD_CHANGED, oldHighThreshold, highThreshold);
 	}
 
 	@Override
@@ -46,8 +43,6 @@ public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChange
 	public void setGaussianKernelRadius(float gaussianKernelRadius) {
 		float oldGaussianKernelRadius = this.gaussianKernelRadius;
 		this.gaussianKernelRadius = gaussianKernelRadius;
-		firePropertyChange(CommunicationMessages.CANNY_GAUSSIAN_KERNEL_RADIUS_CHANGED, oldGaussianKernelRadius,
-				gaussianKernelRadius);
 	}
 
 	@Override
@@ -59,8 +54,6 @@ public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChange
 	public void setGaussianKernelWidth(int gaussianKernelWidth) {
 		float oldGaussianKernelWidth = this.gaussianKernelWidth;
 		this.gaussianKernelWidth = gaussianKernelWidth;
-		firePropertyChange(CommunicationMessages.CANNY_GAUSSIAN_KERNEL_WIDTH_CHANGED, oldGaussianKernelWidth,
-				gaussianKernelWidth);
 	}
 
 	@Override
@@ -72,8 +65,6 @@ public class CannyEdgesDetectorFilterPreferencesImpl extends BasicPropertyChange
 	public void setContrastNormalized(boolean contrastNormalized) {
 		boolean oldContrastNormalized = this.contrastNormalized;
 		this.contrastNormalized = contrastNormalized;
-		firePropertyChange(CommunicationMessages.CANNY_CONTRAST_NORMALIZED_CHANGED, oldContrastNormalized,
-				contrastNormalized);
 	}
 
 	@Override

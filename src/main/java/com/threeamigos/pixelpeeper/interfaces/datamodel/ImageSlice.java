@@ -4,14 +4,13 @@ import com.threeamigos.pixelpeeper.data.ImageDoodlesData;
 import com.threeamigos.pixelpeeper.data.PictureData;
 
 import java.awt.*;
-import java.beans.PropertyChangeListener;
 
 /**
  * A portion of the application's window that depicts part of an image
  *
  * @author Stefano Reksten
  */
-public interface ImageSlice extends PropertyChangeListener {
+public interface ImageSlice {
 
     /**
      * Set the onscreen location of this slice
@@ -132,10 +131,14 @@ public interface ImageSlice extends PropertyChangeListener {
      */
     void releaseFilters();
 
-    // Communication part
+    /**
+     * Resets the cached tag display (called when tag visibility changes).
+     */
+    void resetTagsDisplay();
 
-    void addPropertyChangeListener(PropertyChangeListener listener);
-
-    void removePropertyChangeListener(PropertyChangeListener listener);
+    /**
+     * Forces the tag renderer to be fully rebuilt (called when tag rendering style changes).
+     */
+    void rebuildTagsRenderer();
 
 }

@@ -67,27 +67,6 @@ public class Main {
                 .withAboutWindow(AboutWindowInstance.get())
                 .build();
 
-        dataModel.addPropertyChangeListener(imageViewerCanvas);
-        dataModel.addPropertyChangeListener(ControlsPanelInstance.get());
-        ImageSlicesInstance.get().addPropertyChangeListener(imageViewerCanvas);
-        UserInputTrackerInstance.get().addPropertyChangeListener(dataModel);
-        FilterPluginInstance.get().addPropertyChangeListener(dataModel);
-        ImageHandlingPluginInstance.get().addPropertyChangeListener(dataModel);
-        Preferences.IMAGE_HANDLING.addPropertyChangeListener(ControlsPanelInstance.get());
-        Preferences.IMAGE_HANDLING.addPropertyChangeListener(imageViewerCanvas);
-        Preferences.IMAGE_HANDLING.addPropertyChangeListener(dataModel);
-        Preferences.IMAGE_HANDLING.addPropertyChangeListener(ImageHandlingPluginInstance.get());
-        Preferences.CURSOR.addPropertyChangeListener(imageViewerCanvas);
-        Preferences.CURSOR.addPropertyChangeListener(CursorManagerInstance.get());
-        Preferences.CURSOR.addPropertyChangeListener(CursorPluginInstance.get());
-        Preferences.GRID.addPropertyChangeListener(imageViewerCanvas);
-        Preferences.GRID.addPropertyChangeListener(GridPluginInstance.get());
-        Preferences.EXIF_TAG.addPropertyChangeListener(imageViewerCanvas);
-        Preferences.EXIF_TAG.addPropertyChangeListener(ImageSlicesInstance.get());
-        Preferences.FILTER.addPropertyChangeListener(dataModel);
-        Preferences.FILTER.addPropertyChangeListener(FilterPluginInstance.get());
-        CursorManagerInstance.get().addPropertyChangeListener(imageViewerCanvas);
-
         setupChainedInputConsumer();
 
         JFrame jframe = prepareFrame(menuBar, imageViewerCanvas, ControlsPanelInstance.get());

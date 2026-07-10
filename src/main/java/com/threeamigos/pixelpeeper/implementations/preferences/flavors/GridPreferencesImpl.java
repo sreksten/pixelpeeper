@@ -1,7 +1,9 @@
 package com.threeamigos.pixelpeeper.implementations.preferences.flavors;
 
 import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.GridSpacingChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.GridVisibilityChangedEvent;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.GridPreferences;
 
 public class GridPreferencesImpl extends BasicPropertyChangeAware implements GridPreferences {
@@ -13,7 +15,7 @@ public class GridPreferencesImpl extends BasicPropertyChangeAware implements Gri
 	public void setGridVisible(boolean gridVisible) {
 		boolean oldGridVisible = this.gridVisible;
 		this.gridVisible = gridVisible;
-		firePropertyChange(CommunicationMessages.GRID_VISIBILITY_CHANGED, oldGridVisible, gridVisible);
+		EventBus.get().publish(new GridVisibilityChangedEvent(gridVisible));
 	}
 
 	@Override
@@ -25,7 +27,7 @@ public class GridPreferencesImpl extends BasicPropertyChangeAware implements Gri
 	public void setGridSpacing(int gridSpacing) {
 		int oldGridSpacing = this.gridSpacing;
 		this.gridSpacing = gridSpacing;
-		firePropertyChange(CommunicationMessages.GRID_SPACING_CHANGED, oldGridSpacing, gridSpacing);
+		EventBus.get().publish(new GridSpacingChangedEvent(gridSpacing));
 	}
 
 	@Override

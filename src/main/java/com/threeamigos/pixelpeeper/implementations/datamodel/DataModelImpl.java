@@ -7,19 +7,18 @@ import com.threeamigos.common.util.interfaces.ui.InputConsumer;
 import com.threeamigos.pixelpeeper.data.ExifTag;
 import com.threeamigos.pixelpeeper.data.ExifValue;
 import com.threeamigos.pixelpeeper.data.PictureData;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.*;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.*;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.SessionPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.ExifTagsFilter;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
+import jakarta.annotation.Nonnull;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.List;
 import java.util.*;
@@ -36,7 +35,6 @@ public class DataModelImpl implements DataModel {
     private final ExifTagsClassifier tagsClassifier;
     private final ExifTagsFilter exifTagsFilter;
     private final DoodlesPersistenceService doodlesPersistenceService;
-    private final PropertyChangeSupport propertyChangeSupport;
 
     private boolean isDrawing;
     private boolean isMovementAppliedToAllImagesTemporarilyInverted;
@@ -51,7 +49,18 @@ public class DataModelImpl implements DataModel {
         tagsClassifier = builder.getExifTagsClassifier();
         exifTagsFilter = builder.getExifTagsFilter();
         doodlesPersistenceService = builder.getDoodlesPersistenceService();
-        propertyChangeSupport = new PropertyChangeSupport(this);
+
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(AutorotationChangedEvent.class, e -> toggleAutorotation());
+        eventBus.subscribe(DispositionChangedEvent.class, e -> eventBus.publish(new DataModelChangedEvent()));
+        eventBus.subscribe(FilterVisibilityChangedEvent.class, e -> requestRepaint());
+        eventBus.subscribe(RequestFilterCalculationEvent.class, e -> startFilterCalculation());
+        eventBus.subscribe(ZoomLevelChangedEvent.class, e -> changeZoomLevel());
+        eventBus.subscribe(NormalizedForCropChangedEvent.class, e -> changeZoomLevel());
+        eventBus.subscribe(NormalizedForFocalLengthChangedEvent.class, e -> changeZoomLevel());
+        eventBus.subscribe(MousePressedEvent.class, this::handleMousePressed);
+        eventBus.subscribe(MouseReleasedEvent.class, e -> handleMouseReleased());
+        eventBus.subscribe(MouseDraggedEvent.class, this::handleMouseDragged);
     }
 
     @Override
@@ -179,7 +188,7 @@ public class DataModelImpl implements DataModel {
                 tagsClassifier.classifyTags(
                         loadedPictures.values().stream().map(PictureData::getExifMap).collect(Collectors.toList()));
 
-                propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
+                EventBus.get().publish(new DataModelChangedEvent());
             }
         }).start();
     }
@@ -197,7 +206,7 @@ public class DataModelImpl implements DataModel {
     @Override
     public void toggleAutorotation() {
         imageSlices.toggleAutorotation();
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+        EventBus.get().publish(new RepaintRequestEvent());
     }
 
     @Override
@@ -220,7 +229,7 @@ public class DataModelImpl implements DataModel {
             }
             imageSlices.move(deltaX, deltaY, isMovementAppliedToAllImages);
         }
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+        EventBus.get().publish(new RepaintRequestEvent());
     }
 
     @Override
@@ -241,67 +250,16 @@ public class DataModelImpl implements DataModel {
     @Override
     public void startFilterCalculation() {
         imageSlices.startFilterCalculation();
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
     }
 
     @Override
     public void requestRepaint() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.REQUEST_REPAINT, null, null);
+        EventBus.get().publish(new RepaintRequestEvent());
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.AUTOROTATION_CHANGED.equals(evt.getPropertyName())) {
-            toggleAutorotation();
-        } else if (CommunicationMessages.DISPOSITION_CHANGED.equals(evt.getPropertyName())) {
-            propertyChangeSupport.firePropertyChange(CommunicationMessages.DATA_MODEL_CHANGED, null, null);
-        } else if (CommunicationMessages.FILTER_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
-            handleFilterVisibilityChanged();
-        } else if (CommunicationMessages.REQUEST_FILTER_CALCULATION.equals(evt.getPropertyName())) {
-            startFilterCalculation();
-        } else if (CommunicationMessages.FILTER_CALCULATION_STARTED.equals(evt.getPropertyName())) {
-            handleFilterCalculationStarted();
-        } else if (CommunicationMessages.FILTER_CALCULATION_COMPLETED.equals(evt.getPropertyName())) {
-            handleFilterCalculationCompleted();
-        } else if (CommunicationMessages.ZOOM_LEVEL_CHANGED.equals(evt.getPropertyName())
-                || CommunicationMessages.NORMALIZED_FOR_CROP_CHANGED.equals(evt.getPropertyName())
-                || CommunicationMessages.NORMALIZE_FOR_FOCAL_LENGTH_CHANGED.equals(evt.getPropertyName())) {
-            changeZoomLevel();
-        } else if (CommunicationMessages.MOUSE_PRESSED.equals(evt.getPropertyName())) {
-            handleMousePressed(evt);
-        } else if (CommunicationMessages.MOUSE_RELEASED.equals(evt.getPropertyName())) {
-            handleMouseReleased();
-        } else if (CommunicationMessages.MOUSE_DRAGGED.equals(evt.getPropertyName())) {
-            handleMouseDragged(evt);
-        }
-    }
-
-    private void handleFilterVisibilityChanged() {
-        requestRepaint();
-    }
-
-    private void handleFilterCalculationStarted() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_STARTED, null, null);
-    }
-
-    private void handleFilterCalculationCompleted() {
-        propertyChangeSupport.firePropertyChange(CommunicationMessages.FILTER_CALCULATION_COMPLETED, null, null);
-    }
-
-    private void handleMousePressed(PropertyChangeEvent evt) {
+    private void handleMousePressed(MousePressedEvent e) {
         if (hasLoadedImages()) {
-            MouseEvent e = (MouseEvent) evt.getNewValue();
-            setActiveSlice(e.getX(), e.getY());
+            setActiveSlice(e.mouseEvent.getX(), e.mouseEvent.getY());
             if (isDrawing) {
                 imageSlices.startDoodling();
             }
@@ -319,16 +277,13 @@ public class DataModelImpl implements DataModel {
         }
     }
 
-    private void handleMouseDragged(PropertyChangeEvent evt) {
+    private void handleMouseDragged(MouseDraggedEvent e) {
         if (hasLoadedImages()) {
             if (isDrawing) {
-                MouseEvent newEvent = (MouseEvent) evt.getNewValue();
-                imageSlices.addVertex(newEvent.getX(), newEvent.getY());
+                imageSlices.addVertex(e.newEvent.getX(), e.newEvent.getY());
             } else {
-                MouseEvent oldEvent = (MouseEvent) evt.getOldValue();
-                MouseEvent newEvent = (MouseEvent) evt.getNewValue();
-                int deltaX = oldEvent.getX() - newEvent.getX();
-                int deltaY = oldEvent.getY() - newEvent.getY();
+                int deltaX = e.oldEvent.getX() - e.newEvent.getX();
+                int deltaY = e.oldEvent.getY() - e.newEvent.getY();
                 move(deltaX, deltaY);
             }
             requestRepaint();
@@ -347,8 +302,7 @@ public class DataModelImpl implements DataModel {
                     imageSlices.undoLastDoodle();
                 } else if (e.getKeyCode() == KeyRegistry.DELETE_KEY.getKeyCode()) {
                     imageSlices.clearDoodles();
-                } else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED
-                        .getKeyCode()) {
+                } else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED.getKeyCode()) {
                     isMovementAppliedToAllImagesTemporarilyInverted = true;
                 }
             }
@@ -357,8 +311,7 @@ public class DataModelImpl implements DataModel {
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyRegistry.ANNOTATE_KEY.getKeyCode()) {
                     isDrawing = false;
-                } else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED
-                        .getKeyCode()) {
+                } else if (e.getKeyCode() == KeyRegistry.MOVEMENT_APPLIED_TO_ALL_IMAGES_TEMPORARILY_INVERTED.getKeyCode()) {
                     isMovementAppliedToAllImagesTemporarilyInverted = false;
                 }
             }
@@ -366,10 +319,14 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public Collection<Hint<String>> getHints() {
+    public @Nonnull Collection<Hint<String>> getHints() {
         Collection<Hint<String>> hints = new ArrayList<>();
-        hints.add(new StringHint("You can press P to show the position of the visible part of the image."));
+        hints.add(new StringHint("Keep shift pressed and drag to draw annotations on the images."));
+        hints.add(new StringHint("Press U to undo the last annotation stroke."));
+        hints.add(new StringHint("Press Delete to delete all annotations on the active image."));
+        hints.add(new StringHint("Press I to toggle between moving all images together or moving them independently."));
+        hints.add(new StringHint("Press Ctrl and drag to temporarily invert the 'move all vs. single image' behaviour."));
+        hints.add(new StringHint("Press M to toggle between percentage-based and pixel-based movement."));
         return hints;
     }
-
 }

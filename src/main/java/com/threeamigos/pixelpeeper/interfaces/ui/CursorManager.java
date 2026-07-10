@@ -22,7 +22,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Stefano Reksten
  */
-public interface CursorManager extends PropertyChangeAware, PropertyChangeListener, HintsProducer<String> {
+public interface CursorManager extends HintsProducer<String> {
 
     /**
      * Returns max cursor size in pixels

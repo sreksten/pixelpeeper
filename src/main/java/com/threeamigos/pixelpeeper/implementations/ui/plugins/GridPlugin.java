@@ -4,21 +4,22 @@ import com.threeamigos.common.util.implementations.ui.StringHint;
 import com.threeamigos.common.util.interfaces.ui.Hint;
 import com.threeamigos.common.util.interfaces.ui.HintsProducer;
 import com.threeamigos.common.util.interfaces.ui.InputConsumer;
+import com.threeamigos.pixelpeeper.implementations.eventbus.EventBus;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.GridSpacingChangedEvent;
+import com.threeamigos.pixelpeeper.implementations.eventbus.events.GridVisibilityChangedEvent;
 import com.threeamigos.pixelpeeper.implementations.ui.InputAdapter;
-import com.threeamigos.pixelpeeper.interfaces.datamodel.CommunicationMessages;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.GridPreferences;
 import com.threeamigos.pixelpeeper.interfaces.ui.KeyRegistry;
+import jakarta.annotation.Nonnull;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer<String>, PropertyChangeListener {
+public class GridPlugin extends AbstractMainWindowPlugin implements HintsProducer<String> {
 
     private final GridPreferences gridPreferences;
     private final Map<Integer, JMenuItem> gridSpacingBySize = new HashMap<>();
@@ -27,6 +28,12 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
     public GridPlugin(GridPreferences gridPreferences) {
         super();
         this.gridPreferences = gridPreferences;
+
+        EventBus eventBus = EventBus.get();
+        eventBus.subscribe(GridVisibilityChangedEvent.class,
+                e -> gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible()));
+        eventBus.subscribe(GridSpacingChangedEvent.class,
+                e -> updateGridSpacingMenu(gridPreferences.getGridSpacing()));
     }
 
     @Override
@@ -45,15 +52,6 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
                     KeyRegistry.NO_KEY, gridSpacing == gridPreferences.getGridSpacing(),
                     event -> gridPreferences.setGridSpacing(currentSpacing));
             gridSpacingBySize.put(gridSpacing, gridSpacingItem);
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CommunicationMessages.GRID_VISIBILITY_CHANGED.equals(evt.getPropertyName())) {
-            gridVisibleMenuItem.setSelected(gridPreferences.isGridVisible());
-        } else if (CommunicationMessages.GRID_SPACING_CHANGED.equals(evt.getPropertyName())) {
-            updateGridSpacingMenu(gridPreferences.getGridSpacing());
         }
     }
 
@@ -106,7 +104,7 @@ public class GridPlugin extends AbstractMainWindowPlugin implements HintsProduce
     }
 
     @Override
-    public Collection<Hint<String>> getHints() {
+    public @Nonnull Collection<Hint<String>> getHints() {
         Collection<Hint<String>> hints = new ArrayList<>();
         hints.add(new StringHint("Press G to hide or show a grid."));
         hints.add(new StringHint(

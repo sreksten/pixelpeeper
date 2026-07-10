@@ -5,9 +5,9 @@ import com.threeamigos.pixelpeeper.implementations.ui.UserInputTrackerImpl;
 
 public class UserInputTrackerInstance {
 
-    private static final UserInputTracker instance = new UserInputTrackerImpl();
+    private static final UserInputTrackerImpl instance = new UserInputTrackerImpl();
 
-    public static UserInputTracker get() {
+    public static UserInputTrackerImpl get() {
         return instance;
     }
 
