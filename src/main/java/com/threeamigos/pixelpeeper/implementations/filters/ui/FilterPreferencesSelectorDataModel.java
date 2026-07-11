@@ -4,6 +4,7 @@ import com.threeamigos.common.util.implementations.BasicPropertyChangeAware;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
+import com.threeamigos.pixelpeeper.interfaces.filters.ViewportOverlayPainter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
 
 import javax.swing.*;
@@ -21,6 +22,7 @@ abstract class FilterPreferencesSelectorDataModel extends BasicPropertyChangeAwa
 
     private BufferedImage sourceImage;
     private BufferedImage filteredImage;
+    private ViewportOverlayPainter viewportOverlayPainter;
 
     private final int transparencyBackup;
 
@@ -111,7 +113,13 @@ abstract class FilterPreferencesSelectorDataModel extends BasicPropertyChangeAwa
             filter.setSourceImage(sourceImage);
             filter.process();
             filteredImage = filter.getResultingImage();
+            viewportOverlayPainter = filter instanceof ViewportOverlayPainter
+                    ? (ViewportOverlayPainter) filter : null;
         }
+    }
+
+    final ViewportOverlayPainter getViewportOverlayPainter() {
+        return viewportOverlayPainter;
     }
 
     protected abstract Filter getFilterImplementation();

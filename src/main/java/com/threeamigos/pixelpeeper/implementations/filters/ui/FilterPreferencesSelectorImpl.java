@@ -6,6 +6,7 @@ import com.threeamigos.pixelpeeper.data.PictureData;
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.DataModel;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifImageReader;
+import com.threeamigos.pixelpeeper.interfaces.filters.ViewportOverlayPainter;
 import com.threeamigos.pixelpeeper.interfaces.filters.ui.FilterPreferencesSelector;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
 
@@ -137,11 +138,19 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
         descriptionArea.setWrapStyleWord(true);
         descriptionArea.setFocusable(false);
         descriptionArea.setFont(UIManager.getFont("Label.font"));
-        descriptionArea.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("How it works"),
-                BorderFactory.createEmptyBorder(2, 6, 4, 6)));
-        descriptionArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        outerPanel.add(descriptionArea);
+        descriptionArea.setBorder(BorderFactory.createEmptyBorder(2, 6, 4, 6));
+
+        // Wrap in a scroll pane so the description never makes the dialog taller than the screen.
+        // VERTICAL_SCROLLBAR_AS_NEEDED keeps things tidy for short descriptions.
+        JScrollPane descriptionScroll = new JScrollPane(descriptionArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        descriptionScroll.setBorder(BorderFactory.createTitledBorder("How it works"));
+        descriptionScroll.setOpaque(false);
+        descriptionScroll.getViewport().setOpaque(false);
+        descriptionScroll.setPreferredSize(new Dimension(200, 140));
+        descriptionScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
+        outerPanel.add(descriptionScroll);
 
         outerPanel.add(Box.createVerticalStrut(SPACING));
 
@@ -379,6 +388,10 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
             ImageDrawHelper.drawTransparentImageAtop((Graphics2D) g, filterPreferencesSelectorDataModel.getSourceImage(),
                     filterPreferencesSelectorDataModel.getFilteredImage(), 0, 0,
                     filterPreferencesSelectorDataModel.getTransparency());
+            ViewportOverlayPainter overlayPainter = filterPreferencesSelectorDataModel.getViewportOverlayPainter();
+            if (overlayPainter != null) {
+                overlayPainter.paintViewportOverlay((Graphics2D) g, 0, 0, getWidth(), getHeight());
+            }
         }
 
         private BufferedImage loadCropAndResizeImage(File file) {

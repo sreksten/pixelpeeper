@@ -34,6 +34,9 @@ public class Preferences {
     public static final C64PaletteFilterPreferences C64_PALETTE_FILTER;
     public static final Windows311PaletteFilterPreferences WINDOWS_3_11_PALETTE_FILTER;
     public static final SharpnessHeatmapFilterPreferences SHARPNESS_HEATMAP_FILTER;
+    public static final HistogramClippingDetectorFilterPreferences HISTOGRAM_CLIPPING_DETECTOR_FILTER;
+    public static final NoiseEstimatorFilterPreferences NOISE_ESTIMATOR_FILTER;
+    public static final VignettingProfileFilterPreferences VIGNETTING_PROFILE_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
@@ -101,6 +104,15 @@ public class Preferences {
 
         SHARPNESS_HEATMAP_FILTER = new SharpnessHeatmapFilterPreferencesImpl();
         preferencesCollector.add(SHARPNESS_HEATMAP_FILTER, "sharpness_heatmap_filter.preferences");
+
+        HISTOGRAM_CLIPPING_DETECTOR_FILTER = new HistogramClippingDetectorFilterPreferencesImpl();
+        preferencesCollector.add(HISTOGRAM_CLIPPING_DETECTOR_FILTER, "histogram_clipping_detector_filter.preferences");
+
+        NOISE_ESTIMATOR_FILTER = new NoiseEstimatorFilterPreferencesImpl();
+        preferencesCollector.add(NOISE_ESTIMATOR_FILTER, "noise_estimator_filter.preferences");
+
+        VIGNETTING_PROFILE_FILTER = new VignettingProfileFilterPreferencesImpl();
+        preferencesCollector.add(VIGNETTING_PROFILE_FILTER, "vignetting_profile_filter.preferences");
 
         // Misc preferences
 

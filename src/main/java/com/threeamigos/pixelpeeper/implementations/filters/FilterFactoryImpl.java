@@ -15,6 +15,9 @@ public class FilterFactoryImpl implements FilterFactory {
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
     private final SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences;
+    private final HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences;
+    private final NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences;
+    private final VignettingProfileFilterPreferences vignettingProfileFilterPreferences;
     private final ThrowableHandler exceptionHandler;
 
     public FilterFactoryImpl(FilterPreferences filterPreferences,
@@ -24,6 +27,9 @@ public class FilterFactoryImpl implements FilterFactory {
                              C64PaletteFilterPreferences c64PaletteFilterPreferences,
                              Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
                              SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences,
+                             HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences,
+                             NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences,
+                             VignettingProfileFilterPreferences vignettingProfileFilterPreferences,
                              ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
@@ -32,6 +38,9 @@ public class FilterFactoryImpl implements FilterFactory {
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
         this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
         this.sharpnessHeatmapFilterPreferences = sharpnessHeatmapFilterPreferences;
+        this.histogramClippingDetectorFilterPreferences = histogramClippingDetectorFilterPreferences;
+        this.noiseEstimatorFilterPreferences = noiseEstimatorFilterPreferences;
+        this.vignettingProfileFilterPreferences = vignettingProfileFilterPreferences;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -52,6 +61,12 @@ public class FilterFactoryImpl implements FilterFactory {
                 return new Windows311PaletteFilterImpl(windows311PaletteFilterPreferences, exceptionHandler);
             case SHARPNESS_HEATMAP:
                 return new SharpnessHeatmapFilterImpl(sharpnessHeatmapFilterPreferences);
+            case HISTOGRAM_CLIPPING_DETECTOR:
+                return new HistogramClippingDetectorFilterImpl(histogramClippingDetectorFilterPreferences);
+            case NOISE_ESTIMATOR:
+                return new NoiseEstimatorFilterImpl(noiseEstimatorFilterPreferences);
+            case VIGNETTING_PROFILE:
+                return new VignettingProfileFilterImpl(vignettingProfileFilterPreferences);
             default:
                 throw new IllegalArgumentException();
         }

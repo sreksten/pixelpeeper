@@ -18,6 +18,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
     private final SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences;
+    private final HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences;
+    private final NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences;
+    private final VignettingProfileFilterPreferences vignettingProfileFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
     private final ThrowableHandler exceptionHandler;
@@ -29,6 +32,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 C64PaletteFilterPreferences c64PaletteFilterPreferences,
                                                 Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
                                                 SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences,
+                                                HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences,
+                                                NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences,
+                                                VignettingProfileFilterPreferences vignettingProfileFilterPreferences,
                                                 DataModel dataModel,
                                                 ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
@@ -38,6 +44,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
         this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
         this.sharpnessHeatmapFilterPreferences = sharpnessHeatmapFilterPreferences;
+        this.histogramClippingDetectorFilterPreferences = histogramClippingDetectorFilterPreferences;
+        this.noiseEstimatorFilterPreferences = noiseEstimatorFilterPreferences;
+        this.vignettingProfileFilterPreferences = vignettingProfileFilterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
         this.exceptionHandler = exceptionHandler;
@@ -70,6 +79,18 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
             case SHARPNESS_HEATMAP:
                 return new SharpnessHeatmapFilterPreferencesSelectorImpl(filterPreferences,
                         sharpnessHeatmapFilterPreferences, dataModel,
+                        exifImageReader, exceptionHandler);
+            case HISTOGRAM_CLIPPING_DETECTOR:
+                return new HistogramClippingDetectorFilterPreferencesSelectorImpl(filterPreferences,
+                        histogramClippingDetectorFilterPreferences, dataModel,
+                        exifImageReader, exceptionHandler);
+            case NOISE_ESTIMATOR:
+                return new NoiseEstimatorFilterPreferencesSelectorImpl(filterPreferences,
+                        noiseEstimatorFilterPreferences, dataModel,
+                        exifImageReader, exceptionHandler);
+            case VIGNETTING_PROFILE:
+                return new VignettingProfileFilterPreferencesSelectorImpl(filterPreferences,
+                        vignettingProfileFilterPreferences, dataModel,
                         exifImageReader, exceptionHandler);
             default:
                 throw new IllegalArgumentException();

@@ -40,7 +40,19 @@ public enum FilterFlavor {
     /**
      * Divides the image into a configurable grid and renders a Laplacian-variance sharpness heatmap
      */
-    SHARPNESS_HEATMAP("Sharpness Heatmap");
+    SHARPNESS_HEATMAP("Sharpness Heatmap"),
+    /**
+     * Computes per-channel histograms and highlights shadow/highlight clipping as an overlay
+     */
+    HISTOGRAM_CLIPPING_DETECTOR("Histogram Clipping Detector"),
+    /**
+     * Estimates image noise by measuring luminance and chroma standard deviation in flat (uniform) regions
+     */
+    NOISE_ESTIMATOR("Noise Estimator"),
+    /**
+     * Measures the radial brightness falloff from centre to corners and expresses it as EV loss per ring
+     */
+    VIGNETTING_PROFILE("Vignetting Profile");
 
     private final String description;
 
@@ -63,6 +75,9 @@ public enum FilterFlavor {
         list.add(C64_PALETTE);
         list.add(WINDOWS_3_11_PALETTE);
         list.add(SHARPNESS_HEATMAP);
+        list.add(HISTOGRAM_CLIPPING_DETECTOR);
+        list.add(NOISE_ESTIMATOR);
+        list.add(VIGNETTING_PROFILE);
         return list;
     }
 }

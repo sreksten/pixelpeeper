@@ -15,6 +15,9 @@ public class FilterFactoryInstance {
                     Preferences.C64_PALETTE_FILTER,
                     Preferences.WINDOWS_3_11_PALETTE_FILTER,
                     Preferences.SHARPNESS_HEATMAP_FILTER,
+                    Preferences.HISTOGRAM_CLIPPING_DETECTOR_FILTER,
+                    Preferences.NOISE_ESTIMATOR_FILTER,
+                    Preferences.VIGNETTING_PROFILE_FILTER,
                     new SwingMessageHandler());
 
     public static FilterFactory get() {

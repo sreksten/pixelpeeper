@@ -11,6 +11,7 @@ import com.threeamigos.pixelpeeper.implementations.eventbus.events.SliceFilterCa
 import com.threeamigos.pixelpeeper.implementations.helpers.ImageDrawHelper;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ExifTagsClassifier;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageSlice;
+import com.threeamigos.pixelpeeper.interfaces.filters.ViewportOverlayPainter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.DoodlingPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
@@ -319,6 +320,14 @@ public class ImageSliceImpl implements ImageSlice {
         }
 
         drawFilteredImage(g2d, edgesImage, subImage, pictureX, pictureY, imageSliceWidth, imageSliceHeight);
+
+        if (filterPreferences.isShowResults()) {
+            ViewportOverlayPainter overlayPainter = pictureData.getViewportOverlayPainter();
+            if (overlayPainter != null) {
+                overlayPainter.paintViewportOverlay(g2d, locationX, locationY, locationWidth, locationHeight);
+            }
+        }
+
         drawSelectedRectangle(g2d, locationX, locationY, locationWidth, locationHeight);
         drawDoodles(g2d, zoomOffsetX, zoomOffsetY);
         drawMiniatureWithPosition(g2d);

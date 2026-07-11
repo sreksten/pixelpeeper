@@ -5,6 +5,7 @@ import com.threeamigos.pixelpeeper.implementations.helpers.ExifOrientationHelper
 import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
+import com.threeamigos.pixelpeeper.interfaces.filters.ViewportOverlayPainter;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.FilterPreferences;
 import com.threeamigos.pixelpeeper.interfaces.preferences.flavors.ImageHandlingPreferences;
 
@@ -84,6 +85,22 @@ public class PictureData implements PropertyChangeAware {
      * eventually using a transparency.
      */
     private BufferedImage filteredImage;
+    /**
+     * True once a filter calculation has completed (even if its result image is null, as for viewport-overlay
+     * filters). Guards against restarting the calculation every paint frame when filteredImage stays null.
+     */
+    private volatile boolean filterCalculationCompleted;
+    /**
+     * Non-null when the completed filter implements {@link ViewportOverlayPainter}.
+     * Written by the background thread before the completion callback fires, establishing happens-before.
+     */
+    private volatile ViewportOverlayPainter viewportOverlayPainter;
+    /**
+     * The flavor that was active when viewportOverlayPainter was set. Used by getViewportOverlayPainter()
+     * to return null when the flavor has changed, without needing to null the painter eagerly
+     * (which would cause a visible flicker during recalculation).
+     */
+    private volatile FilterFlavor viewportOverlayPainterFlavor;
 
     /**
      * Current image (we can rotate or zoom the image so these may differ from the original image data).
@@ -240,8 +257,9 @@ public class PictureData implements PropertyChangeAware {
     public BufferedImage getFilteredImage() {
         if (flavor != filterPreferences.getFilterFlavor()) {
             filteredImage = null;
+            filterCalculationCompleted = false;
         }
-        if (filteredImage == null) {
+        if (!filterCalculationCompleted) {
             startFilterCalculation();
         }
         return filteredImage;
@@ -280,6 +298,14 @@ public class PictureData implements PropertyChangeAware {
                     filter.process();
                     if (!filterCalculationAborted) {
                         filteredImage = filter.getResultingImage();
+                        if (filter instanceof ViewportOverlayPainter) {
+                            viewportOverlayPainter = (ViewportOverlayPainter) filter;
+                            viewportOverlayPainterFlavor = flavor;
+                        } else {
+                            viewportOverlayPainter = null;
+                            viewportOverlayPainterFlavor = null;
+                        }
+                        filterCalculationCompleted = true;
                         if (onFilterCompleted != null) onFilterCompleted.run();
                     }
                     filterCalculationInProgress = false;
@@ -296,8 +322,29 @@ public class PictureData implements PropertyChangeAware {
      * no more relevant for the current zoom level, image rotation, etc,
      * we can interrupt it.
      */
+    /**
+     * Returns the viewport overlay painter for the current filter flavor, or null if:
+     * <ul>
+     *   <li>the current filter does not implement {@link ViewportOverlayPainter}, or</li>
+     *   <li>the flavor has changed since the painter was computed (avoids showing a stale
+     *       histogram over a different filter while recalculation is in progress).</li>
+     * </ul>
+     * The painter is intentionally NOT nulled during recalculation so that the old histogram
+     * remains visible until the new one is ready, eliminating flicker.
+     */
+    public ViewportOverlayPainter getViewportOverlayPainter() {
+        if (viewportOverlayPainterFlavor != filterPreferences.getFilterFlavor()) {
+            return null;
+        }
+        return viewportOverlayPainter;
+    }
+
     public void releaseFilters() {
         filteredImage = null;
+        filterCalculationCompleted = false;
+        // viewportOverlayPainter is deliberately kept so the overlay does not flicker
+        // while a recalculation is in progress for the same flavor.
+        // getViewportOverlayPainter() hides it automatically when the flavor changes.
         flavor = null;
         if (filter != null) {
             filterCalculationAborted = true;
