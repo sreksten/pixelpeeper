@@ -36,7 +36,11 @@ public enum FilterFlavor {
     /**
      * A quick hack to render an image using Windows 3.11 colors
      */
-    WINDOWS_3_11_PALETTE("Windows 3.11 palette");
+    WINDOWS_3_11_PALETTE("Windows 3.11 palette"),
+    /**
+     * Divides the image into a configurable grid and renders a Laplacian-variance sharpness heatmap
+     */
+    SHARPNESS_HEATMAP("Sharpness Heatmap");
 
     private final String description;
 
@@ -58,6 +62,7 @@ public enum FilterFlavor {
         list.add(ZX_SPECTRUM_PALETTE);
         list.add(C64_PALETTE);
         list.add(WINDOWS_3_11_PALETTE);
+        list.add(SHARPNESS_HEATMAP);
         return list;
     }
 }

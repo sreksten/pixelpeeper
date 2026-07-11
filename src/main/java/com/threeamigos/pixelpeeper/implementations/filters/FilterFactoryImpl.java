@@ -14,6 +14,7 @@ public class FilterFactoryImpl implements FilterFactory {
     private final ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences;
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
+    private final SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences;
     private final ThrowableHandler exceptionHandler;
 
     public FilterFactoryImpl(FilterPreferences filterPreferences,
@@ -22,6 +23,7 @@ public class FilterFactoryImpl implements FilterFactory {
                              ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
                              C64PaletteFilterPreferences c64PaletteFilterPreferences,
                              Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
+                             SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences,
                              ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
@@ -29,6 +31,7 @@ public class FilterFactoryImpl implements FilterFactory {
         this.zxSpectrumPaletteFilterPreferences = zxSpectrumPaletteFilterPreferences;
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
         this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
+        this.sharpnessHeatmapFilterPreferences = sharpnessHeatmapFilterPreferences;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -47,6 +50,8 @@ public class FilterFactoryImpl implements FilterFactory {
                 return new C64PaletteFilterImpl(c64PaletteFilterPreferences, exceptionHandler);
             case WINDOWS_3_11_PALETTE:
                 return new Windows311PaletteFilterImpl(windows311PaletteFilterPreferences, exceptionHandler);
+            case SHARPNESS_HEATMAP:
+                return new SharpnessHeatmapFilterImpl(sharpnessHeatmapFilterPreferences);
             default:
                 throw new IllegalArgumentException();
         }

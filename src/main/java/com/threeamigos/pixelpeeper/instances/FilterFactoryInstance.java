@@ -14,6 +14,7 @@ public class FilterFactoryInstance {
                     Preferences.ZX_SPECTRUM_PALETTE_FILTER,
                     Preferences.C64_PALETTE_FILTER,
                     Preferences.WINDOWS_3_11_PALETTE_FILTER,
+                    Preferences.SHARPNESS_HEATMAP_FILTER,
                     new SwingMessageHandler());
 
     public static FilterFactory get() {

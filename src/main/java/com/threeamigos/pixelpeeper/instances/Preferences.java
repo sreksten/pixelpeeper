@@ -33,6 +33,7 @@ public class Preferences {
     public static final ZXSpectrumPaletteFilterPreferences ZX_SPECTRUM_PALETTE_FILTER;
     public static final C64PaletteFilterPreferences C64_PALETTE_FILTER;
     public static final Windows311PaletteFilterPreferences WINDOWS_3_11_PALETTE_FILTER;
+    public static final SharpnessHeatmapFilterPreferences SHARPNESS_HEATMAP_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
@@ -97,6 +98,9 @@ public class Preferences {
 
         WINDOWS_3_11_PALETTE_FILTER = new Windows311PaletteFilterPreferencesImpl();
         preferencesCollector.add(WINDOWS_3_11_PALETTE_FILTER, "windows_311_palette_filter.preferences");
+
+        SHARPNESS_HEATMAP_FILTER = new SharpnessHeatmapFilterPreferencesImpl();
+        preferencesCollector.add(SHARPNESS_HEATMAP_FILTER, "sharpness_heatmap_filter.preferences");
 
         // Misc preferences
 

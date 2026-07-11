@@ -17,6 +17,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences;
     private final C64PaletteFilterPreferences c64PaletteFilterPreferences;
     private final Windows311PaletteFilterPreferences windows311PaletteFilterPreferences;
+    private final SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
     private final ThrowableHandler exceptionHandler;
@@ -27,6 +28,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 ZXSpectrumPaletteFilterPreferences zxSpectrumPaletteFilterPreferences,
                                                 C64PaletteFilterPreferences c64PaletteFilterPreferences,
                                                 Windows311PaletteFilterPreferences windows311PaletteFilterPreferences,
+                                                SharpnessHeatmapFilterPreferences sharpnessHeatmapFilterPreferences,
                                                 DataModel dataModel,
                                                 ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
@@ -35,6 +37,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
         this.zxSpectrumPaletteFilterPreferences = zxSpectrumPaletteFilterPreferences;
         this.c64PaletteFilterPreferences = c64PaletteFilterPreferences;
         this.windows311PaletteFilterPreferences = windows311PaletteFilterPreferences;
+        this.sharpnessHeatmapFilterPreferences = sharpnessHeatmapFilterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
         this.exceptionHandler = exceptionHandler;
@@ -64,6 +67,10 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                     return new Windows311PaletteFilterPreferencesSelectorImpl(filterPreferences,
                             windows311PaletteFilterPreferences, dataModel,
                             exifImageReader, exceptionHandler);
+            case SHARPNESS_HEATMAP:
+                return new SharpnessHeatmapFilterPreferencesSelectorImpl(filterPreferences,
+                        sharpnessHeatmapFilterPreferences, dataModel,
+                        exifImageReader, exceptionHandler);
             default:
                 throw new IllegalArgumentException();
         }

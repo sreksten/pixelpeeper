@@ -9,7 +9,7 @@ public class FilterPreferencesSelectorFactoryInstance {
             new FilterPreferencesSelectorFactoryImpl(Preferences.FILTER,
                     Preferences.CANNY_EDGES_DETECTOR_FILTER, Preferences.ROMY_JONA_FILTER,
                     Preferences.ZX_SPECTRUM_PALETTE_FILTER, Preferences.C64_PALETTE_FILTER,
-                    Preferences.WINDOWS_3_11_PALETTE_FILTER,
+                    Preferences.WINDOWS_3_11_PALETTE_FILTER, Preferences.SHARPNESS_HEATMAP_FILTER,
                     DataModelInstance.get(), ExifImageReaderInstance.get(), MessageHandlerInstance.get());
 
     public static FilterPreferencesSelectorFactory get() {
