@@ -35,11 +35,12 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
 
     // ── Overlay geometry (screen pixels) ─────────────────────────────────────
     private static final int PAD = 8;
+    private static final int LABEL_W = 30; // left margin reserved for Y-axis labels (e.g. "-2.0")
     private static final int GRAPH_W = 160;
     private static final int GRAPH_H = 80;
     private static final int TITLE_H = 16;
     private static final int TEXT_H = 16;
-    private static final int OVERLAY_W = GRAPH_W + 2 * PAD;
+    private static final int OVERLAY_W = LABEL_W + GRAPH_W + PAD;
     private static final int OVERLAY_H = PAD + TITLE_H + PAD + GRAPH_H + PAD + TEXT_H + PAD;
 
     // ── Colours ───────────────────────────────────────────────────────────────
@@ -144,19 +145,20 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
         double centreMean = ringMeans[0] > 0 ? ringMeans[0] : 1.0;
         double[] evLoss = new double[ringCount];
         double maxEvLoss = 0.0;
+        double minEvLoss = 0.0;
 
         for (int i = 0; i < ringCount; i++) {
             if (ringMeans[i] > 0) {
                 double ratio = ringMeans[i] / centreMean;
                 evLoss[i] = -Math.log(ratio) / Math.log(2.0); // −log₂(ratio)
             }
-            if (evLoss[i] > maxEvLoss) {
-                maxEvLoss = evLoss[i];
-            }
+            if (evLoss[i] > maxEvLoss) maxEvLoss = evLoss[i];
+            if (evLoss[i] < minEvLoss) minEvLoss = evLoss[i];
         }
 
-        // Graph Y-axis ceiling: next 0.5 EV tick above maxEvLoss, minimum 1.0 EV
+        // Graph Y-axis: ceiling to nearest 0.5 EV above max (min 1.0); floor to nearest 0.5 EV below min
         double graphMaxEV = Math.max(1.0, Math.ceil(maxEvLoss * 2.0) / 2.0);
+        double graphMinEV = minEvLoss < 0 ? Math.floor(minEvLoss * 2.0) / 2.0 : 0.0;
 
         // Pre-compute per-ring ARGB colours for the false-colour overlay image
         int[] ringColors = computeRingColors(evLoss, ringCount, maxEvLoss);
@@ -189,7 +191,7 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
 
         if (!isAborted) {
             vignettingData = new VignettingData(evLoss, ringMeans, centreMean,
-                    evLoss[ringCount - 1], graphMaxEV, ringCount);
+                    evLoss[ringCount - 1], graphMaxEV, graphMinEV, ringCount);
             filteredImage = noiseMap;
         }
     }
@@ -256,33 +258,39 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
         g2d.setColor(TITLE_COLOR);
         g2d.drawString(title, ox + PAD, oy + PAD + fm.getAscent());
 
-        // Graph area origin
-        int gx = ox + PAD;
+        // Graph area origin — gx is offset by LABEL_W to leave room for Y-axis labels
+        int gx = ox + LABEL_W;
         int gy = oy + PAD + TITLE_H + PAD;
 
-        // Grid lines at 0.5 EV intervals
+        // Grid lines and Y-axis labels at 0.5 EV intervals
         g2d.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 9));
         FontMetrics fmSmall = g2d.getFontMetrics();
+        double graphRange = data.graphMaxEV - data.graphMinEV;
         double evStep = 0.5;
-        for (double ev = 0; ev <= data.graphMaxEV + 0.01; ev += evStep) {
-            int lineY = gy + (int) (ev * GRAPH_H / data.graphMaxEV);
+        for (double ev = data.graphMinEV; ev <= data.graphMaxEV + 0.01; ev += evStep) {
+            int lineY = gy + (int) ((ev - data.graphMinEV) * GRAPH_H / graphRange);
             if (lineY > gy + GRAPH_H) {
                 break;
             }
             g2d.setColor(GRID_COLOR);
             g2d.drawLine(gx, lineY, gx + GRAPH_W, lineY);
-            if (ev > 0) {
-                g2d.setColor(AXIS_COLOR);
-                String evLabel = String.format("-%.1f", ev);
-                g2d.drawString(evLabel, gx - fmSmall.stringWidth(evLabel) - 2, lineY + fmSmall.getAscent() / 2);
+            g2d.setColor(AXIS_COLOR);
+            String evLabel;
+            if (Math.abs(ev) < 0.01) {
+                evLabel = "0";
+            } else if (ev < 0) {
+                evLabel = String.format("+%.1f", -ev); // ring brighter than centre
+            } else {
+                evLabel = String.format("-%.1f", ev);  // ring darker than centre (vignetting)
             }
+            g2d.drawString(evLabel, gx - fmSmall.stringWidth(evLabel) - 2, lineY + fmSmall.getAscent() / 2);
         }
 
         // Axis borders
         g2d.setColor(AXIS_COLOR);
         g2d.drawRect(gx, gy, GRAPH_W, GRAPH_H);
 
-        // Curve
+        // Curve — map EV to screen Y using the full [graphMinEV, graphMaxEV] range
         g2d.setColor(CURVE_COLOR);
         g2d.setStroke(new BasicStroke(1.5f));
         int ringCount = data.ringCount;
@@ -290,8 +298,8 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
         int prevScreenY = -1;
         for (int i = 0; i < ringCount; i++) {
             int screenX = gx + (ringCount > 1 ? i * GRAPH_W / (ringCount - 1) : 0);
-            double clampedEV = Math.min(data.evLoss[i], data.graphMaxEV);
-            int screenY = gy + (int) (clampedEV * GRAPH_H / data.graphMaxEV);
+            double clampedEV = Math.max(data.graphMinEV, Math.min(data.evLoss[i], data.graphMaxEV));
+            int screenY = gy + (int) ((clampedEV - data.graphMinEV) * GRAPH_H / graphRange);
             if (prevScreenX >= 0) {
                 g2d.drawLine(prevScreenX, prevScreenY, screenX, screenY);
             }
@@ -348,7 +356,17 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
                 "distance from centre. Loading the same lens at different apertures into separate slices " +
                 "allows direct side-by-side vignetting comparison.\n\n" +
                 "Ring Count sets the number of concentric analysis rings (5\u201330). More rings give a " +
-                "smoother profile curve but each ring is narrower and may sample fewer pixels near the centre.";
+                "smoother profile curve but each ring is narrower and may sample fewer pixels near the centre.\n\n" +
+                "Vignetting is one of the most visible optical weaknesses of fast lenses shot wide open: " +
+                "the corners appear noticeably darker than the centre. This filter lets you quantify that " +
+                "falloff in stops (EV) and compare how it changes as you stop down — loading the same lens " +
+                "at f/1.8 and f/4 into two slices will show how quickly the vignette clears. " +
+                "You can also compare two lenses on the same body at the same aperture to see which controls " +
+                "light falloff better. " +
+                "For reliable results, use evenly lit, neutral-coloured subjects: a clear overcast sky, a large " +
+                "white or grey wall, or a light table. Scenes with strong subject brightness variation from " +
+                "centre to edge (e.g. a dark foreground and bright sky) will skew the ring averages and " +
+                "produce misleading EV loss readings.";
     }
 
     // ── Vignetting data snapshot ──────────────────────────────────────────────
@@ -359,15 +377,17 @@ public class VignettingProfileFilterImpl implements VignettingProfileFilter, Vie
         final double centreMean;
         final double cornerEvLoss;
         final double graphMaxEV;
+        final double graphMinEV;
         final int ringCount;
 
         VignettingData(double[] evLoss, double[] ringMeans, double centreMean,
-                       double cornerEvLoss, double graphMaxEV, int ringCount) {
+                       double cornerEvLoss, double graphMaxEV, double graphMinEV, int ringCount) {
             this.evLoss = evLoss;
             this.ringMeans = ringMeans;
             this.centreMean = centreMean;
             this.cornerEvLoss = cornerEvLoss;
             this.graphMaxEV = graphMaxEV;
+            this.graphMinEV = graphMinEV;
             this.ringCount = ringCount;
         }
     }

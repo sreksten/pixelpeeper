@@ -295,7 +295,15 @@ public class NoiseEstimatorFilterImpl implements NoiseEstimatorFilter, ViewportO
                 "Patch Size controls the side length of each analysis patch (8\u201364 px). Larger patches give a more " +
                 "stable noise estimate but fewer data points. " +
                 "Flat Variance Threshold sets the maximum luminance variance for a patch to be considered uniform. " +
-                "Raise this value for very noisy images (high ISO) where flat regions still show significant variance.";
+                "Raise this value for very noisy images (high ISO) where flat regions still show significant variance.\n\n" +
+                "This filter is the primary tool for comparing ISO performance between cameras or sensor generations: " +
+                "load the same scene shot at ISO 3200 on two bodies and compare the luma σ readout to see " +
+                "which sensor is cleaner. It also reveals how a camera's in-body noise reduction trades " +
+                "luminance smoothness for chroma smearing. " +
+                "Best test images are shots taken at elevated ISO settings (ISO 800 and above) that contain " +
+                "large featureless areas — a clear sky, a painted wall, an out-of-focus background, or a " +
+                "neutral grey card. Images that are entirely textured (grass, foliage, fabric) will have very " +
+                "few flat patches detected and may produce unreliable estimates.";
     }
 
     // ── Noise data snapshot ───────────────────────────────────────────────────

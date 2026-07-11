@@ -38,6 +38,9 @@ public class Preferences {
     public static final NoiseEstimatorFilterPreferences NOISE_ESTIMATOR_FILTER;
     public static final VignettingProfileFilterPreferences VIGNETTING_PROFILE_FILTER;
     public static final DepthOfFieldFilterPreferences DEPTH_OF_FIELD_FILTER;
+    public static final ChromaticAberrationFilterPreferences CHROMATIC_ABERRATION_FILTER;
+    public static final DistortionMeasurementFilterPreferences DISTORTION_MEASUREMENT_FILTER;
+    public static final BokehQualityFilterPreferences BOKEH_QUALITY_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
@@ -117,6 +120,15 @@ public class Preferences {
 
         DEPTH_OF_FIELD_FILTER = new DepthOfFieldFilterPreferencesImpl();
         preferencesCollector.add(DEPTH_OF_FIELD_FILTER, "depth_of_field_filter.preferences");
+
+        CHROMATIC_ABERRATION_FILTER = new ChromaticAberrationFilterPreferencesImpl();
+        preferencesCollector.add(CHROMATIC_ABERRATION_FILTER, "chromatic_aberration_filter.preferences");
+
+        DISTORTION_MEASUREMENT_FILTER = new DistortionMeasurementFilterPreferencesImpl();
+        preferencesCollector.add(DISTORTION_MEASUREMENT_FILTER, "distortion_measurement_filter.preferences");
+
+        BOKEH_QUALITY_FILTER = new BokehQualityFilterPreferencesImpl();
+        preferencesCollector.add(BOKEH_QUALITY_FILTER, "bokeh_quality_filter.preferences");
 
         // Misc preferences
 

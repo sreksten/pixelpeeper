@@ -137,7 +137,13 @@ public class SobelEdgesDetectorFilterImpl implements SobelEdgesDetectorFilter {
                 "The gradient magnitude G = √(Gx² + Gy²) is computed per pixel and normalised to a greyscale output.\n\n" +
                 "High values (bright pixels) indicate strong edges; dark pixels indicate uniform regions. " +
                 "This filter has no tuneable parameters — the transparency slider controls how strongly the edge map " +
-                "is blended over the original image.";
+                "is blended over the original image.\n\n" +
+                "Use Sobel as a quick, parameter-free way to compare overall edge contrast between two lenses or " +
+                "two cameras: a sharper optical system will produce brighter, better-defined edges. It is also " +
+                "useful as a sanity check before using the more configurable Canny detector. " +
+                "Best results come from images rich in medium-to-high-contrast edges — architecture, signage, " +
+                "fences, or any subject with a clear silhouette against a contrasting background. " +
+                "Very low-contrast or strongly backlit images may produce a mostly flat (dark) output.";
     }
 
     @Override

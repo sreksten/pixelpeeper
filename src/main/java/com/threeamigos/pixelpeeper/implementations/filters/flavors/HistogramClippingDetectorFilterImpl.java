@@ -270,7 +270,16 @@ public class HistogramClippingDetectorFilterImpl implements HistogramClippingDet
                 "Clipping percentages — the fraction of pixels at or below the shadow threshold and at or " +
                 "above the highlight threshold — are printed below the bars.\n\n" +
                 "Shadow threshold sets the luminance value below which a pixel is considered clipped in the shadows (default 2, range 0–15). " +
-                "Highlight threshold sets the luminance value above which a pixel is considered clipped in the highlights (default 253, range 240–255).";
+                "Highlight threshold sets the luminance value above which a pixel is considered clipped in the highlights (default 253, range 240–255).\n\n" +
+                "This filter answers the question \"did my camera keep all the tones in this scene, or did it " +
+                "blow out the sky and crush the shadows?\". It is especially valuable for comparing the dynamic " +
+                "range of two different cameras: load the same high-contrast scene from each body and observe " +
+                "which one retains more detail in the bright and dark zones. " +
+                "It also helps evaluate metering accuracy and exposure consistency when testing multiple bodies " +
+                "against the same light source. " +
+                "Best test images are challenging lighting situations: sunsets, backlit subjects, interiors with " +
+                "bright windows, scenes mixing deep shadow and direct sunlight, or any image where you suspect " +
+                "the camera struggled to balance exposure.";
     }
 
     // ── Histogram data snapshot ───────────────────────────────────────────────

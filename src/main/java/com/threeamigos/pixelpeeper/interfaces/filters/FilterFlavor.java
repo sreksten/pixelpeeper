@@ -60,7 +60,19 @@ public enum FilterFlavor {
     /**
      * Computes full-frame-equivalent exposure settings and a comparable light-gathering index from EXIF metadata
      */
-    EQUIVALENT_EXPOSURE("Equivalent Exposure");
+    EQUIVALENT_EXPOSURE("Equivalent Exposure"),
+    /**
+     * Detects lateral chromatic aberration by measuring R/G and B/G channel misalignment at high-contrast edges
+     */
+    CHROMATIC_ABERRATION("Chromatic Aberration"),
+    /**
+     * Measures barrel and pincushion distortion from the curvature of detected straight edges
+     */
+    DISTORTION_MEASUREMENT("Distortion Measurement"),
+    /**
+     * Analyses background blur quality: OOF smoothness, bokeh highlight shape (cat's-eye, onion rings), and an overall score
+     */
+    BOKEH_QUALITY("Bokeh Quality");
 
     private final String description;
 
@@ -88,6 +100,9 @@ public enum FilterFlavor {
         list.add(VIGNETTING_PROFILE);
         list.add(DEPTH_OF_FIELD);
         list.add(EQUIVALENT_EXPOSURE);
+        list.add(CHROMATIC_ABERRATION);
+        list.add(DISTORTION_MEASUREMENT);
+        list.add(BOKEH_QUALITY);
         return list;
     }
 }

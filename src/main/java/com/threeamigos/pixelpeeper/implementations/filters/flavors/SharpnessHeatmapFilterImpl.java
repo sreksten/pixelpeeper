@@ -249,6 +249,14 @@ public class SharpnessHeatmapFilterImpl implements SharpnessHeatmapFilter {
                 "Cells are colour-coded blue (soft) → green → red (sharp). The centre cell is highlighted with a white border " +
                 "for easy centre-vs-corner comparison. Each cell also shows its raw variance score.\n\n" +
                 "Grid size sets the number of rows and columns (3×3 to 9×9). " +
-                "Smaller grids give broader regional averages; larger grids reveal finer sharpness variation across the frame.";
+                "Smaller grids give broader regional averages; larger grids reveal finer sharpness variation across the frame.\n\n" +
+                "This filter is the go-to tool for centre-vs-corner sharpness analysis — one of the most common " +
+                "criteria when evaluating or purchasing a lens. A high-quality prime or a stopped-down zoom will " +
+                "show warm colours across most cells; a cheap wide-angle or a lens shot wide open will often show " +
+                "red in the centre and blue in the corners. Loading the same scene at different apertures in " +
+                "separate slices makes the sharpness gain from stopping down immediately visible. " +
+                "Best test images are flat, uniformly detailed surfaces photographed square-on: " +
+                "a textured wall, a test chart, a printed newspaper spread, or a brick façade. " +
+                "The subject should fill the entire frame with similar detail density from edge to edge.";
     }
 }

@@ -314,7 +314,17 @@ public class DepthOfFieldFilterImpl implements DepthOfFieldFilter, ViewportOverl
                 "CoC Denominator adjusts the CoC formula (CoC = sensor diagonal / denominator). " +
                 "The default of 1500 targets a standard 8\u00d710 inch print at 25 cm viewing distance. " +
                 "Increase to 2000 for more critical sharpness standards (e.g. large prints); " +
-                "decrease to 1000 for casual display sizes.";
+                "decrease to 1000 for casual display sizes.\n\n" +
+                "This filter requires no image content — it works entirely from what the camera wrote into " +
+                "the file. It is most useful when planning or reviewing a shoot: load two portraits taken " +
+                "at different apertures to confirm which one achieved the shallower depth of field, or " +
+                "check whether a landscape shot had enough depth of field to keep both foreground and " +
+                "background sharp. The diffraction warning is particularly handy when comparing macro or " +
+                "landscape shots taken at very small apertures (f/16 and beyond) where diffraction softening " +
+                "may have undone the benefit of stopping down. " +
+                "Any photo with complete EXIF data works; subject distance must have been recorded " +
+                "by the camera or lens (some older manual lenses omit it, in which case the metrics " +
+                "will show as N/A).";
     }
 
     // ── Data snapshot ─────────────────────────────────────────────────────────

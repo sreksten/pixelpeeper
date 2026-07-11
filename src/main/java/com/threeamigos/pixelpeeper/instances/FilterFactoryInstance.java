@@ -19,6 +19,9 @@ public class FilterFactoryInstance {
                     Preferences.NOISE_ESTIMATOR_FILTER,
                     Preferences.VIGNETTING_PROFILE_FILTER,
                     Preferences.DEPTH_OF_FIELD_FILTER,
+                    Preferences.CHROMATIC_ABERRATION_FILTER,
+                    Preferences.DISTORTION_MEASUREMENT_FILTER,
+                    Preferences.BOKEH_QUALITY_FILTER,
                     new SwingMessageHandler());
 
     public static FilterFactory get() {

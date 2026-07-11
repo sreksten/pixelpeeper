@@ -22,6 +22,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences;
     private final VignettingProfileFilterPreferences vignettingProfileFilterPreferences;
     private final DepthOfFieldFilterPreferences depthOfFieldFilterPreferences;
+    private final ChromaticAberrationFilterPreferences chromaticAberrationFilterPreferences;
+    private final DistortionMeasurementFilterPreferences distortionMeasurementFilterPreferences;
+    private final BokehQualityFilterPreferences bokehQualityFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
     private final ThrowableHandler exceptionHandler;
@@ -37,6 +40,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences,
                                                 VignettingProfileFilterPreferences vignettingProfileFilterPreferences,
                                                 DepthOfFieldFilterPreferences depthOfFieldFilterPreferences,
+                                                ChromaticAberrationFilterPreferences chromaticAberrationFilterPreferences,
+                                                DistortionMeasurementFilterPreferences distortionMeasurementFilterPreferences,
+                                                BokehQualityFilterPreferences bokehQualityFilterPreferences,
                                                 DataModel dataModel,
                                                 ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
@@ -50,6 +56,9 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
         this.noiseEstimatorFilterPreferences = noiseEstimatorFilterPreferences;
         this.vignettingProfileFilterPreferences = vignettingProfileFilterPreferences;
         this.depthOfFieldFilterPreferences = depthOfFieldFilterPreferences;
+        this.chromaticAberrationFilterPreferences = chromaticAberrationFilterPreferences;
+        this.distortionMeasurementFilterPreferences = distortionMeasurementFilterPreferences;
+        this.bokehQualityFilterPreferences = bokehQualityFilterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
         this.exceptionHandler = exceptionHandler;
@@ -102,6 +111,15 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
             case EQUIVALENT_EXPOSURE:
                 return new EquivalentExposureFilterPreferencesSelectorImpl(filterPreferences,
                         dataModel, exifImageReader, exceptionHandler);
+            case CHROMATIC_ABERRATION:
+                return new ChromaticAberrationFilterPreferencesSelectorImpl(filterPreferences,
+                        chromaticAberrationFilterPreferences, dataModel, exifImageReader, exceptionHandler);
+            case DISTORTION_MEASUREMENT:
+                return new DistortionMeasurementFilterPreferencesSelectorImpl(filterPreferences,
+                        distortionMeasurementFilterPreferences, dataModel, exifImageReader, exceptionHandler);
+            case BOKEH_QUALITY:
+                return new BokehQualityFilterPreferencesSelectorImpl(filterPreferences,
+                        bokehQualityFilterPreferences, dataModel, exifImageReader, exceptionHandler);
             default:
                 throw new IllegalArgumentException();
         }

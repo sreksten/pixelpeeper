@@ -313,7 +313,14 @@ public class CannyEdgesDetectorFilterImpl implements CannyEdgesDetectorFilter {
                 "Non-maximum suppression thins the edges to single pixels, and hysteresis thresholding " +
                 "(Low threshold / High threshold) keeps only the strongest, well-connected edges.\n\n" +
                 "Lower thresholds detect more edges including faint ones; higher thresholds keep only strong edges. " +
-                "Enable Contrast normalisation to stretch the tonal range before processing.";
+                "Enable Contrast normalisation to stretch the tonal range before processing.\n\n" +
+                "In practice this filter is most useful for evaluating and comparing lens resolving power: " +
+                "a sharper lens or a better-focused shot will produce thinner, crisper edges in the output. " +
+                "Load the same scene shot with two different lenses (or two cameras) into side-by-side slices " +
+                "and compare how cleanly the edges are rendered — finer, more complete lines mean better resolution. " +
+                "Best test images are flat subjects shot square-on with abundant fine detail: brick walls, " +
+                "printed newspapers, textile swatches, or architectural façades. Avoid scenes dominated by " +
+                "smooth gradients (sky, out-of-focus backgrounds) as these offer little to detect.";
     }
 
     // private utility methods

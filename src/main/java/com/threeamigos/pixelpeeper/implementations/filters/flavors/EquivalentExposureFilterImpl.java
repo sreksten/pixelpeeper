@@ -327,7 +327,16 @@ public class EquivalentExposureFilterImpl implements EquivalentExposureFilter, V
                 "same total light: aperture \u00d7 crop, ISO \u00d7 crop\u00b2, same shutter speed.\n" +
                 "\u2022 Light index \u2014 log\u2082(t\u00a0/\u00a0(N\u00a0\u00d7\u00a0crop)\u00b2) in EV stops.  " +
                 "Two images with equal light index values captured the same total light regardless of " +
-                "sensor size, allowing fair ISO-noise comparisons between different systems.";
+                "sensor size, allowing fair ISO-noise comparisons between different systems.\n\n" +
+                "This filter is essential when comparing cameras with different sensor sizes and you want " +
+                "to know whether the comparison is fair. For example, a Micro Four Thirds camera at f/2 " +
+                "ISO\u202f800 and a full-frame camera at f/4 ISO\u202f3200 are actually equivalent exposures " +
+                "gathering the same total light — this filter makes that equivalence explicit. " +
+                "Load side-by-side images from a crop and a full-frame body shot at the same scene " +
+                "and use the light index readout to confirm whether the test conditions were truly " +
+                "matched. Any image with EXIF focal length, f-number, shutter speed, and ISO works; " +
+                "the 35\u202fmm equivalent focal length tag must be present for the crop factor to be " +
+                "derived automatically.";
     }
 
     // ── Data snapshot ─────────────────────────────────────────────────────────
