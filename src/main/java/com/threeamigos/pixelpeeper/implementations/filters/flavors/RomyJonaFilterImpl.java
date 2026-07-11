@@ -83,4 +83,10 @@ public class RomyJonaFilterImpl implements RomyJonaFilter {
         return aNastro;
     }
 
+    @Override
+    public String getDescription() {
+        return "A developer test filter. It renders a cheerful message using the Puppamento and A nastro parameters. " +
+                "Not intended for actual image analysis.";
+    }
+
 }

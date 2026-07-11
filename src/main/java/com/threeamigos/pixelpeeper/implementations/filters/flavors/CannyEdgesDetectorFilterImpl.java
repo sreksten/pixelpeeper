@@ -305,6 +305,17 @@ public class CannyEdgesDetectorFilterImpl implements CannyEdgesDetectorFilter {
         isAborted = true;
     }
 
+    @Override
+    public String getDescription() {
+        return "Canny edge detection is a multi-stage algorithm that finds edges in an image.\n\n" +
+                "It first applies a Gaussian blur (controlled by Kernel radius and Kernel width) to reduce noise, " +
+                "then computes image gradients to find areas of rapid intensity change. " +
+                "Non-maximum suppression thins the edges to single pixels, and hysteresis thresholding " +
+                "(Low threshold / High threshold) keeps only the strongest, well-connected edges.\n\n" +
+                "Lower thresholds detect more edges including faint ones; higher thresholds keep only strong edges. " +
+                "Enable Contrast normalisation to stretch the tonal range before processing.";
+    }
+
     // private utility methods
 
     private void initArrays() {

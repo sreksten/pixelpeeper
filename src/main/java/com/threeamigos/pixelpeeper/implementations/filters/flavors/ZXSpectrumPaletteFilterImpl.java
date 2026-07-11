@@ -270,4 +270,14 @@ public class ZXSpectrumPaletteFilterImpl extends ColorClashPaletteFilterImpl imp
         }
         return closestColor;
     }
+
+    @Override
+    public String getDescription() {
+        return "Renders the image using only the 8 colours of the Sinclair ZX Spectrum palette " +
+                "(black, blue, red, magenta, green, cyan, yellow, white), extended with intermediate dithered mixes.\n\n" +
+                "The image is divided into 8×8 pixel blocks. Each block's average luminosity determines whether to use " +
+                "the normal- or high-luminosity palette variant. When Colour clash is enabled, blocks are restricted to " +
+                "the two most dominant colours — faithfully reproducing the ZX Spectrum's hardware attribute limit. " +
+                "Enable Skin tone mapping to improve the rendering of portraits.";
+    }
 }

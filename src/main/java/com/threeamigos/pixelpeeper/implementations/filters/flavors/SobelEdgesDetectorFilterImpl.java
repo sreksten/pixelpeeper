@@ -131,6 +131,16 @@ public class SobelEdgesDetectorFilterImpl implements SobelEdgesDetectorFilter {
     }
 
     @Override
+    public String getDescription() {
+        return "The Sobel edge detector highlights areas of rapid brightness change using two 3×3 convolution kernels — " +
+                "one measuring horizontal gradients (Gx) and one vertical (Gy). " +
+                "The gradient magnitude G = √(Gx² + Gy²) is computed per pixel and normalised to a greyscale output.\n\n" +
+                "High values (bright pixels) indicate strong edges; dark pixels indicate uniform regions. " +
+                "This filter has no tuneable parameters — the transparency slider controls how strongly the edge map " +
+                "is blended over the original image.";
+    }
+
+    @Override
     public BufferedImage getResultingImage() {
         return filteredImage;
     }

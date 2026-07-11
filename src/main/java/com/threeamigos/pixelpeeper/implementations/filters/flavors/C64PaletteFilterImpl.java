@@ -278,4 +278,15 @@ public class C64PaletteFilterImpl extends ColorClashPaletteFilterImpl implements
         }
         return closestColor;
     }
+
+    @Override
+    public String getDescription() {
+        return "Renders the image using only the 16 colours of the Commodore 64 palette, " +
+                "extended with dithered mixes between adjacent palette entries to increase perceived colour depth.\n\n" +
+                "Each pixel is mapped to the closest palette colour in HSL space. " +
+                "The Saturation threshold controls when a pixel is treated as neutral grey. " +
+                "Lightness min/max thresholds force near-black and near-white pixels to the absolute palette extremes. " +
+                "When Colour clash is enabled, each 8×8 block is limited to its four most-used colours. " +
+                "Enable Skin tone mapping to improve the rendering of portraits.";
+    }
 }

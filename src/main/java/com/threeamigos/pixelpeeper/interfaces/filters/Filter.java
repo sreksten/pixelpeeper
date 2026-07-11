@@ -32,4 +32,10 @@ public interface Filter {
      */
     BufferedImage getResultingImage();
 
+    /**
+     * Returns a human-readable description of what this filter does and how its parameters
+     * affect the output. Displayed at the top of the filter preferences dialog.
+     */
+    String getDescription();
+
 }

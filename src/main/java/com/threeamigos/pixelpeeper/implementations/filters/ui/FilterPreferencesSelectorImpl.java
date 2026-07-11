@@ -125,6 +125,26 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
 
     private JPanel createPreferencesPanel(Component component) {
 
+        JPanel outerPanel = new JPanel();
+        outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.PAGE_AXIS));
+
+        // Description banner at the top, sourced from the filter itself
+        String description = getFilterPreferencesSelectorDataModel().getFilterImplementation().getDescription();
+        JTextArea descriptionArea = new JTextArea(description);
+        descriptionArea.setEditable(false);
+        descriptionArea.setOpaque(false);
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setFocusable(false);
+        descriptionArea.setFont(UIManager.getFont("Label.font"));
+        descriptionArea.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("How it works"),
+                BorderFactory.createEmptyBorder(2, 6, 4, 6)));
+        descriptionArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        outerPanel.add(descriptionArea);
+
+        outerPanel.add(Box.createVerticalStrut(SPACING));
+
         JPanel sliderAndPreviewPanel = new JPanel();
         sliderAndPreviewPanel.setLayout(new BoxLayout(sliderAndPreviewPanel, BoxLayout.LINE_AXIS));
 
@@ -134,7 +154,9 @@ abstract class FilterPreferencesSelectorImpl implements FilterPreferencesSelecto
 
         sliderAndPreviewPanel.add(createPreviewPanel());
 
-        return sliderAndPreviewPanel;
+        outerPanel.add(sliderAndPreviewPanel);
+
+        return outerPanel;
     }
 
     private JPanel createSlidersPanel(Component component) {

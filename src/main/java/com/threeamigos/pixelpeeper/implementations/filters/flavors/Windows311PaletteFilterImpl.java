@@ -212,4 +212,14 @@ public class Windows311PaletteFilterImpl extends PaletteFilterImpl implements Wi
         }
         return closestColor;
     }
+
+    @Override
+    public String getDescription() {
+        return "Renders the image using only the 16 colours of the Windows 3.11 system palette, " +
+                "extended with dithered mixes between adjacent palette entries.\n\n" +
+                "Each pixel is mapped to the closest palette colour in HSL space. " +
+                "The Saturation threshold controls when a pixel is treated as neutral grey. " +
+                "Lightness min/max thresholds force near-black and near-white pixels to the palette extremes. " +
+                "Enable Skin tone mapping to improve the rendering of portraits.";
+    }
 }

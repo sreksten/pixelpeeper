@@ -240,4 +240,15 @@ public class SharpnessHeatmapFilterImpl implements SharpnessHeatmapFilter {
     public BufferedImage getResultingImage() {
         return filteredImage;
     }
+
+    @Override
+    public String getDescription() {
+        return "Divides the image into an N×N grid and computes a sharpness score for each cell using " +
+                "Laplacian variance — the variance of the per-pixel Laplacian response (centre pixel minus its four neighbours). " +
+                "Higher variance means more high-frequency detail, i.e. a sharper render by the lens.\n\n" +
+                "Cells are colour-coded blue (soft) → green → red (sharp). The centre cell is highlighted with a white border " +
+                "for easy centre-vs-corner comparison. Each cell also shows its raw variance score.\n\n" +
+                "Grid size sets the number of rows and columns (3×3 to 9×9). " +
+                "Smaller grids give broader regional averages; larger grids reveal finer sharpness variation across the frame.";
+    }
 }
