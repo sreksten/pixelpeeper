@@ -10,7 +10,7 @@ abstract class PaletteFilterImpl {
 
     protected BufferedImage sourceImage;
     protected BufferedImage filteredImage;
-    protected boolean isAborted;
+    protected volatile boolean isAborted;
 
     protected final PaletteFilterPreferences paletteFilterPreferences;
     protected final ThrowableHandler exceptionHandler;
@@ -51,11 +51,11 @@ abstract class PaletteFilterImpl {
                 0xD2B897, 0xD5B699, 0xD9B59B, 0xDBC39F,
                 0xC4A682, 0xCBA487, 0xCFA28B, 0xD1A08F, 0xD4A093,
                 0xB4976F, 0xB89470, 0xBD9174, 0xC38F7A, 0xC68D82,
-                0xA5855E, 0xA7835F, 0xAC8063, 0xBAF8066, 0xB27E69, 0xB67C70,
+                0xA5855E, 0xA7835F, 0xAC8063, 0xAF8066, 0xB27E69, 0xB67C70,
                 0xA7835F, 0x95734E, 0x9A7153, 0x9D6F55, 0xA16E5B, 0xA36A5F,
-                0x80643D, 0x836241, 0x876043, 0x8B5F46, 0x8D54B, 0x905C4F,
+                0x80643D, 0x836241, 0x876043, 0x8B5F46, 0x8D5E4B, 0x905C4F,
                 0x6D5533, 0x715235, 0x745063, 0x754F38, 0x784D3D, 0x7B4B41,
-                0x594427, 0x5D412B, 0x61402D, 0x594427,
+                0x594427, 0x5D412B, 0x61402D, 0x653F2F,
                 0x453420, 0x463420, 0x4E2F2A
         );
         for (int color : skinTones) {

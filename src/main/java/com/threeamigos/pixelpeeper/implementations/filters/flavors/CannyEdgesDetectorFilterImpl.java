@@ -75,7 +75,7 @@ public class CannyEdgesDetectorFilterImpl implements CannyEdgesDetectorFilter {
     private float[] xGradient;
     private float[] yGradient;
 
-    private boolean isAborted;
+    private volatile boolean isAborted;
 
     // constructors
 

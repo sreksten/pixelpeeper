@@ -8,7 +8,7 @@ public class SobelEdgesDetectorFilterImpl implements SobelEdgesDetectorFilter {
 
     private BufferedImage sourceImage;
     private BufferedImage filteredImage;
-    private boolean isAborted;
+    private volatile boolean isAborted;
 
     @Override
     public void setSourceImage(BufferedImage sourceImage) {
@@ -20,67 +20,108 @@ public class SobelEdgesDetectorFilterImpl implements SobelEdgesDetectorFilter {
 
         isAborted = false;
 
-        int x = sourceImage.getWidth();
-        int y = sourceImage.getHeight();
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
 
-        filteredImage = new BufferedImage(x, y, BufferedImage.TYPE_INT_ARGB);
+        filteredImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-        int[][] edgeColors = new int[x][y];
-        int maxGradient = -1;
+        int[][] edgeColors = new int[width][height];
 
-        for (int i = 1; i < x - 1 && !isAborted; i++) {
-            for (int j = 1; j < y - 1; j++) {
+        int processors = Runtime.getRuntime().availableProcessors();
+        int usableCols = width - 2; // columns 1..width-2
+        int colsPerProcessor = (usableCols + processors - 1) / processors;
+        int[] localMaxima = new int[processors];
 
-                int val00 = getGrayScale(sourceImage.getRGB(i - 1, j - 1));
-                int val01 = getGrayScale(sourceImage.getRGB(i - 1, j));
-                int val02 = getGrayScale(sourceImage.getRGB(i - 1, j + 1));
+        // Pass 1: compute gradients in parallel, each thread tracks its local maximum
+        Thread[] threads = new Thread[processors];
+        for (int t = 0; t < processors; t++) {
+            final int threadIndex = t;
+            final int startCol = 1 + threadIndex * colsPerProcessor;
+            final int endCol = Math.min(startCol + colsPerProcessor, width - 1);
+            threads[t] = new Thread(() -> {
+                int localMax = -1;
+                for (int i = startCol; i < endCol && !isAborted; i++) {
+                    for (int j = 1; j < height - 1; j++) {
 
-                int val10 = getGrayScale(sourceImage.getRGB(i, j - 1));
-                int val12 = getGrayScale(sourceImage.getRGB(i, j + 1));
+                        int val00 = getGrayScale(sourceImage.getRGB(i - 1, j - 1));
+                        int val01 = getGrayScale(sourceImage.getRGB(i - 1, j));
+                        int val02 = getGrayScale(sourceImage.getRGB(i - 1, j + 1));
 
-                int val20 = getGrayScale(sourceImage.getRGB(i + 1, j - 1));
-                int val21 = getGrayScale(sourceImage.getRGB(i + 1, j));
-                int val22 = getGrayScale(sourceImage.getRGB(i + 1, j + 1));
+                        int val10 = getGrayScale(sourceImage.getRGB(i, j - 1));
+                        int val12 = getGrayScale(sourceImage.getRGB(i, j + 1));
 
-                // gx =
-                // ((-1 * val00) + (0 * val01) + (1 * val02)) +
-                // ((-2 * val10) + (0) + (2 * val12)) +
-                // ((-1 * val20) + (0 * val21) + (1 * val22))
+                        int val20 = getGrayScale(sourceImage.getRGB(i + 1, j - 1));
+                        int val21 = getGrayScale(sourceImage.getRGB(i + 1, j));
+                        int val22 = getGrayScale(sourceImage.getRGB(i + 1, j + 1));
 
-                int gx = -val00 + val02 - val10 - val10 + val12 + val12 - val20 + val22;
+                        int gx = -val00 + val02 - val10 - val10 + val12 + val12 - val20 + val22;
+                        int gy = -val00 - val01 - val01 - val02 + val20 + val21 + val21 + val22;
 
-                // gy =
-                // ((-1 * val00) + (-2 * val01) + (-1 * val02)) +
-                // ((0 * val10) + (0) + (0 * val12)) +
-                // ((1 * val20) + (2 * val21) + (1 * val22))
+                        int square = (gx * gx) + (gy * gy);
+                        int g = (int) Math.sqrt(square);
 
-                int gy = -val00 - val01 - val01 - val02 + val20 + val21 + val21 + val22;
-
-                int square = (gx * gx) + (gy * gy);
-                int g = (int) Math.sqrt(square);
-
-                if (maxGradient < g) {
-                    maxGradient = g;
+                        if (localMax < g) {
+                            localMax = g;
+                        }
+                        edgeColors[i][j] = g;
+                    }
                 }
-
-                edgeColors[i][j] = g;
-            }
+                localMaxima[threadIndex] = localMax;
+            });
+            threads[t].start();
         }
 
-        double scale = 255.0 / maxGradient;
-
-        for (int i = 1; i < x - 1 && !isAborted; i++) {
-            for (int j = 1; j < y - 1; j++) {
-                int edgeColor = edgeColors[i][j];
-                edgeColor = (int) (edgeColor * scale);
-                edgeColor = 0xff000000 | (edgeColor << 16) | (edgeColor << 8) | edgeColor;
-
-                filteredImage.setRGB(i, j, edgeColor);
-            }
-        }
+        joinAll(threads);
 
         if (isAborted) {
             filteredImage = null;
+            return;
+        }
+
+        // Find global maximum across all thread-local results
+        int maxGradient = -1;
+        for (int localMax : localMaxima) {
+            if (localMax > maxGradient) {
+                maxGradient = localMax;
+            }
+        }
+
+        if (maxGradient <= 0) {
+            return;
+        }
+
+        final double scale = 255.0 / maxGradient;
+
+        // Pass 2: normalize and write to output image in parallel
+        for (int t = 0; t < processors; t++) {
+            final int startCol = 1 + t * colsPerProcessor;
+            final int endCol = Math.min(startCol + colsPerProcessor, width - 1);
+            threads[t] = new Thread(() -> {
+                for (int i = startCol; i < endCol && !isAborted; i++) {
+                    for (int j = 1; j < height - 1; j++) {
+                        int edgeColor = (int) (edgeColors[i][j] * scale);
+                        edgeColor = 0xff000000 | (edgeColor << 16) | (edgeColor << 8) | edgeColor;
+                        filteredImage.setRGB(i, j, edgeColor);
+                    }
+                }
+            });
+            threads[t].start();
+        }
+
+        joinAll(threads);
+
+        if (isAborted) {
+            filteredImage = null;
+        }
+    }
+
+    private void joinAll(Thread[] threads) {
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

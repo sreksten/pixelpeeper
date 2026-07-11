@@ -104,24 +104,6 @@ public class ZXSpectrumPaletteFilterImpl extends ColorClashPaletteFilterImpl imp
         if (isAborted) {
             filteredImage = null;
         } else {
-            // Display a gradient in the upper left corner, just to test
-            for (int color = 0; color < 9; color++) {
-                DitheredHSL hsl;
-                if (color == 0) {
-                    hsl = mixedPaletteNormalLuminosity.get(7);
-                } else if (color == 8) {
-                    hsl = mixedPaletteNormalLuminosity.get(0);
-                } else {
-                    hsl = mixedPaletteNormalLuminosity.get(7 + color);
-                }
-                for (int x = 0; x < 8; x++) {
-                    for (int y = 0; y < 8; y++) {
-                        newImage.setRGB(x + color * 8, y, hsl.getHSLToMap().getRGB());
-                        newImage.setRGB(x + color * 8, y + 8, hsl.getDitheredHSLAtPixel(x, y).getRGB());
-                    }
-                }
-            }
-
             filteredImage = newImage;
         }
     }
