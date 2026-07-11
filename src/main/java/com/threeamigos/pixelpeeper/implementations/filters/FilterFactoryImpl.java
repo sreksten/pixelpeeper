@@ -18,6 +18,7 @@ public class FilterFactoryImpl implements FilterFactory {
     private final HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences;
     private final NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences;
     private final VignettingProfileFilterPreferences vignettingProfileFilterPreferences;
+    private final DepthOfFieldFilterPreferences depthOfFieldFilterPreferences;
     private final ThrowableHandler exceptionHandler;
 
     public FilterFactoryImpl(FilterPreferences filterPreferences,
@@ -30,6 +31,7 @@ public class FilterFactoryImpl implements FilterFactory {
                              HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences,
                              NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences,
                              VignettingProfileFilterPreferences vignettingProfileFilterPreferences,
+                             DepthOfFieldFilterPreferences depthOfFieldFilterPreferences,
                              ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
         this.cannyEdgesDetectorFilterPreferences = cannyEdgesDetectorFilterPreferences;
@@ -41,6 +43,7 @@ public class FilterFactoryImpl implements FilterFactory {
         this.histogramClippingDetectorFilterPreferences = histogramClippingDetectorFilterPreferences;
         this.noiseEstimatorFilterPreferences = noiseEstimatorFilterPreferences;
         this.vignettingProfileFilterPreferences = vignettingProfileFilterPreferences;
+        this.depthOfFieldFilterPreferences = depthOfFieldFilterPreferences;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -67,6 +70,10 @@ public class FilterFactoryImpl implements FilterFactory {
                 return new NoiseEstimatorFilterImpl(noiseEstimatorFilterPreferences);
             case VIGNETTING_PROFILE:
                 return new VignettingProfileFilterImpl(vignettingProfileFilterPreferences);
+            case DEPTH_OF_FIELD:
+                return new DepthOfFieldFilterImpl(depthOfFieldFilterPreferences);
+            case EQUIVALENT_EXPOSURE:
+                return new EquivalentExposureFilterImpl();
             default:
                 throw new IllegalArgumentException();
         }

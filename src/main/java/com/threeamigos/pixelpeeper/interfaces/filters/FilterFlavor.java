@@ -52,7 +52,15 @@ public enum FilterFlavor {
     /**
      * Measures the radial brightness falloff from centre to corners and expresses it as EV loss per ring
      */
-    VIGNETTING_PROFILE("Vignetting Profile");
+    VIGNETTING_PROFILE("Vignetting Profile"),
+    /**
+     * Computes near/far DoF limits, hyperfocal distance, and diffraction warning from EXIF metadata
+     */
+    DEPTH_OF_FIELD("Depth of Field"),
+    /**
+     * Computes full-frame-equivalent exposure settings and a comparable light-gathering index from EXIF metadata
+     */
+    EQUIVALENT_EXPOSURE("Equivalent Exposure");
 
     private final String description;
 
@@ -78,6 +86,8 @@ public enum FilterFlavor {
         list.add(HISTOGRAM_CLIPPING_DETECTOR);
         list.add(NOISE_ESTIMATOR);
         list.add(VIGNETTING_PROFILE);
+        list.add(DEPTH_OF_FIELD);
+        list.add(EQUIVALENT_EXPOSURE);
         return list;
     }
 }

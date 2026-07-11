@@ -21,6 +21,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
     private final HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences;
     private final NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences;
     private final VignettingProfileFilterPreferences vignettingProfileFilterPreferences;
+    private final DepthOfFieldFilterPreferences depthOfFieldFilterPreferences;
     private final DataModel dataModel;
     private final ExifImageReader exifImageReader;
     private final ThrowableHandler exceptionHandler;
@@ -35,6 +36,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                                                 HistogramClippingDetectorFilterPreferences histogramClippingDetectorFilterPreferences,
                                                 NoiseEstimatorFilterPreferences noiseEstimatorFilterPreferences,
                                                 VignettingProfileFilterPreferences vignettingProfileFilterPreferences,
+                                                DepthOfFieldFilterPreferences depthOfFieldFilterPreferences,
                                                 DataModel dataModel,
                                                 ExifImageReader exifImageReader, ThrowableHandler exceptionHandler) {
         this.filterPreferences = filterPreferences;
@@ -47,6 +49,7 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
         this.histogramClippingDetectorFilterPreferences = histogramClippingDetectorFilterPreferences;
         this.noiseEstimatorFilterPreferences = noiseEstimatorFilterPreferences;
         this.vignettingProfileFilterPreferences = vignettingProfileFilterPreferences;
+        this.depthOfFieldFilterPreferences = depthOfFieldFilterPreferences;
         this.dataModel = dataModel;
         this.exifImageReader = exifImageReader;
         this.exceptionHandler = exceptionHandler;
@@ -92,6 +95,13 @@ public class FilterPreferencesSelectorFactoryImpl implements FilterPreferencesSe
                 return new VignettingProfileFilterPreferencesSelectorImpl(filterPreferences,
                         vignettingProfileFilterPreferences, dataModel,
                         exifImageReader, exceptionHandler);
+            case DEPTH_OF_FIELD:
+                return new DepthOfFieldFilterPreferencesSelectorImpl(filterPreferences,
+                        depthOfFieldFilterPreferences, dataModel,
+                        exifImageReader, exceptionHandler);
+            case EQUIVALENT_EXPOSURE:
+                return new EquivalentExposureFilterPreferencesSelectorImpl(filterPreferences,
+                        dataModel, exifImageReader, exceptionHandler);
             default:
                 throw new IllegalArgumentException();
         }

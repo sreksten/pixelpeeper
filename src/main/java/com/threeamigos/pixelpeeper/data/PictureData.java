@@ -2,6 +2,7 @@ package com.threeamigos.pixelpeeper.data;
 
 import com.threeamigos.common.util.interfaces.PropertyChangeAware;
 import com.threeamigos.pixelpeeper.implementations.helpers.ExifOrientationHelper;
+import com.threeamigos.pixelpeeper.interfaces.filters.ExifAwareFilter;
 import com.threeamigos.pixelpeeper.interfaces.filters.Filter;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFactory;
 import com.threeamigos.pixelpeeper.interfaces.filters.FilterFlavor;
@@ -294,6 +295,9 @@ public class PictureData implements PropertyChangeAware {
                 Thread thread = new Thread(() -> {
                     filter = filterFactory.getFilter();
                     filter.setSourceImage(image);
+                    if (filter instanceof ExifAwareFilter) {
+                        ((ExifAwareFilter) filter).setExifMap(exifMap);
+                    }
                     flavor = filterPreferences.getFilterFlavor();
                     filter.process();
                     if (!filterCalculationAborted) {

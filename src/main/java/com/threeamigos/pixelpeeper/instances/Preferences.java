@@ -37,6 +37,7 @@ public class Preferences {
     public static final HistogramClippingDetectorFilterPreferences HISTOGRAM_CLIPPING_DETECTOR_FILTER;
     public static final NoiseEstimatorFilterPreferences NOISE_ESTIMATOR_FILTER;
     public static final VignettingProfileFilterPreferences VIGNETTING_PROFILE_FILTER;
+    public static final DepthOfFieldFilterPreferences DEPTH_OF_FIELD_FILTER;
     public static final NamePatternPreferences NAME_PATTERN;
     public static final DoodlingPreferences DOODLING;
     public static final HintsPreferences HINTS;
@@ -113,6 +114,9 @@ public class Preferences {
 
         VIGNETTING_PROFILE_FILTER = new VignettingProfileFilterPreferencesImpl();
         preferencesCollector.add(VIGNETTING_PROFILE_FILTER, "vignetting_profile_filter.preferences");
+
+        DEPTH_OF_FIELD_FILTER = new DepthOfFieldFilterPreferencesImpl();
+        preferencesCollector.add(DEPTH_OF_FIELD_FILTER, "depth_of_field_filter.preferences");
 
         // Misc preferences
 

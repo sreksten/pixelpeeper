@@ -18,6 +18,7 @@ public class FilterFactoryInstance {
                     Preferences.HISTOGRAM_CLIPPING_DETECTOR_FILTER,
                     Preferences.NOISE_ESTIMATOR_FILTER,
                     Preferences.VIGNETTING_PROFILE_FILTER,
+                    Preferences.DEPTH_OF_FIELD_FILTER,
                     new SwingMessageHandler());
 
     public static FilterFactory get() {
