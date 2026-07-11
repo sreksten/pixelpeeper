@@ -23,9 +23,10 @@ A desktop application for photographers to compare multiple images side-by-side 
 ## Features
 
 - Side-by-side comparison of multiple images in vertical, horizontal, or grid layout
-- Zoom from 10% to 800% (13 steps)
+- Zoom from 10 % to 800 % (13 steps)
 - Display of 28+ EXIF tags per image, with configurable per-tag visibility
-- Edge detection and retro palette filters (Canny, Sobel, ZX Spectrum, C64, Windows 3.11)
+- **Optical analysis filters** — sharpness heatmap, vignetting profile, noise estimation, histogram clipping, chromatic aberration, distortion measurement, bokeh quality, depth of field, equivalent exposure, edge detectors, and retro palette filters
+- **Viewport overlays** — per-slice histogram, vignetting line graph, and noise/CA/distortion result panels rendered directly on each image slice
 - Free-hand annotation (doodles) with colour, size, and transparency control; saved as JSON sidecar files
 - Configurable grid overlay
 - Large custom cursor for precise pixel inspection
@@ -138,17 +139,53 @@ Tags are rendered as text with an optional shadow border. Four shadow sizes are 
 
 Access via the *Filters* menu. Toggle display with `F`; adjust transparency with the filter transparency slider.
 
+- `P` — open the parameter window for the current filter
+- Filter transparency (0–100 %) blends the filtered result over the original image
+- All pixel computations run on a background thread pool and are aborted automatically when zoom or images change
+
+### Sharpness & Resolution
+
+| Filter | What it shows | Best test images |
+|--------|--------------|-----------------|
+| **Sharpness Heatmap** | Divides the image into an N×N grid (3×3 – 9×9) and colour-codes each cell by Laplacian variance: blue = soft, red = sharp. The centre cell is highlighted for easy centre-vs-corner comparison. | Flat uniformly textured surfaces shot square-on — brick walls, printed test charts, newspaper pages |
+| **Canny Edge Detector** | Multi-stage edge detector with Gaussian blur, gradient computation, non-maximum suppression, and hysteresis thresholding. Parameters: kernel radius/width, low/high threshold, contrast normalisation. | Flat detailed scenes (brick walls, architectural façades, textured fabric) |
+| **Sobel Edge Detector** | Gradient-magnitude edge detection (no parameters). Bright pixels = strong edges; useful as a quick sharpness proxy before running Canny. | Same scenes as Canny; also useful as a sanity check |
+
+### Exposure & Tonal Range
+
+| Filter | What it shows | Best test images |
+|--------|--------------|-----------------|
+| **Histogram Clipping Detector** | Per-channel (luminance, R, G, B) histogram overlay in the bottom-left corner of each viewport. The shadow zone (≤ shadow threshold) is tinted blue; the highlight zone (≥ highlight threshold) is tinted red; clipping percentages are printed below the bars. Parameters: shadow threshold (default 2), highlight threshold (default 253). | High-contrast / backlit scenes, sunsets, interiors with bright windows |
+
+### Sensor & Noise
+
+| Filter | What it shows | Best test images |
+|--------|--------------|-----------------|
+| **Noise Estimator** | Detects flat (low-variance) patches and measures luminance σ and chroma σ within them. Flat patches are rendered as a false-colour noise map (blue = low, red = high); textured patches are left transparent. Aggregate luma σ, chroma σ, and flat-patch fraction are shown in a corner overlay. Parameters: patch size (8–64 px), flat variance threshold. | High-ISO shots with large featureless areas (sky, smooth walls, out-of-focus backgrounds) |
+
+### Lens Optics
+
+| Filter | What it shows | Best test images |
+|--------|--------------|-----------------|
+| **Vignetting Profile** | Divides the image into concentric rings and plots mean luminance per ring as an EV loss curve (−log₂(ring / centre)). A false-colour radial overlay colours each pixel by its ring's EV loss (blue = mild, red = severe). A compact line graph with Y-axis labels appears in the bottom-left corner of each viewport. Parameters: ring count (5–30). | Evenly lit neutral surfaces — plain sky, white/grey wall, light table. Avoid scenes with inherent centre-to-edge brightness variation. |
+| **Chromatic Aberration** | Measures lateral (transverse) CA by computing \|R−G\| and \|B−G\| channel differences at Sobel-detected high-contrast edges. An overlay colours edge pixels blue (low fringing) → red (high fringing). Whole-frame and corner-only mean fringe values are reported separately. Parameters: edge threshold, sensitivity. | High-contrast silhouettes — dark branches against bright sky, white architectural details on dark background |
+| **Distortion Measurement** | Detects dominant straight edges with a Hough accumulator and measures sagitta (midpoint deviation) per line segment. Reports TV-standard distortion % (negative = barrel, positive = pincushion) and estimated radial coefficient k₁. The overlay shows a deformed grid visualising the distortion field. Parameters: edge threshold, grid size (3–11). | Images with many real straight lines extending to the frame edges — architecture, corridors, bookshelves, tiled floors |
+| **Bokeh Quality** | Classifies patches as in-focus (green) or out-of-focus (blue → red by gradient), identifies specular highlights, and analyses circularity, cat's-eye effect, and onion-ring artefacts. Produces a composite score 0–10. Parameters: sharpness threshold, patch size (8–48 px). | Portraits or still-life shots wide open with point-light-source backgrounds — fairy lights, candles, water reflections |
+
+### EXIF-Derived Metrics *(no pixel processing)*
+
+| Filter | What it shows | Notes |
+|--------|--------------|-------|
+| **Depth of Field** | Computes near/far DoF limits, total DoF, hyperfocal distance, CoC, and a diffraction warning from EXIF focal length, f-number, and subject distance. Crop factor is derived from the 35 mm equivalent tag. | Requires focal length, f-number, and subject distance in EXIF. Works on any image; diffraction warning is most relevant for macro/landscape shots at f/11+. |
+| **Equivalent Exposure** | Converts EXIF settings to full-frame-equivalent aperture, ISO, and light index (EV), enabling a fair side-by-side comparison between cameras with different sensor sizes. | Requires focal length and 35 mm equivalent focal length EXIF tags for automatic crop-factor derivation. |
+
+### Retro Palette Filters
+
 | Filter | Description |
 |--------|-------------|
-| **Canny Edge Detector** | Classic gradient-based edge detection. Parameters: low/high threshold, Gaussian kernel radius & width, contrast normalisation |
-| **Sobel Edge Detector** | Gradient magnitude edge detection |
 | **ZX Spectrum Palette** | Maps image colours to the Sinclair ZX Spectrum 8-colour palette |
 | **Commodore 64 Palette** | Maps image colours to the C64 16-colour palette |
 | **Windows 3.11 Palette** | Maps image colours to the Win 3.11 system palette |
-
-- `P` — open the parameter window for the current filter
-- Filter transparency (0–100 %) blends the filtered result over the original image
-- Calculations run in a background thread and are aborted automatically when zoom or images change
 
 ---
 
