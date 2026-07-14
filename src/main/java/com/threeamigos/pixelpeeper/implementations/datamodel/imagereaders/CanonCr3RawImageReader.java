@@ -9,10 +9,27 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Canon CR3 reader for the lossless CRX raw branch.
+ *
+ * <p>This reader decodes the CRX sensor mosaic, subtracts black level,
+ * normalizes white level, bilinear-demosaics the Bayer data, estimates a
+ * conservative scene white balance for display, applies a model-specific
+ * camera-to-sRGB matrix, neutralizes near-neutral clipped highlights, applies
+ * bounded post-matrix display balance, applies a simple percentile display
+ * exposure scale, applies sRGB gamma, and returns an 8-bit
+ * {@link BufferedImage}.</p>
+ *
+ * <p>It does not use the embedded JPEG preview and it does not perform full
+ * RAW-development or optical corrections: no chromatic-aberration correction,
+ * lens/distortion/perspective correction, vignetting correction, sharpening,
+ * denoise, or camera JPEG tone curve. This class is a CR3/CRX reader; older
+ * Canon CRW/CR2 files need their own container/RAW decoder before they can use
+ * these color matrices.</p>
  */
 public class CanonCr3RawImageReader implements ImageReader {
 
@@ -41,12 +58,282 @@ public class CanonCr3RawImageReader implements ImageReader {
     private static final int[][] HORIZONTAL_OFFSETS = {{0, -1}, {0, 1}};
     private static final int[][] VERTICAL_OFFSETS = {{-1, 0}, {1, 0}};
 
+    private static final byte[] CANON_UUID = {
+            (byte) 0x85, (byte) 0xc0, (byte) 0xb6, (byte) 0x87,
+            (byte) 0x82, 0x0f, 0x11, (byte) 0xe0,
+            (byte) 0x81, 0x11, (byte) 0xf4, (byte) 0xce,
+            0x46, 0x2b, 0x6a, 0x48
+    };
+
+    private static final double[][] SRGB_TO_XYZ = {
+            {0.4124564, 0.3575761, 0.1804375},
+            {0.2126729, 0.7151522, 0.0721750},
+            {0.0193339, 0.1191920, 0.9503041}
+    };
+
+    private static final CameraMatrix DEFAULT_COLOR_MATRIX = matrix("EOS RP",
+            8608, -2097, -1178, -5425, 13265, 2383, -1149, 2238, 5680);
+
+    private static final CameraMatrix[] CANON_COLOR_MATRICES = {
+            matrix("EOS RP", 8608, -2097, -1178, -5425, 13265, 2383, -1149, 2238, 5680),
+            matrix("EOS R50", 9269, -2012, -1107, -3990, 11762, 2527, -569, 2093, 4913),
+            matrix("EOS 300D", 8250, -2044, -1127, -8092, 15606, 2664, -2893, 3453, 8348)
+    };
+
     @Override
     public BufferedImage readImage(File file) throws Exception {
         byte[] data = Files.readAllBytes(file.toPath());
         Cr3Track track = new Cr3ContainerParser(data).parse();
+        CanonColorMetadata colorMetadata = new CanonMetadataReader(data).read();
         int[] raw = new CrxDecoder(data, track).decode();
-        return new RawRenderer(raw, track.header).render();
+        colorMetadata.finish(raw, track.header);
+        return new RawRenderer(raw, track.header, colorMetadata).render();
+    }
+
+    private static final class CanonMetadataReader {
+
+        private final byte[] data;
+        private final CanonColorMetadata metadata = new CanonColorMetadata();
+
+        private CanonMetadataReader(byte[] data) {
+            this.data = data;
+        }
+
+        private CanonColorMetadata read() throws IOException {
+            parseAtoms(0, data.length, false);
+            if (metadata.model == null || metadata.model.isEmpty()) {
+                metadata.model = findKnownModelInFile(data);
+            }
+            return metadata;
+        }
+
+        private void parseAtoms(long start, long size, boolean canonUuid) throws IOException {
+            long end = checkedEnd(start, size);
+            long offset = start;
+            while (offset + 8 <= end) {
+                Atom atom = readAtom(offset, end);
+                if (atom.size < atom.headerSize || atom.offset + atom.size > end) {
+                    throw new IOException("Invalid CR3 metadata atom at offset " + offset);
+                }
+
+                if ("moov".equals(atom.type)) {
+                    parseAtoms(atom.contentOffset, atom.contentSize, false);
+                } else if ("uuid".equals(atom.type) && atom.contentSize >= CANON_UUID.length
+                        && hasCanonUuid(atom.contentOffset)) {
+                    parseAtoms(atom.contentOffset + CANON_UUID.length,
+                            atom.contentSize - CANON_UUID.length, true);
+                } else if (canonUuid && ("CMT1".equals(atom.type) || "CMT3".equals(atom.type))) {
+                    parseCanonTiff(atom.contentOffset, atom.contentSize);
+                }
+
+                offset += atom.size;
+            }
+        }
+
+        private boolean hasCanonUuid(long offset) throws IOException {
+            int intOffset = toIntOffset(data, offset, CANON_UUID.length);
+            for (int i = 0; i < CANON_UUID.length; i++) {
+                if (data[intOffset + i] != CANON_UUID[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void parseCanonTiff(long baseOffset, long size) throws IOException {
+            if (size < 8 || baseOffset < 0 || baseOffset > data.length - size) {
+                return;
+            }
+
+            int base = toIntOffset(data, baseOffset, (int) Math.min(size, Integer.MAX_VALUE));
+            boolean littleEndian;
+            if (data[base] == 'I' && data[base + 1] == 'I') {
+                littleEndian = true;
+            } else if (data[base] == 'M' && data[base + 1] == 'M') {
+                littleEndian = false;
+            } else {
+                return;
+            }
+
+            if (readUnsignedShort(data, base + 2, littleEndian) != 42) {
+                return;
+            }
+
+            long firstIfd = readUnsignedInt(data, base + 4, littleEndian);
+            parseCanonIfd(base, baseOffset + size, base + firstIfd, littleEndian, 0);
+        }
+
+        private void parseCanonIfd(int base, long tiffEnd, long ifdOffset, boolean littleEndian, int depth)
+                throws IOException {
+            if (depth > 4 || ifdOffset <= 0 || ifdOffset > tiffEnd - 2L) {
+                return;
+            }
+
+            int offset = toIntOffset(data, ifdOffset, 2);
+            int entries = readUnsignedShort(data, offset, littleEndian);
+            if (entries < 0 || entries > 1024 || offset + 2L + entries * 12L > tiffEnd) {
+                return;
+            }
+
+            int entryOffset = offset + 2;
+            for (int i = 0; i < entries; i++) {
+                int tag = readUnsignedShort(data, entryOffset, littleEndian);
+                int type = readUnsignedShort(data, entryOffset + 2, littleEndian);
+                long count = readUnsignedInt(data, entryOffset + 4, littleEndian);
+                long value = readUnsignedInt(data, entryOffset + 8, littleEndian);
+                int valueOffset = valueOffset(base, entryOffset, type, count, value);
+
+                if (tag == 0x0006 || tag == 0x0110) {
+                    String model = ascii(valueOffset, count);
+                    if (!model.isEmpty()) {
+                        metadata.model = model;
+                    }
+                } else if (tag == 0x00aa) {
+                    readWhiteBalance(valueOffset, type, count, littleEndian);
+                }
+
+                entryOffset += 12;
+            }
+
+            if (entryOffset <= tiffEnd - 4L) {
+                long nextIfd = readUnsignedInt(data, entryOffset, littleEndian);
+                if (nextIfd > 0) {
+                    parseCanonIfd(base, tiffEnd, base + nextIfd, littleEndian, depth + 1);
+                }
+            }
+        }
+
+        private int valueOffset(int base, int entryOffset, int type, long count, long value) throws IOException {
+            int typeSize = typeSize(type);
+            if (typeSize <= 0 || count < 0 || count > Long.MAX_VALUE / typeSize) {
+                return -1;
+            }
+            long bytes = count * typeSize;
+            if (bytes <= 4) {
+                return entryOffset + 8;
+            }
+            return toIntOffset(data, base + value, 0);
+        }
+
+        private void readWhiteBalance(int offset, int type, long count, boolean littleEndian) throws IOException {
+            if (type != 3 || count < 5 || offset < 0 || offset > data.length - count * 2L) {
+                return;
+            }
+
+            int[] values = new int[(int) Math.min(count, 8)];
+            for (int i = 0; i < values.length; i++) {
+                values[i] = readUnsignedShort(data, offset + i * 2, littleEndian);
+            }
+
+            int red = values[1];
+            int green = (values[2] + values[3]) / 2;
+            int blue = values[4];
+            if (red > 0 && green > 0 && blue > 0) {
+                metadata.whiteBalance[RED] = clamp(green / (double) red, 0.25, 8.0);
+                metadata.whiteBalance[GREEN] = 1.0;
+                metadata.whiteBalance[BLUE] = clamp(green / (double) blue, 0.25, 8.0);
+                metadata.hasCameraWhiteBalance = true;
+            }
+        }
+
+        private String ascii(int offset, long count) throws IOException {
+            if (offset < 0 || offset >= data.length) {
+                return "";
+            }
+
+            int length = (int) Math.min(count, data.length - (long) offset);
+            StringBuilder value = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                int character = data[offset + i] & 0xff;
+                if (character == 0) {
+                    break;
+                }
+                value.append((char) character);
+            }
+            return value.toString().trim();
+        }
+
+        private Atom readAtom(long offset, long parentEnd) throws IOException {
+            long size = readUnsignedInt(data, toIntOffset(data, offset, 8));
+            String type = atomType(offset + 4, 4);
+            int headerSize = 8;
+            if (size == 1) {
+                size = (readUnsignedInt(data, toIntOffset(data, offset + 8, 8)) << 32)
+                        | readUnsignedInt(data, toIntOffset(data, offset + 12, 4));
+                headerSize = 16;
+            } else if (size == 0) {
+                size = parentEnd - offset;
+            }
+            return new Atom(offset, size, headerSize, type);
+        }
+
+        private String atomType(long offset, int length) throws IOException {
+            int intOffset = toIntOffset(data, offset, length);
+            char[] chars = new char[length];
+            for (int i = 0; i < length; i++) {
+                chars[i] = (char) (data[intOffset + i] & 0xff);
+            }
+            return new String(chars);
+        }
+
+        private long checkedEnd(long start, long size) throws IOException {
+            if (start < 0 || size < 0 || start > data.length || size > data.length - start) {
+                throw new EOFException("Invalid CR3 metadata atom bounds.");
+            }
+            return start + size;
+        }
+    }
+
+    private static final class CanonColorMetadata {
+
+        private String model;
+        private final double[] whiteBalance = {1.0, 1.0, 1.0};
+        private boolean hasCameraWhiteBalance;
+        private CameraMatrix colorMatrix = DEFAULT_COLOR_MATRIX;
+
+        private void finish(int[] raw, CrxHeader header) {
+            colorMatrix = findColorMatrix(model);
+            // Canon's CMT3 0x00aa WB-like values are not consistently usable as
+            // the display WB across the tested RP/R50 files, so prefer a
+            // decoded-scene estimate and keep parsed camera WB only as fallback.
+            if (!estimateWhiteBalance(raw, header) && !hasCameraWhiteBalance) {
+                whiteBalance[RED] = 1.0;
+                whiteBalance[GREEN] = 1.0;
+                whiteBalance[BLUE] = 1.0;
+            }
+        }
+
+        private boolean estimateWhiteBalance(int[] raw, CrxHeader header) {
+            int blackLevel = defaultBlackLevel(header);
+            int whiteLevel = (1 << header.bitsPerSample) - 1;
+            double[] sum = new double[3];
+            long[] count = new long[3];
+            int stepX = Math.max(1, header.fullWidth / 800);
+            int stepY = Math.max(1, header.fullHeight / 800);
+
+            for (int row = 0; row < header.fullHeight; row += stepY) {
+                for (int col = 0; col < header.fullWidth; col += stepX) {
+                    int channel = bayerChannel(header.cfaLayout, row, col);
+                    double sample = (raw[row * header.fullWidth + col] - blackLevel)
+                            / (double) (whiteLevel - blackLevel);
+                    if (sample > 0.01 && sample < 0.98) {
+                        sum[channel] += sample;
+                        count[channel]++;
+                    }
+                }
+            }
+
+            if (count[RED] > 0 && count[GREEN] > 0 && count[BLUE] > 0) {
+                double redAverage = sum[RED] / count[RED];
+                double greenAverage = sum[GREEN] / count[GREEN];
+                double blueAverage = sum[BLUE] / count[BLUE];
+                whiteBalance[RED] = clamp(greenAverage / Math.max(0.000001, redAverage), 0.5, 4.0);
+                whiteBalance[GREEN] = 1.0;
+                whiteBalance[BLUE] = clamp(greenAverage / Math.max(0.000001, blueAverage), 0.5, 4.0);
+                return true;
+            }
+            return false;
+        }
     }
 
     private static final class Cr3ContainerParser {
@@ -1289,30 +1576,153 @@ public class CanonCr3RawImageReader implements ImageReader {
         private final CrxHeader header;
         private final int blackLevel;
         private final int whiteLevel;
+        private final double[] whiteBalance;
+        private final double[][] cameraToSrgb;
+        private final double displayScale;
+        private final double[] displayChannelScale;
 
-        private RawRenderer(int[] raw, CrxHeader header) {
+        private RawRenderer(int[] raw, CrxHeader header, CanonColorMetadata colorMetadata) {
             this.raw = raw;
             this.header = header;
             this.whiteLevel = (1 << header.bitsPerSample) - 1;
-            this.blackLevel = Math.min(whiteLevel - 1, 1 << Math.max(0, header.bitsPerSample - 3));
+            this.blackLevel = defaultBlackLevel(header);
+            this.whiteBalance = colorMetadata.whiteBalance;
+            this.cameraToSrgb = colorMetadata.colorMatrix.cameraToSrgb;
+            this.displayScale = computeDisplayScale();
+            this.displayChannelScale = computeDisplayChannelScale();
         }
 
         private BufferedImage render() {
             BufferedImage image = new BufferedImage(header.fullWidth, header.fullHeight, BufferedImage.TYPE_INT_RGB);
             int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-            double[] rgb = new double[3];
+            double[] cameraRgb = new double[3];
+            double[] linearSrgb = new double[3];
 
             for (int row = 0; row < header.fullHeight; row++) {
                 for (int col = 0; col < header.fullWidth; col++) {
-                    demosaic(row, col, rgb);
-                    int red = toByte(rgb[RED]);
-                    int green = toByte(rgb[GREEN]);
-                    int blue = toByte(rgb[BLUE]);
+                    demosaic(row, col, cameraRgb);
+                    for (int channel = 0; channel < cameraRgb.length; channel++) {
+                        cameraRgb[channel] *= whiteBalance[channel];
+                    }
+                    colorConvert(cameraRgb, linearSrgb);
+                    neutralizeClippedHighlight(cameraRgb, linearSrgb);
+
+                    int red = toByte(clamp(linearSrgb[RED] * displayScale * displayChannelScale[RED], 0.0, 1.0));
+                    int green = toByte(clamp(linearSrgb[GREEN] * displayScale * displayChannelScale[GREEN], 0.0, 1.0));
+                    int blue = toByte(clamp(linearSrgb[BLUE] * displayScale * displayChannelScale[BLUE], 0.0, 1.0));
                     pixels[row * header.fullWidth + col] = (red << 16) | (green << 8) | blue;
                 }
             }
 
             return image;
+        }
+
+        private double computeDisplayScale() {
+            int stepX = Math.max(1, header.fullWidth / 360);
+            int stepY = Math.max(1, header.fullHeight / 360);
+            int columns = (header.fullWidth + stepX - 1) / stepX;
+            int rows = (header.fullHeight + stepY - 1) / stepY;
+            double[] luminanceValues = new double[columns * rows];
+            double[] cameraRgb = new double[3];
+            double[] linearSrgb = new double[3];
+            int count = 0;
+
+            for (int row = 0; row < header.fullHeight; row += stepY) {
+                for (int col = 0; col < header.fullWidth; col += stepX) {
+                    demosaic(row, col, cameraRgb);
+                    for (int channel = 0; channel < cameraRgb.length; channel++) {
+                        cameraRgb[channel] *= whiteBalance[channel];
+                    }
+                    colorConvert(cameraRgb, linearSrgb);
+
+                    double luminance = 0.2126 * Math.max(0.0, linearSrgb[RED])
+                            + 0.7152 * Math.max(0.0, linearSrgb[GREEN])
+                            + 0.0722 * Math.max(0.0, linearSrgb[BLUE]);
+                    if (Double.isFinite(luminance) && luminance > 0.0005) {
+                        luminanceValues[count++] = luminance;
+                    }
+                }
+            }
+
+            if (count < 16) {
+                return 1.0;
+            }
+
+            Arrays.sort(luminanceValues, 0, count);
+            double highlight = luminanceValues[Math.min(count - 1, (int) Math.floor(count * 0.995))];
+            if (highlight <= 0.001) {
+                return 1.0;
+            }
+            return clamp(0.90 / highlight, 0.25, 6.0);
+        }
+
+        private double[] computeDisplayChannelScale() {
+            int stepX = Math.max(1, header.fullWidth / 360);
+            int stepY = Math.max(1, header.fullHeight / 360);
+            double[] sum = new double[3];
+            long count = 0;
+            double[] cameraRgb = new double[3];
+            double[] linearSrgb = new double[3];
+
+            for (int row = 0; row < header.fullHeight; row += stepY) {
+                for (int col = 0; col < header.fullWidth; col += stepX) {
+                    demosaic(row, col, cameraRgb);
+                    for (int channel = 0; channel < cameraRgb.length; channel++) {
+                        cameraRgb[channel] *= whiteBalance[channel];
+                    }
+                    colorConvert(cameraRgb, linearSrgb);
+                    neutralizeClippedHighlight(cameraRgb, linearSrgb);
+
+                    double red = clamp(linearSrgb[RED] * displayScale, 0.0, 1.0);
+                    double green = clamp(linearSrgb[GREEN] * displayScale, 0.0, 1.0);
+                    double blue = clamp(linearSrgb[BLUE] * displayScale, 0.0, 1.0);
+                    double luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+                    if (luminance > 0.03 && luminance < 0.95) {
+                        sum[RED] += red;
+                        sum[GREEN] += green;
+                        sum[BLUE] += blue;
+                        count++;
+                    }
+                }
+            }
+
+            if (count < 16 || sum[RED] <= 0.0 || sum[GREEN] <= 0.0 || sum[BLUE] <= 0.0) {
+                return new double[]{1.0, 1.0, 1.0};
+            }
+
+            double redAverage = sum[RED] / count;
+            double greenAverage = sum[GREEN] / count;
+            double blueAverage = sum[BLUE] / count;
+            return new double[]{
+                    clamp(greenAverage / redAverage, 0.75, 1.35),
+                    1.0,
+                    clamp(greenAverage / blueAverage, 0.75, 1.35)
+            };
+        }
+
+        private void colorConvert(double[] cameraRgb, double[] linearSrgb) {
+            for (int channel = 0; channel < linearSrgb.length; channel++) {
+                linearSrgb[channel] = cameraToSrgb[channel][RED] * cameraRgb[RED]
+                        + cameraToSrgb[channel][GREEN] * cameraRgb[GREEN]
+                        + cameraToSrgb[channel][BLUE] * cameraRgb[BLUE];
+            }
+        }
+
+        private void neutralizeClippedHighlight(double[] cameraRgb, double[] linearSrgb) {
+            double cameraMin = Math.min(cameraRgb[RED], Math.min(cameraRgb[GREEN], cameraRgb[BLUE]));
+            double cameraMax = Math.max(cameraRgb[RED], Math.max(cameraRgb[GREEN], cameraRgb[BLUE]));
+            double nearNeutralHighlight = clamp((cameraMin - 0.80) / 0.20, 0.0, 1.0);
+            double clippedHighlight = clamp((cameraMax - 1.0) / 0.25, 0.0, 1.0);
+            double blend = nearNeutralHighlight * clippedHighlight;
+
+            if (blend <= 0.0) {
+                return;
+            }
+
+            double neutral = Math.min(1.0, Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE])));
+            for (int channel = 0; channel < linearSrgb.length; channel++) {
+                linearSrgb[channel] = linearSrgb[channel] * (1.0 - blend) + neutral * blend;
+            }
         }
 
         private void demosaic(int row, int col, double[] rgb) {
@@ -1384,20 +1794,7 @@ public class CanonCr3RawImageReader implements ImageReader {
         }
 
         private int bayerChannel(int row, int col) {
-            boolean evenRow = (row & 1) == 0;
-            boolean evenCol = (col & 1) == 0;
-            switch (header.cfaLayout) {
-                case 0:
-                    return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
-                case 1:
-                    return evenRow ? (evenCol ? GREEN : RED) : (evenCol ? BLUE : GREEN);
-                case 2:
-                    return evenRow ? (evenCol ? GREEN : BLUE) : (evenCol ? RED : GREEN);
-                case 3:
-                    return evenRow ? (evenCol ? BLUE : GREEN) : (evenCol ? GREEN : RED);
-                default:
-                    return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
-            }
+            return CanonCr3RawImageReader.bayerChannel(header.cfaLayout, row, col);
         }
 
         private boolean inside(int row, int col) {
@@ -1408,6 +1805,181 @@ public class CanonCr3RawImageReader implements ImageReader {
             double gamma = linear <= 0.0031308 ? 12.92 * linear : 1.055 * Math.pow(linear, 1.0 / 2.4) - 0.055;
             return clamp((int) Math.round(gamma * 255.0), 0, 255);
         }
+    }
+
+    private static CameraMatrix matrix(String modelPrefix, int... adobeColorMatrix) {
+        return new CameraMatrix(modelPrefix, adobeColorMatrix);
+    }
+
+    private static CameraMatrix findColorMatrix(String model) {
+        String normalizedModel = normalizeModel(model);
+        if (!normalizedModel.isEmpty()) {
+            for (CameraMatrix matrix : CANON_COLOR_MATRICES) {
+                if (matrix.matches(normalizedModel)) {
+                    return matrix;
+                }
+            }
+        }
+        return DEFAULT_COLOR_MATRIX;
+    }
+
+    private static String normalizeModel(String model) {
+        if (model == null) {
+            return "";
+        }
+        String normalized = model.trim().toUpperCase(Locale.ROOT);
+        if (normalized.startsWith("CANON ")) {
+            normalized = normalized.substring("CANON ".length()).trim();
+        }
+        return normalized;
+    }
+
+    private static String findKnownModelInFile(byte[] data) {
+        for (CameraMatrix matrix : CANON_COLOR_MATRICES) {
+            for (String modelPrefix : matrix.modelPrefixes) {
+                if (containsAsciiIgnoreCase(data, modelPrefix)) {
+                    return modelPrefix;
+                }
+            }
+        }
+        return "";
+    }
+
+    private static boolean containsAsciiIgnoreCase(byte[] data, String needle) {
+        if (needle == null || needle.isEmpty() || data.length < needle.length()) {
+            return false;
+        }
+        byte[] target = needle.toUpperCase(Locale.ROOT).getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+        for (int offset = 0; offset <= data.length - target.length; offset++) {
+            int i = 0;
+            while (i < target.length && toAsciiUpper(data[offset + i]) == target[i]) {
+                i++;
+            }
+            if (i == target.length) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int toAsciiUpper(byte value) {
+        int character = value & 0xff;
+        if (character >= 'a' && character <= 'z') {
+            return character - ('a' - 'A');
+        }
+        return character;
+    }
+
+    private static int defaultBlackLevel(CrxHeader header) {
+        int whiteLevel = (1 << header.bitsPerSample) - 1;
+        return Math.min(whiteLevel - 1, 1 << Math.max(0, header.bitsPerSample - 3));
+    }
+
+    private static int bayerChannel(int cfaLayout, int row, int col) {
+        boolean evenRow = (row & 1) == 0;
+        boolean evenCol = (col & 1) == 0;
+        switch (cfaLayout) {
+            case 0:
+                return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
+            case 1:
+                return evenRow ? (evenCol ? GREEN : RED) : (evenCol ? BLUE : GREEN);
+            case 2:
+                return evenRow ? (evenCol ? GREEN : BLUE) : (evenCol ? RED : GREEN);
+            case 3:
+                return evenRow ? (evenCol ? BLUE : GREEN) : (evenCol ? GREEN : RED);
+            default:
+                return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
+        }
+    }
+
+    private static double[][] convertAdobeColorMatrix(int[] adobeColorMatrix) {
+        if (adobeColorMatrix.length != 9) {
+            throw new IllegalArgumentException("Canon color matrices must contain 9 values.");
+        }
+
+        double[][] camXyz = new double[3][3];
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                camXyz[row][col] = adobeColorMatrix[row * 3 + col] / 10000.0;
+            }
+        }
+
+        double[][] camRgb = multiply3x3(camXyz, SRGB_TO_XYZ);
+        for (int row = 0; row < 3; row++) {
+            double rowSum = camRgb[row][RED] + camRgb[row][GREEN] + camRgb[row][BLUE];
+            if (Math.abs(rowSum) < 0.00001) {
+                throw new IllegalArgumentException("Canon color matrix has a zero row sum.");
+            }
+            for (int col = 0; col < 3; col++) {
+                camRgb[row][col] /= rowSum;
+            }
+        }
+
+        return invert3x3(camRgb);
+    }
+
+    private static double[][] multiply3x3(double[][] left, double[][] right) {
+        double[][] result = new double[3][3];
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                for (int index = 0; index < 3; index++) {
+                    result[row][col] += left[row][index] * right[index][col];
+                }
+            }
+        }
+        return result;
+    }
+
+    private static double[][] invert3x3(double[][] matrix) {
+        double a = matrix[0][0];
+        double b = matrix[0][1];
+        double c = matrix[0][2];
+        double d = matrix[1][0];
+        double e = matrix[1][1];
+        double f = matrix[1][2];
+        double g = matrix[2][0];
+        double h = matrix[2][1];
+        double i = matrix[2][2];
+        double determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+        if (Math.abs(determinant) < 0.00000001) {
+            throw new IllegalArgumentException("Canon color matrix is not invertible.");
+        }
+
+        return new double[][]{
+                {(e * i - f * h) / determinant, (c * h - b * i) / determinant, (b * f - c * e) / determinant},
+                {(f * g - d * i) / determinant, (a * i - c * g) / determinant, (c * d - a * f) / determinant},
+                {(d * h - e * g) / determinant, (b * g - a * h) / determinant, (a * e - b * d) / determinant}
+        };
+    }
+
+    private static final class CameraMatrix {
+
+        private final String[] modelPrefixes;
+        private final double[][] cameraToSrgb;
+
+        private CameraMatrix(String modelPrefix, int[] adobeColorMatrix) {
+            this.modelPrefixes = new String[]{normalizeModel(modelPrefix)};
+            this.cameraToSrgb = convertAdobeColorMatrix(adobeColorMatrix);
+        }
+
+        private boolean matches(String normalizedModel) {
+            for (String modelPrefix : modelPrefixes) {
+                if (normalizedModel.equals(modelPrefix)
+                        || (normalizedModel.startsWith(modelPrefix)
+                        && hasModelBoundary(normalizedModel, modelPrefix.length()))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private static boolean hasModelBoundary(String model, int prefixLength) {
+        if (prefixLength >= model.length()) {
+            return true;
+        }
+        char next = model.charAt(prefixLength);
+        return !((next >= 'A' && next <= 'Z') || (next >= '0' && next <= '9'));
     }
 
     private static byte[] copyRange(byte[] data, long offset, int length) throws IOException {
@@ -1436,6 +2008,14 @@ public class CanonCr3RawImageReader implements ImageReader {
         return ((data[offset] & 0xff) << 8) | (data[offset + 1] & 0xff);
     }
 
+    private static int readUnsignedShort(byte[] data, int offset, boolean littleEndian) throws EOFException {
+        ensureAvailable(data, offset, 2);
+        if (littleEndian) {
+            return (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8);
+        }
+        return readUnsignedShort(data, offset);
+    }
+
     private static int readUnsigned24(byte[] data, int offset) throws EOFException {
         ensureAvailable(data, offset, 3);
         return ((data[offset] & 0xff) << 16) | ((data[offset + 1] & 0xff) << 8) | (data[offset + 2] & 0xff);
@@ -1447,6 +2027,40 @@ public class CanonCr3RawImageReader implements ImageReader {
                 | ((data[offset + 1] & 0xffL) << 16)
                 | ((data[offset + 2] & 0xffL) << 8)
                 | (data[offset + 3] & 0xffL);
+    }
+
+    private static long readUnsignedInt(byte[] data, int offset, boolean littleEndian) throws EOFException {
+        ensureAvailable(data, offset, 4);
+        if (littleEndian) {
+            return (data[offset] & 0xffL)
+                    | ((data[offset + 1] & 0xffL) << 8)
+                    | ((data[offset + 2] & 0xffL) << 16)
+                    | ((data[offset + 3] & 0xffL) << 24);
+        }
+        return readUnsignedInt(data, offset);
+    }
+
+    private static int typeSize(int tiffType) {
+        switch (tiffType) {
+            case 1:  // BYTE
+            case 2:  // ASCII
+            case 6:  // SBYTE
+            case 7:  // UNDEFINED
+                return 1;
+            case 3:  // SHORT
+            case 8:  // SSHORT
+                return 2;
+            case 4:  // LONG
+            case 9:  // SLONG
+            case 11: // FLOAT
+                return 4;
+            case 5:  // RATIONAL
+            case 10: // SRATIONAL
+            case 12: // DOUBLE
+                return 8;
+            default:
+                return 0;
+        }
     }
 
     private static int unsignedIntToInt(long value) throws IOException {

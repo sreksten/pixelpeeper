@@ -69,6 +69,20 @@ public class PanasonicRawImageReader implements ImageReader {
     private static final int PANASONIC_TAG_CROP_LEFT = 0x0030;
     private static final int PANASONIC_TAG_CROP_BOTTOM = 0x0031;
     private static final int PANASONIC_TAG_CROP_RIGHT = 0x0032;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_TABLE_39 = 0x0039;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_TABLE_3A = 0x003a;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_DATA_MAX = 0x003b;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_INITIAL_0 = 0x003c;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_INITIAL_3 = 0x003f;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_HUFFMAN_40 = 0x0040;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_HUFFMAN_41 = 0x0041;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_COUNT = 0x0042;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_TAG_43 = 0x0043;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_OFFSETS = 0x0044;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_LEFT = 0x0045;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_COMPRESSED_SIZE = 0x0046;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_WIDTH = 0x0047;
+    private static final int PANASONIC_TAG_RAW_FORMAT_8_STRIPE_HEIGHT = 0x0048;
     private static final int PANASONIC_TAG_RW2_OFFSET = 0x0118;
 
     private static final int TYPE_BYTE = 1;
@@ -82,6 +96,7 @@ public class PanasonicRawImageReader implements ImageReader {
 
     private static final int COMPRESSION_NONE = 1;
     private static final int COMPRESSION_PANASONIC_LOSSLESS = 34316;
+    private static final int PANASONIC_RAW_FORMAT_8 = 8;
 
     private static final int RED = 0;
     private static final int GREEN = 1;
@@ -91,6 +106,7 @@ public class PanasonicRawImageReader implements ImageReader {
     private static final int[][] DIAGONAL_OFFSETS = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     private static final int[][] HORIZONTAL_OFFSETS = {{0, -1}, {0, 1}};
     private static final int[][] VERTICAL_OFFSETS = {{-1, 0}, {1, 0}};
+    private static final int[] BIT_REVERSE_TABLE = buildBitReverseTable();
 
     private static final double[][] SRGB_TO_XYZ = {
             {0.4124564, 0.3575761, 0.1804375},
@@ -219,6 +235,10 @@ public class PanasonicRawImageReader implements ImageReader {
     }
 
     private int[] decodeRaw(byte[] data, RawMetadata metadata) throws IOException {
+        if (metadata.panasonicEncoding == PANASONIC_RAW_FORMAT_8) {
+            return decodePanasonicRawFormat8(data, metadata);
+        }
+
         if (metadata.panasonicEncoding == 5) {
             return decodePanasonicPacked(data, metadata);
         }
@@ -370,6 +390,69 @@ public class PanasonicRawImageReader implements ImageReader {
         }
 
         return raw;
+    }
+
+    private int[] decodePanasonicRawFormat8(byte[] data, RawMetadata metadata) throws IOException {
+        int[] raw = new int[checkedPixelCount(metadata)];
+        PanasonicRawFormat8Metadata rawFormat8 = metadata.rawFormat8;
+        validatePanasonicRawFormat8(data, metadata, rawFormat8);
+
+        PanasonicRawFormat8Parameters parameters = new PanasonicRawFormat8Parameters(rawFormat8);
+        for (int stripe = 0; stripe < rawFormat8.stripeCount; stripe++) {
+            PanasonicRawFormat8Buffer buffer = new PanasonicRawFormat8Buffer(
+                    data,
+                    rawFormat8.stripeOffsets[stripe],
+                    exactBytesForCompressedBits(rawFormat8.stripeCompressedSize[stripe]));
+            if (!parameters.decodeStrip(buffer, raw, metadata.rawWidth, metadata.rawHeight,
+                    rawFormat8.stripeWidth[stripe], rawFormat8.stripeHeight[stripe],
+                    rawFormat8.stripeLeft[stripe])) {
+                throw new IOException("Invalid Panasonic RW2 RawFormat 8 compressed stripe.");
+            }
+        }
+
+        return raw;
+    }
+
+    private void validatePanasonicRawFormat8(byte[] data, RawMetadata metadata,
+                                             PanasonicRawFormat8Metadata rawFormat8) throws IOException {
+        if (rawFormat8.stripeCount <= 0 || rawFormat8.stripeCount > 5) {
+            throw new IOException("Invalid Panasonic RW2 RawFormat 8 stripe count: " + rawFormat8.stripeCount);
+        }
+
+        int totalWidth = 0;
+        for (int stripe = 0; stripe < rawFormat8.stripeCount; stripe++) {
+            int stripeWidth = rawFormat8.stripeWidth[stripe];
+            int stripeHeight = rawFormat8.stripeHeight[stripe];
+            int stripeLeft = rawFormat8.stripeLeft[stripe];
+            long stripeOffset = rawFormat8.stripeOffsets[stripe];
+            int stripeBytes = exactBytesForCompressedBits(rawFormat8.stripeCompressedSize[stripe]);
+
+            if (stripeWidth <= 0 || stripeHeight != metadata.rawHeight) {
+                throw new IOException("Invalid Panasonic RW2 RawFormat 8 stripe dimensions.");
+            }
+            if (stripeLeft < 0 || stripeLeft + stripeWidth > metadata.rawWidth) {
+                throw new IOException("Invalid Panasonic RW2 RawFormat 8 stripe position.");
+            }
+            if (stripeOffset < 0 || stripeOffset > data.length - (long) stripeBytes) {
+                throw new EOFException("Unexpected end of Panasonic RW2 RawFormat 8 stripe data.");
+            }
+            totalWidth += stripeWidth;
+        }
+
+        if (totalWidth != metadata.rawWidth) {
+            throw new IOException("Panasonic RW2 RawFormat 8 stripes do not cover the raw width.");
+        }
+    }
+
+    private int exactBytesForCompressedBits(long compressedBits) throws IOException {
+        if (compressedBits <= 0) {
+            throw new IOException("Invalid Panasonic RW2 RawFormat 8 compressed stripe size.");
+        }
+        long exactBytes = (compressedBits + 7L) / 8L;
+        if (exactBytes <= 0 || exactBytes > Integer.MAX_VALUE) {
+            throw new IOException("Invalid Panasonic RW2 RawFormat 8 compressed stripe size: " + compressedBits);
+        }
+        return (int) exactBytes;
     }
 
     private void putRaw(int[] raw, int index, int col, int width, int offset, int value) {
@@ -590,6 +673,20 @@ public class PanasonicRawImageReader implements ImageReader {
         return Math.max(min, Math.min(max, value));
     }
 
+    private static int[] buildBitReverseTable() {
+        int[] table = new int[256];
+        for (int value = 0; value < table.length; value++) {
+            int source = value;
+            int reversed = 0;
+            for (int bit = 0; bit < 8; bit++) {
+                reversed = (reversed << 1) | (source & 1);
+                source >>= 1;
+            }
+            table[value] = reversed;
+        }
+        return table;
+    }
+
     private static CameraMatrix matrix(String modelPrefix, int... adobeColorMatrix) {
         return matrix(new String[]{modelPrefix}, adobeColorMatrix);
     }
@@ -742,6 +839,7 @@ public class PanasonicRawImageReader implements ImageReader {
         private int whiteLevel;
         private CameraMatrix colorMatrix = DEFAULT_COLOR_MATRIX;
         private final int[] bayerPattern = {RED, GREEN, GREEN, BLUE};
+        private final PanasonicRawFormat8Metadata rawFormat8 = new PanasonicRawFormat8Metadata();
 
         private void finish(int fileLength) throws IOException {
             if (rawWidth <= 0) {
@@ -858,6 +956,24 @@ public class PanasonicRawImageReader implements ImageReader {
             default:
                 return new int[]{RED, GREEN, GREEN, BLUE};
         }
+    }
+
+    private static class PanasonicRawFormat8Metadata {
+
+        private final int[] tag39 = new int[6];
+        private final int[] tag3A = new int[6];
+        private int tag3B;
+        private int tag43;
+        private final int[] initial = new int[4];
+        private final int[] tag40A = new int[17];
+        private final int[] tag40B = new int[17];
+        private final int[] tag41 = new int[17];
+        private int stripeCount;
+        private final long[] stripeOffsets = new long[5];
+        private final int[] stripeLeft = new int[5];
+        private final long[] stripeCompressedSize = new long[5];
+        private final int[] stripeWidth = new int[5];
+        private final int[] stripeHeight = new int[5];
     }
 
     private static class TiffMetadataReader {
@@ -1068,6 +1184,48 @@ public class PanasonicRawImageReader implements ImageReader {
                 case PANASONIC_TAG_CROP_RIGHT:
                     metadata.cropRight = entry.firstInt();
                     break;
+                case PANASONIC_TAG_RAW_FORMAT_8_TABLE_39:
+                    readRawFormat8Tag39(entry);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_TABLE_3A:
+                    readRawFormat8Tag3A(entry);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_DATA_MAX:
+                    metadata.rawFormat8.tag3B = entry.firstInt();
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_INITIAL_0:
+                case PANASONIC_TAG_RAW_FORMAT_8_INITIAL_0 + 1:
+                case PANASONIC_TAG_RAW_FORMAT_8_INITIAL_0 + 2:
+                case PANASONIC_TAG_RAW_FORMAT_8_INITIAL_3:
+                    metadata.rawFormat8.initial[entry.tag - PANASONIC_TAG_RAW_FORMAT_8_INITIAL_0] = entry.firstInt();
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_HUFFMAN_40:
+                    readRawFormat8Huffman40(entry);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_HUFFMAN_41:
+                    readRawFormat8Huffman41(entry);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_COUNT:
+                    metadata.rawFormat8.stripeCount = Math.min(5, entry.firstInt());
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_TAG_43:
+                    metadata.rawFormat8.tag43 = Math.min(5, entry.firstInt());
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_OFFSETS:
+                    readRawFormat8LongArray(entry, metadata.rawFormat8.stripeOffsets);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_LEFT:
+                    readRawFormat8IntArray(entry, metadata.rawFormat8.stripeLeft);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_COMPRESSED_SIZE:
+                    readRawFormat8LongArray(entry, metadata.rawFormat8.stripeCompressedSize);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_WIDTH:
+                    readRawFormat8ShortArray(entry, metadata.rawFormat8.stripeWidth);
+                    break;
+                case PANASONIC_TAG_RAW_FORMAT_8_STRIPE_HEIGHT:
+                    readRawFormat8ShortArray(entry, metadata.rawFormat8.stripeHeight);
+                    break;
                 case PANASONIC_TAG_RW2_OFFSET:
                 case TAG_STRIP_OFFSETS:
                     metadata.rawOffset = entry.firstInt();
@@ -1088,6 +1246,93 @@ public class PanasonicRawImageReader implements ImageReader {
                 return value - 16;
             }
             return value;
+        }
+
+        private void readRawFormat8Tag39(IfdEntry entry) throws IOException {
+            if (entry.type != TYPE_UNDEFINED || entry.count != 26) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(6, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                metadata.rawFormat8.tag39[i] = (int) readUnsignedInt(offset + 2 + i * 4);
+            }
+        }
+
+        private void readRawFormat8Tag3A(IfdEntry entry) throws IOException {
+            if (entry.type != TYPE_UNDEFINED || entry.count != 26) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(6, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                metadata.rawFormat8.tag3A[i] = readUnsignedShort(offset + 4 + i * 4);
+            }
+        }
+
+        private void readRawFormat8Huffman40(IfdEntry entry) throws IOException {
+            if (entry.type != TYPE_UNDEFINED || entry.count != 70) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(17, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                int valueA = readUnsignedShort(offset + 2 + i * 4);
+                int valueB = readUnsignedShort(offset + 4 + i * 4);
+                metadata.rawFormat8.tag40A[i] = Math.min(valueA, 16);
+                metadata.rawFormat8.tag40B[i] = Math.min(valueB, 0x0fff);
+            }
+        }
+
+        private void readRawFormat8Huffman41(IfdEntry entry) throws IOException {
+            if (entry.type != TYPE_UNDEFINED || entry.count != 36) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(17, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                metadata.rawFormat8.tag41[i] = Math.min(readUnsignedShort(offset + 2 + i * 2), 64);
+            }
+        }
+
+        private void readRawFormat8LongArray(IfdEntry entry, long[] target) throws IOException {
+            if (entry.type != TYPE_UNDEFINED) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(target.length, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                target[i] = readUnsignedInt(offset + 2 + i * 4);
+            }
+        }
+
+        private void readRawFormat8IntArray(IfdEntry entry, int[] target) throws IOException {
+            if (entry.type != TYPE_UNDEFINED) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(target.length, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                target[i] = (int) readUnsignedInt(offset + 2 + i * 4);
+            }
+        }
+
+        private void readRawFormat8ShortArray(IfdEntry entry, int[] target) throws IOException {
+            if (entry.type != TYPE_UNDEFINED) {
+                return;
+            }
+
+            int offset = entry.valueOffset();
+            int count = Math.min(target.length, readUnsignedShort(offset));
+            for (int i = 0; i < count; i++) {
+                target[i] = readUnsignedShort(offset + 2 + i * 2);
+            }
         }
 
         private void parsePanasonicMakerNote(int makerNoteOffset) throws IOException {
@@ -1267,6 +1512,329 @@ public class PanasonicRawImageReader implements ImageReader {
                 return 8;
             default:
                 return 1;
+        }
+    }
+
+    private static class PanasonicRawFormat8Parameters {
+
+        private final int[] tag3A = new int[6];
+        private final int[] tag39 = new int[6];
+        private final int[] huffmanCoefficients = new int[18];
+        private final long[] huffmanTable1 = new long[17];
+        private final long[] huffmanTable2 = new long[17];
+        private final int[] initial = new int[4];
+        private final int tag3B;
+        private final int tag3B2;
+        private boolean noGamma = true;
+        private int[] gammaTable;
+        private byte[] extraHuffmanTable;
+
+        private PanasonicRawFormat8Parameters(PanasonicRawFormat8Metadata metadata) {
+            System.arraycopy(metadata.tag3A, 0, tag3A, 0, tag3A.length);
+            System.arraycopy(metadata.tag39, 0, tag39, 0, tag39.length);
+            System.arraycopy(metadata.initial, 0, initial, 0, initial.length);
+            tag3B = metadata.tag3B;
+            tag3B2 = metadata.tag3B;
+
+            for (int i = 0; i < 17; i++) {
+                huffmanCoefficients[i] = ((metadata.tag41[i] & 0xff) << 24)
+                        | ((metadata.tag40A[i] & 0xffff) << 16)
+                        | (metadata.tag40B[i] & 0xffff);
+            }
+
+            buildGammaTable();
+            buildHuffmanTables();
+        }
+
+        private void buildGammaTable() {
+            int[] candidate = new int[0x10000];
+            for (int i = 0; i < candidate.length; i++) {
+                int value = gammaCurve(i) & 0xffff;
+                candidate[i] = value;
+                if (value != i) {
+                    noGamma = false;
+                }
+            }
+            if (!noGamma) {
+                gammaTable = candidate;
+            }
+        }
+
+        private void buildHuffmanTables() {
+            int longestCode = 0;
+            for (int index = 0; index < 17; index++) {
+                int coefficient = huffmanCoefficients[index];
+                int lowBits = (coefficient >>> 16) & 0x1f;
+                int mask = 0;
+                if ((coefficient & 0x1f0000) != 0) {
+                    int lowBitsMod8 = ((coefficient >>> 16) & 0xffff) & 7;
+                    if (lowBits - 1 >= 7) {
+                        int difference = lowBitsMod8 - lowBits;
+                        do {
+                            mask = ((mask & 0xffff) << 8) | 0xff;
+                            difference += 8;
+                        } while (difference != 0);
+                    }
+                    for (; lowBitsMod8 > 0; lowBitsMod8--) {
+                        mask = ((mask & 0xffff) << 1) | 1;
+                    }
+                }
+
+                int value = coefficient & (mask & 0xffff);
+                if (longestCode < lowBits) {
+                    longestCode = lowBits;
+                }
+                huffmanTable2[index] = lowBits == 0 ? 0L : -1L << (64 - lowBits);
+                huffmanTable1[index] = lowBits == 0 ? 0L : (value & 0xffffL) << (64 - lowBits);
+            }
+
+            if (longestCode < 17) {
+                extraHuffmanTable = new byte[0x10000];
+                long prefix = 0L;
+                for (int i = 0; i < extraHuffmanTable.length; i++) {
+                    extraHuffmanTable[i] = (byte) (getDeltaBit(prefix) & 0xff);
+                    prefix += 0x1000000000000L;
+                }
+            }
+        }
+
+        private boolean decodeStrip(PanasonicRawFormat8Buffer buffer, int[] raw, int rawWidth, int rawHeight,
+                                    int stripeWidth, int stripeHeight, int leftMargin) {
+            int halfWidth = stripeWidth >> 1;
+            int halfHeight = stripeHeight >> 1;
+            if (halfWidth <= 0 || halfHeight <= 0 || buffer.size() < 9) {
+                return false;
+            }
+
+            int dataMax = tag3B2;
+            int qwords = buffer.size() >> 3;
+            int doubleWidth = 4 * halfWidth;
+            int[] lineBase = new int[4];
+            int[] currentBase = new int[4];
+            int[] group = new int[4];
+            for (int i = 0; i < lineBase.length; i++) {
+                lineBase[i] = initial[i] & 0xffff;
+            }
+
+            long bitTail = 0L;
+            int bitPortion = 0;
+            int inputQword = 0;
+
+            for (int rowPair = 0; rowPair < halfHeight; rowPair++) {
+                System.arraycopy(lineBase, 0, currentBase, 0, currentBase.length);
+                int destRow = rowPair * 2;
+
+                for (int col = 0; col < doubleWidth; col++) {
+                    long pixelBits;
+                    if (bitPortion < 0) {
+                        int nextQword = inputQword + 1;
+                        if (nextQword >= qwords) {
+                            return false;
+                        }
+                        bitPortion += 64;
+                        long current = buffer.getQWord(inputQword);
+                        long next = buffer.getQWord(nextQword);
+                        pixelBits = (next >>> bitPortion) | (current << (64 - (bitPortion & 0xff)));
+                        if (inputQword < qwords) {
+                            inputQword = nextQword;
+                        }
+                    } else {
+                        if (inputQword >= qwords) {
+                            return false;
+                        }
+                        long current = buffer.getQWord(inputQword);
+                        pixelBits = (current >>> bitPortion) | bitTail;
+                        if (bitPortion == 0) {
+                            bitPortion = 64;
+                            inputQword++;
+                        }
+                    }
+
+                    int huffmanIndex = huffmanIndex(pixelBits);
+                    int coefficient = huffmanCoefficients[huffmanIndex];
+                    int highBits = (coefficient >>> 24) & 0x1f;
+                    long shiftedBits = pixelBits << (((coefficient >>> 16) & 0xffff) & 0x1f);
+                    long consumedTailBits = huffmanIndex - highBits;
+                    int shift = ((highBits & 0xff) - (huffmanIndex & 0xff)) & 63;
+                    int valueBits = (int) ((shiftedBits >>> shift) & 0xffffL);
+                    int value = valueBits << (((coefficient >>> 24) & 0xff) & 31);
+
+                    if (huffmanIndex - highBits <= 0) {
+                        value &= 0xffff0000;
+                    }
+
+                    int delta;
+                    if (shiftedBits < 0) {
+                        delta = value & 0xffff;
+                    } else if (huffmanIndex != 0) {
+                        int base = -1 << huffmanIndex;
+                        delta = (value & 0xffff) + base + (highBits == 0 ? 1 : 0);
+                    } else {
+                        delta = 0;
+                    }
+                    if (highBits != 0) {
+                        delta += 1 << (highBits - 1);
+                    }
+
+                    int nextBitPortion = bitPortion - ((coefficient >>> 16) & 0x1f);
+                    int component = componentIndex(col & 3);
+                    int sample = clamp(currentBase[component] + delta, 0, dataMax);
+                    group[component] = sample;
+                    putRawFormat8Sample(raw, rawWidth, rawHeight, leftMargin, destRow, col, gamma(sample));
+
+                    if (huffmanIndex <= highBits) {
+                        consumedTailBits = 0L;
+                    }
+                    bitTail = shiftedBits << (int) consumedTailBits;
+                    bitPortion = (int) (nextBitPortion - consumedTailBits);
+
+                    if ((col & 3) == 3) {
+                        System.arraycopy(group, 0, currentBase, 0, currentBase.length);
+                    }
+                    if (col == 3) {
+                        System.arraycopy(group, 0, lineBase, 0, lineBase.length);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private int huffmanIndex(long pixelBits) {
+            if (extraHuffmanTable != null) {
+                return extraHuffmanTable[(int) ((pixelBits >>> 48) & 0xffff)] & 0xff;
+            }
+            return getDeltaBit(pixelBits);
+        }
+
+        private int componentIndex(int colMod4) {
+            switch (colMod4) {
+                case 1:
+                    return 2;
+                case 2:
+                    return 1;
+                case 3:
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+
+        private void putRawFormat8Sample(int[] raw, int rawWidth, int rawHeight, int leftMargin,
+                                         int destRow, int encodedCol, int value) {
+            int rawCol = (encodedCol >> 2) * 2 + (encodedCol >= 2 && (encodedCol & 3) >= 2 ? 1 : 0);
+            int rawRow = destRow + (((encodedCol & 3) == 1 || (encodedCol & 3) == 3) ? 1 : 0);
+            if (rawRow < rawHeight && leftMargin + rawCol < rawWidth) {
+                raw[rawRow * rawWidth + leftMargin + rawCol] = value;
+            }
+        }
+
+        private int gamma(int value) {
+            if (noGamma || gammaTable == null) {
+                return value;
+            }
+            return gammaTable[value & 0xffff];
+        }
+
+        private int getDeltaBit(long value) {
+            for (int i = 0; i < 16; i++) {
+                if ((value & huffmanTable2[i]) == huffmanTable1[i]) {
+                    return i;
+                }
+            }
+            return (((value & huffmanTable2[16]) == huffmanTable1[16]) ? 1 : 0) ^ 0x11;
+        }
+
+        private int gammaCurve(int index) {
+            int value = index | 0xffff0000;
+            if ((index & 0x10000) == 0) {
+                value = index & 0x1ffff;
+            }
+
+            int gammaInput = gammaBase() + value;
+            int limitedInput = Math.min(gammaInput, 0xffff);
+            if (limitedInput < 0) {
+                limitedInput = 0;
+            }
+
+            int segment = 0;
+            if (limitedInput >= (tag3A[1] & 0xffff)) {
+                segment = 1;
+                if (limitedInput >= (tag3A[2] & 0xffff)) {
+                    segment = 2;
+                    if (limitedInput >= (tag3A[3] & 0xffff)) {
+                        segment = 3;
+                        if (limitedInput >= (tag3A[4] & 0xffff)) {
+                            long packed = ((long) limitedInput | 0x500000000L) - (tag3A[5] & 0xffffL);
+                            segment = (int) (packed >>> 32);
+                        }
+                    }
+                }
+            }
+
+            int segmentStart = tag3A[segment];
+            int shift = tag39[segment];
+            int delta = limitedInput - (segmentStart & 0xffff);
+            int shiftLow = shift & 0x1f;
+            long result;
+
+            if (shiftLow == 31) {
+                result = segment == 5 ? 0xffffL : ((tag3A[segment + 1] >>> 16) & 0xffffL);
+                return (int) Math.min(result, tag3B & 0xffffffffL);
+            }
+            if ((shift & 0x10) == 0) {
+                if (shiftLow == 15) {
+                    result = (segmentStart >>> 16) & 0xffffL;
+                    return (int) Math.min(result, tag3B & 0xffffffffL);
+                } else if (shiftLow != 0) {
+                    delta = (delta + (1 << (shiftLow - 1))) >> shiftLow;
+                }
+            } else {
+                delta <<= shift & 0x0f;
+            }
+
+            result = (delta & 0xffffffffL) + ((segmentStart >>> 16) & 0xffffL);
+            return (int) Math.min(result, tag3B & 0xffffffffL);
+        }
+
+        private int gammaBase() {
+            return 0;
+        }
+    }
+
+    private static class PanasonicRawFormat8Buffer {
+
+        private final byte[] source;
+        private final long baseOffset;
+        private final int exactBytes;
+        private final int paddedBytes;
+
+        private PanasonicRawFormat8Buffer(byte[] source, long baseOffset, int exactBytes) {
+            this.source = source;
+            this.baseOffset = baseOffset;
+            this.exactBytes = exactBytes;
+            this.paddedBytes = (int) (((exactBytes + 7L) / 8L) * 8L);
+        }
+
+        private int size() {
+            return paddedBytes;
+        }
+
+        private long getQWord(int wordOffset) {
+            long byteOffset = baseOffset + wordOffset * 8L;
+            long result = 0L;
+            for (int i = 0; i < 8; i++) {
+                long relativeOffset = wordOffset * 8L + i;
+                int value = 0;
+                if (relativeOffset >= 0 && relativeOffset < exactBytes) {
+                    int sourceOffset = (int) (byteOffset + i);
+                    if (sourceOffset >= 0 && sourceOffset < source.length) {
+                        value = source[sourceOffset] & 0xff;
+                    }
+                }
+                result |= (long) BIT_REVERSE_TABLE[value] << (56 - i * 8);
+            }
+            return result;
         }
     }
 
