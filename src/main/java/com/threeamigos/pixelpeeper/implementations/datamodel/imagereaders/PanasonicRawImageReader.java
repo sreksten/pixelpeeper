@@ -108,6 +108,8 @@ public class PanasonicRawImageReader implements ImageReader {
 
     private static final double HIGHLIGHT_ROLL_OFF_START = 0.90;
     private static final double SENSOR_CLIP_START = 0.985;
+    private static final int DEAD_SAMPLE_REPAIR_RADIUS = 2;
+    private static final double DEAD_SAMPLE_REPAIR_MIN_NEIGHBOR = 0.15;
     private static final int RENDER_STRIPE_HEIGHT = 64;
     private static final int MIN_DECODE_UNITS_PER_TASK = 262_144;
 
@@ -578,6 +580,7 @@ public class PanasonicRawImageReader implements ImageReader {
                 int rawCol = metadata.cropLeft + x;
                 double sensorClip = clippedHighlightFactor(raw, metadata, rawRow, rawCol);
                 demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
+                neutralizeCameraClippedHighlight(cameraRgb, sensorClip);
                 colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
                 neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
                 applyHighlightRollOff(linearSrgb);
@@ -614,6 +617,7 @@ public class PanasonicRawImageReader implements ImageReader {
                 } else {
                     demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
                 }
+                neutralizeCameraClippedHighlight(cameraRgb, sensorClip);
                 colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
                 neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
                 applyHighlightRollOff(linearSrgb);
@@ -843,15 +847,49 @@ public class PanasonicRawImageReader implements ImageReader {
 
     private double sample(int[] raw, RawMetadata metadata, int row, int col) {
         int channel = bayerChannel(metadata, row, col);
+        double normalized = repairedNormalizedSample(raw, metadata, row, col, channel);
+        return Math.max(0.0, normalized) * metadata.whiteBalance[channel];
+    }
+
+    private double repairedNormalizedSample(int[] raw, RawMetadata metadata, int row, int col, int channel) {
         int value = raw[row * metadata.rawWidth + col];
+        int black = metadata.blackLevel(channel);
+        double normalized = normalizedSample(raw, metadata, row, col, channel);
+        if (value > Math.max(1, black / 2)) {
+            return normalized;
+        }
+
+        double sum = 0.0;
+        int count = 0;
+        for (int sampleRow = row - DEAD_SAMPLE_REPAIR_RADIUS; sampleRow <= row + DEAD_SAMPLE_REPAIR_RADIUS; sampleRow++) {
+            for (int sampleCol = col - DEAD_SAMPLE_REPAIR_RADIUS; sampleCol <= col + DEAD_SAMPLE_REPAIR_RADIUS; sampleCol++) {
+                if ((sampleRow == row && sampleCol == col)
+                        || !insideRaw(metadata, sampleRow, sampleCol)
+                        || bayerChannel(metadata, sampleRow, sampleCol) != channel) {
+                    continue;
+                }
+                double neighbor = normalizedSample(raw, metadata, sampleRow, sampleCol, channel);
+                if (neighbor > DEAD_SAMPLE_REPAIR_MIN_NEIGHBOR) {
+                    sum += neighbor;
+                    count++;
+                }
+            }
+        }
+
+        if (count >= 2) {
+            return sum / count;
+        }
+        return normalized;
+    }
+
+    private double normalizedSample(int[] raw, RawMetadata metadata, int row, int col, int channel) {
         int black = metadata.blackLevel(channel);
         int white = metadata.whiteLevel(channel);
         int range = white - black;
         if (range <= 0) {
             return 0.0;
         }
-        double normalized = (value - black) / (double) range;
-        return Math.max(0.0, normalized) * metadata.whiteBalance[channel];
+        return (raw[row * metadata.rawWidth + col] - black) / (double) range;
     }
 
     private void colorConvert(double[] cameraRgb, double[][] cameraToSrgb, double[] linearSrgb) {
@@ -934,6 +972,28 @@ public class PanasonicRawImageReader implements ImageReader {
             return value >= end ? 1.0 : 0.0;
         }
         return clamp((value - start) / (end - start), 0.0, 1.0);
+    }
+
+    private void neutralizeCameraClippedHighlight(double[] cameraRgb, double sensorClip) {
+        if (sensorClip <= 0.0) {
+            return;
+        }
+
+        double cameraMin = Math.min(cameraRgb[RED], Math.min(cameraRgb[GREEN], cameraRgb[BLUE]));
+        double cameraMax = Math.max(cameraRgb[RED], Math.max(cameraRgb[GREEN], cameraRgb[BLUE]));
+        if (cameraMax <= 0.0) {
+            return;
+        }
+
+        double chroma = (cameraMax - cameraMin) / cameraMax;
+        double blend = sensorClip * clipFactor(chroma, 0.05, 0.35);
+        if (blend <= 0.0) {
+            return;
+        }
+
+        for (int channel = 0; channel < cameraRgb.length; channel++) {
+            cameraRgb[channel] = cameraRgb[channel] * (1.0 - blend) + cameraMax * blend;
+        }
     }
 
     private void neutralizeClippedHighlight(double[] cameraRgb, double[] linearSrgb, double sensorClip) {
