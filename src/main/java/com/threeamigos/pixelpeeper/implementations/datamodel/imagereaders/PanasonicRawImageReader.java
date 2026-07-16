@@ -17,11 +17,12 @@ import java.util.Locale;
  *
  * <p>This reader performs a plain RAW decode into a viewable RGB image. It reads
  * RW2/TIFF metadata and Panasonic RAW metadata, decompresses/unpacks the sensor
- * data, crops to the active image area, subtracts black level, normalizes white
- * level, uses the Panasonic CFA/Bayer pattern, bilinear-demosaics the mosaic,
- * applies as-shot white balance, applies a model-specific Panasonic
- * camera-to-sRGB matrix, neutralizes near-neutral clipped highlights to avoid
- * purple blown highlights, applies sRGB gamma, and returns an 8-bit
+ * data, crops to the active image area, subtracts black level, normalizes each
+ * channel with its Panasonic linearity limit, uses the Panasonic CFA/Bayer
+ * pattern, bilinear-demosaics the mosaic, applies as-shot white balance,
+ * applies a model-specific Panasonic camera-to-sRGB matrix, neutralizes
+ * near-neutral clipped highlights to avoid purple blown highlights, applies a
+ * soft highlight roll-off, applies sRGB gamma, and returns an 8-bit
  * {@link BufferedImage}.</p>
  *
  * <p>It deliberately does not use the embedded JPEG preview and does not perform
@@ -101,6 +102,8 @@ public class PanasonicRawImageReader implements ImageReader {
     private static final int RED = 0;
     private static final int GREEN = 1;
     private static final int BLUE = 2;
+
+    private static final double HIGHLIGHT_ROLL_OFF_START = 0.90;
 
     private static final int[][] CARDINAL_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     private static final int[][] DIAGONAL_OFFSETS = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
@@ -526,6 +529,7 @@ public class PanasonicRawImageReader implements ImageReader {
                 demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
                 colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
                 neutralizeClippedHighlight(cameraRgb, linearSrgb);
+                applyHighlightRollOff(linearSrgb);
 
                 int red = toByte(clamp(linearSrgb[RED], 0.0, 1.0));
                 int green = toByte(clamp(linearSrgb[GREEN], 0.0, 1.0));
@@ -604,8 +608,13 @@ public class PanasonicRawImageReader implements ImageReader {
         int channel = bayerChannel(metadata, row, col);
         int value = raw[row * metadata.rawWidth + col];
         int black = metadata.blackLevel(channel);
-        double normalized = (value - black) / (double) (metadata.whiteLevel - black);
-        return clamp(normalized, 0.0, 1.0) * metadata.whiteBalance[channel];
+        int white = metadata.whiteLevel(channel);
+        int range = white - black;
+        if (range <= 0) {
+            return 0.0;
+        }
+        double normalized = (value - black) / (double) range;
+        return Math.max(0.0, normalized) * metadata.whiteBalance[channel];
     }
 
     private void colorConvert(double[] cameraRgb, double[][] cameraToSrgb, double[] linearSrgb) {
@@ -627,10 +636,34 @@ public class PanasonicRawImageReader implements ImageReader {
             return;
         }
 
-        double neutral = Math.min(1.0, Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE])));
+        double neutral = 0.2126 * Math.max(0.0, linearSrgb[RED])
+                + 0.7152 * Math.max(0.0, linearSrgb[GREEN])
+                + 0.0722 * Math.max(0.0, linearSrgb[BLUE]);
         for (int channel = 0; channel < linearSrgb.length; channel++) {
             linearSrgb[channel] = linearSrgb[channel] * (1.0 - blend) + neutral * blend;
         }
+    }
+
+    private void applyHighlightRollOff(double[] linearSrgb) {
+        double max = Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE]));
+        if (max <= HIGHLIGHT_ROLL_OFF_START) {
+            return;
+        }
+
+        double compressedMax = compressHighlight(max);
+        double scale = compressedMax / max;
+        for (int channel = 0; channel < linearSrgb.length; channel++) {
+            linearSrgb[channel] *= scale;
+        }
+    }
+
+    private double compressHighlight(double value) {
+        if (value <= HIGHLIGHT_ROLL_OFF_START) {
+            return value;
+        }
+        double shoulder = 1.0 - HIGHLIGHT_ROLL_OFF_START;
+        double excess = value - HIGHLIGHT_ROLL_OFF_START;
+        return HIGHLIGHT_ROLL_OFF_START + shoulder * excess / (excess + shoulder);
     }
 
     private int toByte(double linear) {
@@ -836,7 +869,7 @@ public class PanasonicRawImageReader implements ImageReader {
         private int wbGreenLevel = -1;
         private int wbBlueLevel = -1;
         private final double[] whiteBalance = {1.0, 1.0, 1.0};
-        private int whiteLevel;
+        private final int[] whiteLevel = {-1, -1, -1};
         private CameraMatrix colorMatrix = DEFAULT_COLOR_MATRIX;
         private final int[] bayerPattern = {RED, GREEN, GREEN, BLUE};
         private final PanasonicRawFormat8Metadata rawFormat8 = new PanasonicRawFormat8Metadata();
@@ -866,9 +899,9 @@ public class PanasonicRawImageReader implements ImageReader {
             }
 
             finishCrop();
+            finishBlackLevels();
             finishWhiteLevels();
             finishWhiteBalance();
-            finishBlackLevels();
             finishColorMatrix();
             finishBayerPattern();
         }
@@ -888,15 +921,11 @@ public class PanasonicRawImageReader implements ImageReader {
         }
 
         private void finishWhiteLevels() {
-            whiteLevel = (1 << bitsPerSample) - 1;
-            int lowestLinearityLimit = Integer.MAX_VALUE;
-            for (int limit : linearityLimit) {
-                if (limit > 0) {
-                    lowestLinearityLimit = Math.min(lowestLinearityLimit, limit);
-                }
-            }
-            if (lowestLinearityLimit != Integer.MAX_VALUE) {
-                whiteLevel = Math.min(whiteLevel, lowestLinearityLimit);
+            int nativeWhite = (1 << bitsPerSample) - 1;
+            for (int channel = 0; channel < whiteLevel.length; channel++) {
+                int limit = linearityLimit[channel];
+                int channelWhite = limit > 0 ? Math.min(nativeWhite, limit) : nativeWhite;
+                whiteLevel[channel] = Math.max(blackLevel[channel] + 1, channelWhite);
             }
         }
 
@@ -940,6 +969,10 @@ public class PanasonicRawImageReader implements ImageReader {
 
         private int blackLevel(int channel) {
             return blackLevel[channel];
+        }
+
+        private int whiteLevel(int channel) {
+            return whiteLevel[channel];
         }
     }
 
@@ -1137,13 +1170,13 @@ public class PanasonicRawImageReader implements ImageReader {
                     metadata.compression = entry.firstInt();
                     break;
                 case PANASONIC_TAG_LINEARITY_LIMIT_RED:
-                    metadata.linearityLimit[RED] = adjustedLinearityLimit(entry.firstInt());
+                    metadata.linearityLimit[RED] = entry.firstInt();
                     break;
                 case PANASONIC_TAG_LINEARITY_LIMIT_GREEN:
-                    metadata.linearityLimit[GREEN] = adjustedLinearityLimit(entry.firstInt());
+                    metadata.linearityLimit[GREEN] = entry.firstInt();
                     break;
                 case PANASONIC_TAG_LINEARITY_LIMIT_BLUE:
-                    metadata.linearityLimit[BLUE] = adjustedLinearityLimit(entry.firstInt());
+                    metadata.linearityLimit[BLUE] = entry.firstInt();
                     break;
                 case PANASONIC_TAG_RED_BALANCE:
                     metadata.redBalance = entry.firstInt();
@@ -1236,16 +1269,6 @@ public class PanasonicRawImageReader implements ImageReader {
                 default:
                     break;
             }
-        }
-
-        private int adjustedLinearityLimit(int value) {
-            if (value == 16383) {
-                return value - 64;
-            }
-            if (value == 4095) {
-                return value - 16;
-            }
-            return value;
         }
 
         private void readRawFormat8Tag39(IfdEntry entry) throws IOException {
