@@ -17,7 +17,7 @@ import java.util.Locale;
  * Canon CR3 reader for the lossless CRX raw branch.
  *
  * <p>This reader decodes the CRX sensor mosaic, subtracts black level,
- * normalizes white level, bilinear-demosaics the Bayer data, estimates a
+ * normalizes white level, AHD-demosaics the Bayer data, estimates a
  * conservative scene white balance for display, applies a model-specific
  * camera-to-sRGB matrix, neutralizes near-neutral clipped highlights, applies
  * bounded post-matrix display balance, applies a simple percentile display
@@ -55,8 +55,12 @@ public class CanonCr3RawImageReader implements ImageReader {
 
     private static final int[][] CARDINAL_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     private static final int[][] DIAGONAL_OFFSETS = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+    private static final int[][] DIAGONAL_NW_SE_OFFSETS = {{-1, -1}, {1, 1}};
+    private static final int[][] DIAGONAL_NE_SW_OFFSETS = {{-1, 1}, {1, -1}};
     private static final int[][] HORIZONTAL_OFFSETS = {{0, -1}, {0, 1}};
     private static final int[][] VERTICAL_OFFSETS = {{-1, 0}, {1, 0}};
+    private static final int[][] HORIZONTAL_TWO_OFFSETS = {{0, -2}, {0, 2}};
+    private static final int[][] VERTICAL_TWO_OFFSETS = {{-2, 0}, {2, 0}};
 
     private static final byte[] CANON_UUID = {
             (byte) 0x85, (byte) 0xc0, (byte) 0xb6, (byte) 0x87,
@@ -70,6 +74,12 @@ public class CanonCr3RawImageReader implements ImageReader {
             {0.2126729, 0.7151522, 0.0721750},
             {0.0193339, 0.1191920, 0.9503041}
     };
+
+    private static final double D65_WHITE_X = 0.95047;
+    private static final double D65_WHITE_Y = 1.00000;
+    private static final double D65_WHITE_Z = 1.08883;
+    private static final double LAB_EPSILON = 216.0 / 24389.0;
+    private static final double LAB_KAPPA = 24389.0 / 27.0;
 
     private static final CameraMatrix DEFAULT_COLOR_MATRIX = matrix("EOS RP",
             8608, -2097, -1178, -5425, 13265, 2383, -1149, 2238, 5680);
@@ -1580,6 +1590,7 @@ public class CanonCr3RawImageReader implements ImageReader {
         private final double[][] cameraToSrgb;
         private final double displayScale;
         private final double[] displayChannelScale;
+        private final AhdWorkspace ahdWorkspace = new AhdWorkspace();
 
         private RawRenderer(int[] raw, CrxHeader header, CanonColorMetadata colorMetadata) {
             this.raw = raw;
@@ -1726,6 +1737,148 @@ public class CanonCr3RawImageReader implements ImageReader {
         }
 
         private void demosaic(int row, int col, double[] rgb) {
+            if (!insideAhdWindow(row, col)) {
+                demosaicBilinear(row, col, rgb);
+                return;
+            }
+
+            interpolateAhdCandidate(row, col, true, ahdWorkspace.horizontalRgb);
+            interpolateAhdCandidate(row, col, false, ahdWorkspace.verticalRgb);
+            cameraRgbToLab(ahdWorkspace.horizontalRgb, ahdWorkspace.horizontalLab);
+            cameraRgbToLab(ahdWorkspace.verticalRgb, ahdWorkspace.verticalLab);
+
+            int horizontalHomogeneity = 0;
+            int verticalHomogeneity = 0;
+            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+                for (int colOffset = -1; colOffset <= 1; colOffset++) {
+                    if (rowOffset == 0 && colOffset == 0) {
+                        continue;
+                    }
+
+                    int neighborRow = row + rowOffset;
+                    int neighborCol = col + colOffset;
+                    interpolateAhdCandidate(neighborRow, neighborCol, true, ahdWorkspace.neighborHorizontalRgb);
+                    interpolateAhdCandidate(neighborRow, neighborCol, false, ahdWorkspace.neighborVerticalRgb);
+                    cameraRgbToLab(ahdWorkspace.neighborHorizontalRgb, ahdWorkspace.neighborHorizontalLab);
+                    cameraRgbToLab(ahdWorkspace.neighborVerticalRgb, ahdWorkspace.neighborVerticalLab);
+
+                    double horizontalDistance = labDistance(ahdWorkspace.horizontalLab, ahdWorkspace.neighborHorizontalLab);
+                    double verticalDistance = labDistance(ahdWorkspace.verticalLab, ahdWorkspace.neighborVerticalLab);
+                    if (horizontalDistance < verticalDistance) {
+                        horizontalHomogeneity++;
+                    } else if (verticalDistance < horizontalDistance) {
+                        verticalHomogeneity++;
+                    }
+                }
+            }
+
+            if (horizontalHomogeneity > verticalHomogeneity) {
+                copyRgb(ahdWorkspace.horizontalRgb, rgb);
+            } else if (verticalHomogeneity > horizontalHomogeneity) {
+                copyRgb(ahdWorkspace.verticalRgb, rgb);
+            } else {
+                averageRgb(ahdWorkspace.horizontalRgb, ahdWorkspace.verticalRgb, rgb);
+            }
+        }
+
+        private boolean insideAhdWindow(int row, int col) {
+            return row >= 2 && row < header.fullHeight - 2 && col >= 2 && col < header.fullWidth - 2;
+        }
+
+        private void interpolateAhdCandidate(int row, int col, boolean horizontal, double[] rgb) {
+            int channel = bayerChannel(row, col);
+            double center = sample(row, col);
+
+            if (channel == RED) {
+                rgb[RED] = center;
+                rgb[GREEN] = interpolateGreenAhd(row, col, horizontal);
+                rgb[BLUE] = interpolateDiagonalColorAhd(row, col, BLUE, horizontal, rgb[GREEN]);
+            } else if (channel == BLUE) {
+                rgb[GREEN] = interpolateGreenAhd(row, col, horizontal);
+                rgb[RED] = interpolateDiagonalColorAhd(row, col, RED, horizontal, rgb[GREEN]);
+                rgb[BLUE] = center;
+            } else {
+                rgb[RED] = interpolateCardinalColorAhd(row, col, RED, horizontal, center);
+                rgb[GREEN] = center;
+                rgb[BLUE] = interpolateCardinalColorAhd(row, col, BLUE, horizontal, center);
+            }
+        }
+
+        private double interpolateGreenAhd(int row, int col, boolean horizontal) {
+            int[][] greenOffsets = horizontal ? HORIZONTAL_OFFSETS : VERTICAL_OFFSETS;
+            int[][] sameColorOffsets = horizontal ? HORIZONTAL_TWO_OFFSETS : VERTICAL_TWO_OFFSETS;
+            int channel = bayerChannel(row, col);
+            double green = average(row, col, GREEN, greenOffsets);
+            double sameColor = averageFromOffsetsOrNaN(row, col, channel, sameColorOffsets);
+            if (Double.isNaN(sameColor)) {
+                return green;
+            }
+            return Math.max(0.0, green + (sample(row, col) - sameColor) * 0.5);
+        }
+
+        private double interpolateCardinalColorAhd(int row, int col, int targetChannel, boolean horizontal,
+                                                  double greenCenter) {
+            int[][] primaryOffsets = horizontal ? HORIZONTAL_OFFSETS : VERTICAL_OFFSETS;
+            int[][] fallbackOffsets = horizontal ? VERTICAL_OFFSETS : HORIZONTAL_OFFSETS;
+            double difference = colorDifferenceAverage(row, col, targetChannel, primaryOffsets);
+            if (Double.isNaN(difference)) {
+                difference = colorDifferenceAverage(row, col, targetChannel, fallbackOffsets);
+            }
+            if (Double.isNaN(difference)) {
+                return average(row, col, targetChannel, CARDINAL_OFFSETS);
+            }
+            return Math.max(0.0, greenCenter + difference);
+        }
+
+        private double interpolateDiagonalColorAhd(int row, int col, int targetChannel, boolean horizontal,
+                                                  double greenCenter) {
+            int[][] primaryOffsets = horizontal ? DIAGONAL_NW_SE_OFFSETS : DIAGONAL_NE_SW_OFFSETS;
+            double difference = colorDifferenceAverage(row, col, targetChannel, primaryOffsets);
+            if (Double.isNaN(difference)) {
+                difference = colorDifferenceAverage(row, col, targetChannel, DIAGONAL_OFFSETS);
+            }
+            if (Double.isNaN(difference)) {
+                return average(row, col, targetChannel, DIAGONAL_OFFSETS);
+            }
+            return Math.max(0.0, greenCenter + difference);
+        }
+
+        private double colorDifferenceAverage(int row, int col, int targetChannel, int[][] offsets) {
+            double sum = 0.0;
+            int count = 0;
+            for (int[] offset : offsets) {
+                int sampleRow = row + offset[0];
+                int sampleCol = col + offset[1];
+                if (inside(sampleRow, sampleCol) && bayerChannel(sampleRow, sampleCol) == targetChannel) {
+                    sum += sample(sampleRow, sampleCol) - greenAtSite(sampleRow, sampleCol);
+                    count++;
+                }
+            }
+            return count > 0 ? sum / count : Double.NaN;
+        }
+
+        private double greenAtSite(int row, int col) {
+            if (bayerChannel(row, col) == GREEN) {
+                return sample(row, col);
+            }
+            return average(row, col, GREEN, CARDINAL_OFFSETS);
+        }
+
+        private double averageFromOffsetsOrNaN(int row, int col, int targetChannel, int[][] offsets) {
+            double sum = 0.0;
+            int count = 0;
+            for (int[] offset : offsets) {
+                int sampleRow = row + offset[0];
+                int sampleCol = col + offset[1];
+                if (inside(sampleRow, sampleCol) && bayerChannel(sampleRow, sampleCol) == targetChannel) {
+                    sum += sample(sampleRow, sampleCol);
+                    count++;
+                }
+            }
+            return count > 0 ? sum / count : Double.NaN;
+        }
+
+        private void demosaicBilinear(int row, int col, double[] rgb) {
             int channel = bayerChannel(row, col);
             if (channel == RED) {
                 rgb[RED] = sample(row, col);
@@ -1801,9 +1954,75 @@ public class CanonCr3RawImageReader implements ImageReader {
             return row >= 0 && row < header.fullHeight && col >= 0 && col < header.fullWidth;
         }
 
+        private void cameraRgbToLab(double[] cameraRgb, double[] lab) {
+            double cameraRed = cameraRgb[RED] * whiteBalance[RED];
+            double cameraGreen = cameraRgb[GREEN] * whiteBalance[GREEN];
+            double cameraBlue = cameraRgb[BLUE] * whiteBalance[BLUE];
+            double red = Math.max(0.0, cameraToSrgb[RED][RED] * cameraRed
+                    + cameraToSrgb[RED][GREEN] * cameraGreen
+                    + cameraToSrgb[RED][BLUE] * cameraBlue);
+            double green = Math.max(0.0, cameraToSrgb[GREEN][RED] * cameraRed
+                    + cameraToSrgb[GREEN][GREEN] * cameraGreen
+                    + cameraToSrgb[GREEN][BLUE] * cameraBlue);
+            double blue = Math.max(0.0, cameraToSrgb[BLUE][RED] * cameraRed
+                    + cameraToSrgb[BLUE][GREEN] * cameraGreen
+                    + cameraToSrgb[BLUE][BLUE] * cameraBlue);
+
+            double x = (SRGB_TO_XYZ[0][RED] * red + SRGB_TO_XYZ[0][GREEN] * green + SRGB_TO_XYZ[0][BLUE] * blue)
+                    / D65_WHITE_X;
+            double y = (SRGB_TO_XYZ[1][RED] * red + SRGB_TO_XYZ[1][GREEN] * green + SRGB_TO_XYZ[1][BLUE] * blue)
+                    / D65_WHITE_Y;
+            double z = (SRGB_TO_XYZ[2][RED] * red + SRGB_TO_XYZ[2][GREEN] * green + SRGB_TO_XYZ[2][BLUE] * blue)
+                    / D65_WHITE_Z;
+
+            double fx = labPivot(x);
+            double fy = labPivot(y);
+            double fz = labPivot(z);
+            lab[0] = 116.0 * fy - 16.0;
+            lab[1] = 500.0 * (fx - fy);
+            lab[2] = 200.0 * (fy - fz);
+        }
+
+        private double labPivot(double value) {
+            if (value > LAB_EPSILON) {
+                return Math.cbrt(value);
+            }
+            return (LAB_KAPPA * value + 16.0) / 116.0;
+        }
+
+        private double labDistance(double[] left, double[] right) {
+            return Math.abs(left[0] - right[0])
+                    + Math.abs(left[1] - right[1])
+                    + Math.abs(left[2] - right[2]);
+        }
+
+        private void copyRgb(double[] source, double[] target) {
+            target[RED] = source[RED];
+            target[GREEN] = source[GREEN];
+            target[BLUE] = source[BLUE];
+        }
+
+        private void averageRgb(double[] left, double[] right, double[] target) {
+            target[RED] = (left[RED] + right[RED]) * 0.5;
+            target[GREEN] = (left[GREEN] + right[GREEN]) * 0.5;
+            target[BLUE] = (left[BLUE] + right[BLUE]) * 0.5;
+        }
+
         private int toByte(double linear) {
             double gamma = linear <= 0.0031308 ? 12.92 * linear : 1.055 * Math.pow(linear, 1.0 / 2.4) - 0.055;
             return clamp((int) Math.round(gamma * 255.0), 0, 255);
+        }
+
+        private static final class AhdWorkspace {
+
+            private final double[] horizontalRgb = new double[3];
+            private final double[] verticalRgb = new double[3];
+            private final double[] neighborHorizontalRgb = new double[3];
+            private final double[] neighborVerticalRgb = new double[3];
+            private final double[] horizontalLab = new double[3];
+            private final double[] verticalLab = new double[3];
+            private final double[] neighborHorizontalLab = new double[3];
+            private final double[] neighborVerticalLab = new double[3];
         }
     }
 
