@@ -985,8 +985,25 @@ public class PanasonicRawImageReader implements ImageReader {
             return;
         }
 
+        // A clipped highlight is neutralized toward neutral (its max channel) when it is either
+        // near-neutral (a blown white carrying only a faint differential-clipping cast) or magenta
+        // (green clipped low while red and blue overshoot, the classic purple blown-highlight). A
+        // genuinely colourful highlight such as a gold specular reflection must be preserved.
+        //
+        // near-neutral: low chroma.
+        // magenta: red and blue both well above green. The green deficit is measured relative to the
+        // brightest channel so that warm highlights, where one channel dwarfs the green deficit
+        // (e.g. gold, R>>B>G), are NOT mistaken for magenta (where R and B sit close together above G).
         double chroma = (cameraMax - cameraMin) / cameraMax;
-        double blend = sensorClip * clipFactor(chroma, 0.05, 0.35);
+        double greenDeficit = (Math.min(cameraRgb[RED], cameraRgb[BLUE]) - cameraRgb[GREEN]) / cameraMax;
+        double nearNeutral = 1.0 - clipFactor(chroma, 0.15, 0.35);
+        double magenta = clipFactor(greenDeficit, 0.15, 0.30);
+        // A pixel whose brightest channel overshoots far past the white point is genuinely blown: its
+        // colour is a differential-clipping artifact (e.g. the red-tinged fringe ringing a specular
+        // highlight, where red clips ~2x while green pins at the white point). Desaturate it toward
+        // neutral regardless of hue. The gold body proper sits below the white point and is untouched.
+        double blown = clipFactor(cameraMax, 1.10, 1.80);
+        double blend = sensorClip * Math.max(blown, Math.max(nearNeutral, magenta));
         if (blend <= 0.0) {
             return;
         }
