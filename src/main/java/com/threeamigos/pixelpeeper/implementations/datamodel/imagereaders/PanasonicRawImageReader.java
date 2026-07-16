@@ -1,5 +1,6 @@
 package com.threeamigos.pixelpeeper.implementations.datamodel.imagereaders;
 
+import com.threeamigos.common.util.implementations.concurrency.ParallelTaskExecutor;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReader;
 
 import java.awt.image.BufferedImage;
@@ -9,17 +10,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A small Panasonic RW2 reader for the ImageReader layer.
+ * A Panasonic RW2 reader for the ImageReader layer.
  *
  * <p>This reader performs a plain RAW decode into a viewable RGB image. It reads
  * RW2/TIFF metadata and Panasonic RAW metadata, decompresses/unpacks the sensor
  * data, crops to the active image area, subtracts black level, normalizes each
  * channel with its Panasonic linearity limit, uses the Panasonic CFA/Bayer
- * pattern, AHD-demosaics the mosaic, applies as-shot white balance, applies a
+     * pattern, bilinear-demosaics the mosaic, applies as-shot white balance, applies a
  * model-specific Panasonic camera-to-sRGB matrix, neutralizes near-neutral
  * clipped highlights to avoid purple blown highlights, applies a soft
  * highlight roll-off, applies sRGB gamma, and returns an 8-bit
@@ -104,6 +107,9 @@ public class PanasonicRawImageReader implements ImageReader {
     private static final int BLUE = 2;
 
     private static final double HIGHLIGHT_ROLL_OFF_START = 0.90;
+    private static final double SENSOR_CLIP_START = 0.985;
+    private static final int RENDER_STRIPE_HEIGHT = 64;
+    private static final int MIN_DECODE_UNITS_PER_TASK = 262_144;
 
     private static final int[][] CARDINAL_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     private static final int[][] DIAGONAL_OFFSETS = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
@@ -291,14 +297,18 @@ public class PanasonicRawImageReader implements ImageReader {
     private void decodeLittleEndianContainers(byte[] data, RawMetadata metadata, int[] raw) throws IOException {
         int max = (1 << metadata.bitsPerSample) - 1;
         int shift = shouldShift16BitContainers(data, metadata, max) ? 16 - metadata.bitsPerSample : 0;
-        int offset = metadata.rawOffset;
+        ensureAvailable(data, metadata.rawOffset, raw.length * 2L);
 
-        for (int i = 0; i < raw.length; i++) {
-            ensureAvailable(data, offset, 2);
-            int value = unsignedShortLittleEndian(data, offset) >> shift;
-            raw[i] = clamp(value, 0, max);
-            offset += 2;
-        }
+        int taskCount = parallelTaskCount(raw.length, MIN_DECODE_UNITS_PER_TASK);
+        runParallelTasks(taskCount, "Panasonic uncompressed container decode failed.", taskIndex -> {
+            int start = taskStart(taskIndex, taskCount, raw.length);
+            int end = taskEnd(taskIndex, taskCount, raw.length);
+            for (int i = start; i < end; i++) {
+                int offset = metadata.rawOffset + i * 2;
+                int value = unsignedShortLittleEndian(data, offset) >> shift;
+                raw[i] = clamp(value, 0, max);
+            }
+        });
     }
 
     private boolean shouldShift16BitContainers(byte[] data, RawMetadata metadata, int max) throws IOException {
@@ -315,48 +325,60 @@ public class PanasonicRawImageReader implements ImageReader {
     }
 
     private void decodePacked12BigEndian(byte[] data, RawMetadata metadata, int[] raw) throws IOException {
-        int offset = metadata.rawOffset;
         int max = (1 << metadata.bitsPerSample) - 1;
+        int groups = (raw.length + 1) / 2;
+        ensureAvailable(data, metadata.rawOffset, groups * 3L);
 
-        for (int i = 0; i < raw.length; i += 2) {
-            ensureAvailable(data, offset, 3);
-            int byte0 = data[offset] & 0xff;
-            int byte1 = data[offset + 1] & 0xff;
-            int byte2 = data[offset + 2] & 0xff;
-            raw[i] = clamp((byte0 << 4) | (byte1 >> 4), 0, max);
-            if (i + 1 < raw.length) {
-                raw[i + 1] = clamp(((byte1 & 0x0f) << 8) | byte2, 0, max);
+        int taskCount = parallelTaskCount(groups, MIN_DECODE_UNITS_PER_TASK);
+        runParallelTasks(taskCount, "Panasonic packed 12-bit decode failed.", taskIndex -> {
+            int startGroup = taskStart(taskIndex, taskCount, groups);
+            int endGroup = taskEnd(taskIndex, taskCount, groups);
+            for (int group = startGroup; group < endGroup; group++) {
+                int offset = metadata.rawOffset + group * 3;
+                int i = group * 2;
+                int byte0 = data[offset] & 0xff;
+                int byte1 = data[offset + 1] & 0xff;
+                int byte2 = data[offset + 2] & 0xff;
+                raw[i] = clamp((byte0 << 4) | (byte1 >> 4), 0, max);
+                if (i + 1 < raw.length) {
+                    raw[i + 1] = clamp(((byte1 & 0x0f) << 8) | byte2, 0, max);
+                }
             }
-            offset += 3;
-        }
+        });
     }
 
     private void decodePacked14LittleEndian(byte[] data, RawMetadata metadata, int[] raw) throws IOException {
-        int offset = metadata.rawOffset;
         int max = (1 << metadata.bitsPerSample) - 1;
+        int groups = (raw.length + 3) / 4;
+        ensureAvailable(data, metadata.rawOffset, groups * 7L);
 
-        for (int i = 0; i < raw.length; i += 4) {
-            ensureAvailable(data, offset, 7);
-            int byte0 = data[offset] & 0xff;
-            int byte1 = data[offset + 1] & 0xff;
-            int byte2 = data[offset + 2] & 0xff;
-            int byte3 = data[offset + 3] & 0xff;
-            int byte4 = data[offset + 4] & 0xff;
-            int byte5 = data[offset + 5] & 0xff;
-            int byte6 = data[offset + 6] & 0xff;
+        int taskCount = parallelTaskCount(groups, MIN_DECODE_UNITS_PER_TASK);
+        runParallelTasks(taskCount, "Panasonic packed 14-bit decode failed.", taskIndex -> {
+            int startGroup = taskStart(taskIndex, taskCount, groups);
+            int endGroup = taskEnd(taskIndex, taskCount, groups);
+            for (int group = startGroup; group < endGroup; group++) {
+                int offset = metadata.rawOffset + group * 7;
+                int i = group * 4;
+                int byte0 = data[offset] & 0xff;
+                int byte1 = data[offset + 1] & 0xff;
+                int byte2 = data[offset + 2] & 0xff;
+                int byte3 = data[offset + 3] & 0xff;
+                int byte4 = data[offset + 4] & 0xff;
+                int byte5 = data[offset + 5] & 0xff;
+                int byte6 = data[offset + 6] & 0xff;
 
-            raw[i] = clamp(byte0 | ((byte1 & 0x3f) << 8), 0, max);
-            if (i + 1 < raw.length) {
-                raw[i + 1] = clamp((byte1 >> 6) | (byte2 << 2) | ((byte3 & 0x0f) << 10), 0, max);
+                raw[i] = clamp(byte0 | ((byte1 & 0x3f) << 8), 0, max);
+                if (i + 1 < raw.length) {
+                    raw[i + 1] = clamp((byte1 >> 6) | (byte2 << 2) | ((byte3 & 0x0f) << 10), 0, max);
+                }
+                if (i + 2 < raw.length) {
+                    raw[i + 2] = clamp((byte3 >> 4) | (byte4 << 4) | ((byte5 & 0x03) << 12), 0, max);
+                }
+                if (i + 3 < raw.length) {
+                    raw[i + 3] = clamp(((byte5 & 0xfc) >> 2) | (byte6 << 6), 0, max);
+                }
             }
-            if (i + 2 < raw.length) {
-                raw[i + 2] = clamp((byte3 >> 4) | (byte4 << 4) | ((byte5 & 0x03) << 12), 0, max);
-            }
-            if (i + 3 < raw.length) {
-                raw[i + 3] = clamp(((byte5 & 0xfc) >> 2) | (byte6 << 6), 0, max);
-            }
-            offset += 7;
-        }
+        });
     }
 
     private int[] decodePanasonicPacked(byte[] data, RawMetadata metadata) throws IOException {
@@ -411,7 +433,7 @@ public class PanasonicRawImageReader implements ImageReader {
         validatePanasonicRawFormat8(data, metadata, rawFormat8);
 
         PanasonicRawFormat8Parameters parameters = new PanasonicRawFormat8Parameters(rawFormat8);
-        for (int stripe = 0; stripe < rawFormat8.stripeCount; stripe++) {
+        runParallelTasks(rawFormat8.stripeCount, "Panasonic RW2 RawFormat 8 stripe decode failed.", stripe -> {
             PanasonicRawFormat8Buffer buffer = new PanasonicRawFormat8Buffer(
                     data,
                     rawFormat8.stripeOffsets[stripe],
@@ -421,7 +443,7 @@ public class PanasonicRawImageReader implements ImageReader {
                     rawFormat8.stripeLeft[stripe])) {
                 throw new IOException("Invalid Panasonic RW2 RawFormat 8 compressed stripe.");
             }
-        }
+        });
 
         return raw;
     }
@@ -432,7 +454,8 @@ public class PanasonicRawImageReader implements ImageReader {
             throw new IOException("Invalid Panasonic RW2 RawFormat 8 stripe count: " + rawFormat8.stripeCount);
         }
 
-        int totalWidth = 0;
+        boolean[] coveredColumns = new boolean[metadata.rawWidth];
+        int coveredWidth = 0;
         for (int stripe = 0; stripe < rawFormat8.stripeCount; stripe++) {
             int stripeWidth = rawFormat8.stripeWidth[stripe];
             int stripeHeight = rawFormat8.stripeHeight[stripe];
@@ -449,10 +472,16 @@ public class PanasonicRawImageReader implements ImageReader {
             if (stripeOffset < 0 || stripeOffset > data.length - (long) stripeBytes) {
                 throw new EOFException("Unexpected end of Panasonic RW2 RawFormat 8 stripe data.");
             }
-            totalWidth += stripeWidth;
+            for (int col = stripeLeft; col < stripeLeft + stripeWidth; col++) {
+                if (coveredColumns[col]) {
+                    throw new IOException("Panasonic RW2 RawFormat 8 stripes overlap.");
+                }
+                coveredColumns[col] = true;
+                coveredWidth++;
+            }
         }
 
-        if (totalWidth != metadata.rawWidth) {
+        if (coveredWidth != metadata.rawWidth) {
             throw new IOException("Panasonic RW2 RawFormat 8 stripes do not cover the raw width.");
         }
     }
@@ -525,21 +554,32 @@ public class PanasonicRawImageReader implements ImageReader {
         return raw;
     }
 
-    private BufferedImage render(int[] raw, RawMetadata metadata) {
+    private BufferedImage render(int[] raw, RawMetadata metadata) throws IOException {
         BufferedImage image = new BufferedImage(metadata.cropWidth, metadata.cropHeight, BufferedImage.TYPE_INT_RGB);
         int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+        int stripeCount = (metadata.cropHeight + RENDER_STRIPE_HEIGHT - 1) / RENDER_STRIPE_HEIGHT;
+        runParallelTasks(stripeCount, "Panasonic render task failed.", stripe -> {
+            int startY = stripe * RENDER_STRIPE_HEIGHT;
+            int endY = Math.min(metadata.cropHeight, startY + RENDER_STRIPE_HEIGHT);
+            renderBilinearStripe(raw, metadata, pixels, startY, endY);
+        });
+
+        return image;
+    }
+
+    private void renderBilinearStripe(int[] raw, RawMetadata metadata, int[] pixels, int startY, int endY) {
         double[] cameraRgb = new double[3];
         double[] linearSrgb = new double[3];
         double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
-        AhdWorkspace ahdWorkspace = new AhdWorkspace();
 
-        for (int y = 0; y < metadata.cropHeight; y++) {
+        for (int y = startY; y < endY; y++) {
             int rawRow = metadata.cropTop + y;
             for (int x = 0; x < metadata.cropWidth; x++) {
                 int rawCol = metadata.cropLeft + x;
-                demosaicAhd(raw, metadata, rawRow, rawCol, cameraRgb, ahdWorkspace);
+                double sensorClip = clippedHighlightFactor(raw, metadata, rawRow, rawCol);
+                demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
                 colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
-                neutralizeClippedHighlight(cameraRgb, linearSrgb);
+                neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
                 applyHighlightRollOff(linearSrgb);
 
                 int red = toByte(clamp(linearSrgb[RED], 0.0, 1.0));
@@ -548,23 +588,67 @@ public class PanasonicRawImageReader implements ImageReader {
                 pixels[y * metadata.cropWidth + x] = (red << 16) | (green << 8) | blue;
             }
         }
-
-        return image;
     }
 
-    private void demosaicAhd(int[] raw, RawMetadata metadata, int row, int col, double[] rgb,
-                             AhdWorkspace workspace) {
-        if (!insideAhdWindow(metadata, row, col)) {
-            demosaicBilinear(raw, metadata, row, col, rgb);
-            return;
-        }
+    private void renderAhdStripe(int[] raw, RawMetadata metadata, int[] pixels, int startY, int endY) {
+        int rawStartRow = metadata.cropTop + startY;
+        int rawEndRow = metadata.cropTop + endY;
+        AhdStripe stripe = new AhdStripe(
+                Math.max(0, rawStartRow - 1),
+                Math.min(metadata.rawHeight, rawEndRow + 1),
+                Math.max(0, metadata.cropLeft - 1),
+                Math.min(metadata.rawWidth, metadata.cropRight + 1));
+        precomputeAhdStripe(raw, metadata, stripe);
 
+        double[] cameraRgb = new double[3];
+        double[] linearSrgb = new double[3];
         double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
-        interpolateAhdCandidate(raw, metadata, row, col, true, workspace.horizontalRgb);
-        interpolateAhdCandidate(raw, metadata, row, col, false, workspace.verticalRgb);
-        cameraRgbToLab(workspace.horizontalRgb, cameraToSrgb, workspace.horizontalLab);
-        cameraRgbToLab(workspace.verticalRgb, cameraToSrgb, workspace.verticalLab);
 
+        for (int y = startY; y < endY; y++) {
+            int rawRow = metadata.cropTop + y;
+            for (int x = 0; x < metadata.cropWidth; x++) {
+                int rawCol = metadata.cropLeft + x;
+                double sensorClip = clippedHighlightFactor(raw, metadata, rawRow, rawCol);
+                if (sensorClip <= 0.0 && insideAhdWindow(metadata, rawRow, rawCol)) {
+                    selectAhdRgb(stripe, rawRow, rawCol, cameraRgb);
+                } else {
+                    demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
+                }
+                colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
+                neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
+                applyHighlightRollOff(linearSrgb);
+
+                int red = toByte(clamp(linearSrgb[RED], 0.0, 1.0));
+                int green = toByte(clamp(linearSrgb[GREEN], 0.0, 1.0));
+                int blue = toByte(clamp(linearSrgb[BLUE], 0.0, 1.0));
+                pixels[y * metadata.cropWidth + x] = (red << 16) | (green << 8) | blue;
+            }
+        }
+    }
+
+    private void precomputeAhdStripe(int[] raw, RawMetadata metadata, AhdStripe stripe) {
+        double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
+        double[] rgb = new double[3];
+        double[] lab = new double[3];
+
+        for (int row = stripe.rowStart; row < stripe.rowEnd; row++) {
+            for (int col = stripe.colStart; col < stripe.colEnd; col++) {
+                int offset = stripe.offset(row, col);
+                interpolateAhdCandidate(raw, metadata, row, col, true, rgb);
+                stripe.store(stripe.horizontalRgb, offset, rgb);
+                cameraRgbToLab(rgb, cameraToSrgb, lab);
+                stripe.store(stripe.horizontalLab, offset, lab);
+
+                interpolateAhdCandidate(raw, metadata, row, col, false, rgb);
+                stripe.store(stripe.verticalRgb, offset, rgb);
+                cameraRgbToLab(rgb, cameraToSrgb, lab);
+                stripe.store(stripe.verticalLab, offset, lab);
+            }
+        }
+    }
+
+    private void selectAhdRgb(AhdStripe stripe, int row, int col, double[] rgb) {
+        int centerOffset = stripe.offset(row, col);
         int horizontalHomogeneity = 0;
         int verticalHomogeneity = 0;
         for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
@@ -572,16 +656,9 @@ public class PanasonicRawImageReader implements ImageReader {
                 if (rowOffset == 0 && colOffset == 0) {
                     continue;
                 }
-
-                int neighborRow = row + rowOffset;
-                int neighborCol = col + colOffset;
-                interpolateAhdCandidate(raw, metadata, neighborRow, neighborCol, true, workspace.neighborHorizontalRgb);
-                interpolateAhdCandidate(raw, metadata, neighborRow, neighborCol, false, workspace.neighborVerticalRgb);
-                cameraRgbToLab(workspace.neighborHorizontalRgb, cameraToSrgb, workspace.neighborHorizontalLab);
-                cameraRgbToLab(workspace.neighborVerticalRgb, cameraToSrgb, workspace.neighborVerticalLab);
-
-                double horizontalDistance = labDistance(workspace.horizontalLab, workspace.neighborHorizontalLab);
-                double verticalDistance = labDistance(workspace.verticalLab, workspace.neighborVerticalLab);
+                int neighborOffset = stripe.offset(row + rowOffset, col + colOffset);
+                double horizontalDistance = labDistance(stripe.horizontalLab, centerOffset, neighborOffset);
+                double verticalDistance = labDistance(stripe.verticalLab, centerOffset, neighborOffset);
                 if (horizontalDistance < verticalDistance) {
                     horizontalHomogeneity++;
                 } else if (verticalDistance < horizontalDistance) {
@@ -591,11 +668,11 @@ public class PanasonicRawImageReader implements ImageReader {
         }
 
         if (horizontalHomogeneity > verticalHomogeneity) {
-            copyRgb(workspace.horizontalRgb, rgb);
+            stripe.copyRgb(stripe.horizontalRgb, centerOffset, rgb);
         } else if (verticalHomogeneity > horizontalHomogeneity) {
-            copyRgb(workspace.verticalRgb, rgb);
+            stripe.copyRgb(stripe.verticalRgb, centerOffset, rgb);
         } else {
-            averageRgb(workspace.horizontalRgb, workspace.verticalRgb, rgb);
+            stripe.averageRgb(centerOffset, rgb);
         }
     }
 
@@ -818,38 +895,63 @@ public class PanasonicRawImageReader implements ImageReader {
         return (LAB_KAPPA * value + 16.0) / 116.0;
     }
 
-    private double labDistance(double[] left, double[] right) {
-        return Math.abs(left[0] - right[0])
-                + Math.abs(left[1] - right[1])
-                + Math.abs(left[2] - right[2]);
+    private double labDistance(float[] lab, int leftOffset, int rightOffset) {
+        return Math.abs(lab[leftOffset] - lab[rightOffset])
+                + Math.abs(lab[leftOffset + 1] - lab[rightOffset + 1])
+                + Math.abs(lab[leftOffset + 2] - lab[rightOffset + 2]);
     }
 
-    private void copyRgb(double[] source, double[] target) {
-        target[RED] = source[RED];
-        target[GREEN] = source[GREEN];
-        target[BLUE] = source[BLUE];
+    private double clippedHighlightFactor(int[] raw, RawMetadata metadata, int row, int col) {
+        double[] channelMax = new double[3];
+        for (int rowOffset = -2; rowOffset <= 2; rowOffset++) {
+            int sampleRow = row + rowOffset;
+            for (int colOffset = -2; colOffset <= 2; colOffset++) {
+                int sampleCol = col + colOffset;
+                if (!insideRaw(metadata, sampleRow, sampleCol)) {
+                    continue;
+                }
+                int channel = bayerChannel(metadata, sampleRow, sampleCol);
+                int value = raw[sampleRow * metadata.rawWidth + sampleCol];
+                int black = metadata.blackLevel(channel);
+                int white = metadata.whiteLevel(channel);
+                int range = white - black;
+                if (range <= 0) {
+                    continue;
+                }
+                double normalized = (value - black) / (double) range;
+                channelMax[channel] = Math.max(channelMax[channel], normalized);
+            }
+        }
+
+        double redClip = clipFactor(channelMax[RED], SENSOR_CLIP_START, 1.0);
+        double greenClip = clipFactor(channelMax[GREEN], SENSOR_CLIP_START, 1.0);
+        double blueClip = clipFactor(channelMax[BLUE], SENSOR_CLIP_START, 1.0);
+        return Math.max(greenClip, Math.min(redClip, blueClip));
     }
 
-    private void averageRgb(double[] left, double[] right, double[] target) {
-        target[RED] = (left[RED] + right[RED]) * 0.5;
-        target[GREEN] = (left[GREEN] + right[GREEN]) * 0.5;
-        target[BLUE] = (left[BLUE] + right[BLUE]) * 0.5;
+    private double clipFactor(double value, double start, double end) {
+        if (end <= start) {
+            return value >= end ? 1.0 : 0.0;
+        }
+        return clamp((value - start) / (end - start), 0.0, 1.0);
     }
 
-    private void neutralizeClippedHighlight(double[] cameraRgb, double[] linearSrgb) {
+    private void neutralizeClippedHighlight(double[] cameraRgb, double[] linearSrgb, double sensorClip) {
         double cameraMin = Math.min(cameraRgb[RED], Math.min(cameraRgb[GREEN], cameraRgb[BLUE]));
         double cameraMax = Math.max(cameraRgb[RED], Math.max(cameraRgb[GREEN], cameraRgb[BLUE]));
-        double nearNeutralHighlight = clamp((cameraMin - 0.80) / 0.20, 0.0, 1.0);
-        double clippedHighlight = clamp((cameraMax - 1.0) / 0.25, 0.0, 1.0);
-        double blend = nearNeutralHighlight * clippedHighlight;
+        double nearNeutralHighlight = clipFactor(cameraMin, 0.80, 1.0);
+        double clippedHighlight = clipFactor(cameraMax, 1.0, 1.25);
+        double cameraBlend = nearNeutralHighlight * clippedHighlight;
+        double linearMax = Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE]));
+        double magentaBias = clipFactor(Math.min(linearSrgb[RED], linearSrgb[BLUE]) - linearSrgb[GREEN], 0.015, 0.07);
+        double sensorBlend = sensorClip * clipFactor(linearMax, 0.70, 0.95) * magentaBias;
+        double blend = Math.max(cameraBlend, sensorBlend);
 
         if (blend <= 0.0) {
             return;
         }
 
-        double neutral = 0.2126 * Math.max(0.0, linearSrgb[RED])
-                + 0.7152 * Math.max(0.0, linearSrgb[GREEN])
-                + 0.0722 * Math.max(0.0, linearSrgb[BLUE]);
+        double neutral = Math.max(0.0, linearMax);
         for (int channel = 0; channel < linearSrgb.length; channel++) {
             linearSrgb[channel] = linearSrgb[channel] * (1.0 - blend) + neutral * blend;
         }
@@ -899,11 +1001,83 @@ public class PanasonicRawImageReader implements ImageReader {
         return (int) pixelCount;
     }
 
+    private int parallelTaskCount(int units, int minUnitsPerTask) {
+        if (units <= 1) {
+            return 1;
+        }
+        int tasksBySize = (int) Math.max(1L, ((long) units + minUnitsPerTask - 1L) / minUnitsPerTask);
+        return Math.max(1, Math.min(Runtime.getRuntime().availableProcessors(), tasksBySize));
+    }
+
+    private int taskStart(int taskIndex, int taskCount, int units) {
+        return (int) ((long) taskIndex * units / taskCount);
+    }
+
+    private int taskEnd(int taskIndex, int taskCount, int units) {
+        return (int) ((long) (taskIndex + 1) * units / taskCount);
+    }
+
+    private void runParallelTasks(int taskCount, String failureMessage, ParallelTask task) throws IOException {
+        if (taskCount <= 1) {
+            try {
+                task.run(0);
+            } catch (Throwable e) {
+                rethrowParallelFailure(e, failureMessage);
+            }
+            return;
+        }
+
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        try (ParallelTaskExecutor executor = ParallelTaskExecutor.createExecutor(taskCount)) {
+            for (int taskIndex = 0; taskIndex < taskCount; taskIndex++) {
+                int currentTaskIndex = taskIndex;
+                executor.schedulePlatformThread(() -> {
+                    if (failure.get() != null) {
+                        return;
+                    }
+                    try {
+                        task.run(currentTaskIndex);
+                    } catch (Throwable e) {
+                        failure.compareAndSet(null, e);
+                    }
+                });
+            }
+            executor.awaitCompletion();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(failureMessage, e);
+        }
+
+        Throwable taskFailure = failure.get();
+        if (taskFailure != null) {
+            rethrowParallelFailure(taskFailure, failureMessage);
+        }
+    }
+
+    private void rethrowParallelFailure(Throwable failure, String failureMessage) throws IOException {
+        if (failure instanceof IOException) {
+            throw (IOException) failure;
+        }
+        if (failure instanceof RuntimeException) {
+            throw (RuntimeException) failure;
+        }
+        if (failure instanceof Error) {
+            throw (Error) failure;
+        }
+        throw new IOException(failureMessage, failure);
+    }
+
     private static int unsignedShortLittleEndian(byte[] data, int offset) {
         return (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8);
     }
 
     private void ensureAvailable(byte[] data, int offset, int length) throws EOFException {
+        if (offset < 0 || length < 0 || offset > data.length - length) {
+            throw new EOFException("Unexpected end of Panasonic RW2 raw data.");
+        }
+    }
+
+    private void ensureAvailable(byte[] data, int offset, long length) throws EOFException {
         if (offset < 0 || length < 0 || offset > data.length - length) {
             throw new EOFException("Unexpected end of Panasonic RW2 raw data.");
         }
@@ -1026,16 +1200,57 @@ public class PanasonicRawImageReader implements ImageReader {
         };
     }
 
-    private static class AhdWorkspace {
+    private interface ParallelTask {
 
-        private final double[] horizontalRgb = new double[3];
-        private final double[] verticalRgb = new double[3];
-        private final double[] neighborHorizontalRgb = new double[3];
-        private final double[] neighborVerticalRgb = new double[3];
-        private final double[] horizontalLab = new double[3];
-        private final double[] verticalLab = new double[3];
-        private final double[] neighborHorizontalLab = new double[3];
-        private final double[] neighborVerticalLab = new double[3];
+        void run(int taskIndex) throws Exception;
+    }
+
+    private static class AhdStripe {
+
+        private final int rowStart;
+        private final int rowEnd;
+        private final int colStart;
+        private final int colEnd;
+        private final int width;
+        private final float[] horizontalRgb;
+        private final float[] verticalRgb;
+        private final float[] horizontalLab;
+        private final float[] verticalLab;
+
+        private AhdStripe(int rowStart, int rowEnd, int colStart, int colEnd) {
+            this.rowStart = rowStart;
+            this.rowEnd = rowEnd;
+            this.colStart = colStart;
+            this.colEnd = colEnd;
+            this.width = colEnd - colStart;
+            int values = (rowEnd - rowStart) * width * 3;
+            this.horizontalRgb = new float[values];
+            this.verticalRgb = new float[values];
+            this.horizontalLab = new float[values];
+            this.verticalLab = new float[values];
+        }
+
+        private int offset(int row, int col) {
+            return ((row - rowStart) * width + (col - colStart)) * 3;
+        }
+
+        private void store(float[] target, int offset, double[] values) {
+            target[offset] = (float) values[RED];
+            target[offset + GREEN] = (float) values[GREEN];
+            target[offset + BLUE] = (float) values[BLUE];
+        }
+
+        private void copyRgb(float[] source, int offset, double[] target) {
+            target[RED] = source[offset];
+            target[GREEN] = source[offset + GREEN];
+            target[BLUE] = source[offset + BLUE];
+        }
+
+        private void averageRgb(int offset, double[] target) {
+            target[RED] = (horizontalRgb[offset] + verticalRgb[offset]) * 0.5;
+            target[GREEN] = (horizontalRgb[offset + GREEN] + verticalRgb[offset + GREEN]) * 0.5;
+            target[BLUE] = (horizontalRgb[offset + BLUE] + verticalRgb[offset + BLUE]) * 0.5;
+        }
     }
 
     private static class CameraMatrix {
@@ -1130,8 +1345,8 @@ public class PanasonicRawImageReader implements ImageReader {
         }
 
         private void finishCrop() {
-            int top = cropTop >= 0 ? cropTop : 0;
-            int left = cropLeft >= 0 ? cropLeft : 0;
+            int top = Math.max(cropTop, 0);
+            int left = Math.max(cropLeft, 0);
             int bottom = cropBottom > top ? cropBottom : rawHeight;
             int right = cropRight > left ? cropRight : rawWidth;
 
@@ -1301,7 +1516,7 @@ public class PanasonicRawImageReader implements ImageReader {
             }
         }
 
-        private boolean hasPanasonicRawMarker(List<IfdEntry> entries) throws IOException {
+        private boolean hasPanasonicRawMarker(List<IfdEntry> entries) {
             for (IfdEntry entry : entries) {
                 if (entry.tag == 0x0001 && entry.count == 4) {
                     return true;
@@ -1372,15 +1587,19 @@ public class PanasonicRawImageReader implements ImageReader {
                     metadata.rawHeight = entry.firstInt();
                     break;
                 case PANASONIC_TAG_SENSOR_TOP:
+                case PANASONIC_TAG_CROP_TOP:
                     metadata.cropTop = entry.firstInt();
                     break;
                 case PANASONIC_TAG_SENSOR_LEFT:
+                case PANASONIC_TAG_CROP_LEFT:
                     metadata.cropLeft = entry.firstInt();
                     break;
                 case PANASONIC_TAG_SENSOR_BOTTOM:
+                case PANASONIC_TAG_CROP_BOTTOM:
                     metadata.cropBottom = entry.firstInt();
                     break;
                 case PANASONIC_TAG_SENSOR_RIGHT:
+                case PANASONIC_TAG_CROP_RIGHT:
                     metadata.cropRight = entry.firstInt();
                     break;
                 case PANASONIC_TAG_CFA_PATTERN:
@@ -1427,18 +1646,6 @@ public class PanasonicRawImageReader implements ImageReader {
                     break;
                 case PANASONIC_TAG_RAW_FORMAT:
                     metadata.panasonicEncoding = entry.firstInt();
-                    break;
-                case PANASONIC_TAG_CROP_TOP:
-                    metadata.cropTop = entry.firstInt();
-                    break;
-                case PANASONIC_TAG_CROP_LEFT:
-                    metadata.cropLeft = entry.firstInt();
-                    break;
-                case PANASONIC_TAG_CROP_BOTTOM:
-                    metadata.cropBottom = entry.firstInt();
-                    break;
-                case PANASONIC_TAG_CROP_RIGHT:
-                    metadata.cropRight = entry.firstInt();
                     break;
                 case PANASONIC_TAG_RAW_FORMAT_8_TABLE_39:
                     readRawFormat8Tag39(entry);
@@ -1744,10 +1951,6 @@ public class PanasonicRawImageReader implements ImageReader {
 
     private static int typeSize(int type) {
         switch (type) {
-            case TYPE_BYTE:
-            case TYPE_ASCII:
-            case TYPE_UNDEFINED:
-                return 1;
             case TYPE_SHORT:
                 return 2;
             case TYPE_LONG:
@@ -1852,7 +2055,6 @@ public class PanasonicRawImageReader implements ImageReader {
                 return false;
             }
 
-            int dataMax = tag3B2;
             int qwords = buffer.size() >> 3;
             int doubleWidth = 4 * halfWidth;
             int[] lineBase = new int[4];
@@ -1924,7 +2126,7 @@ public class PanasonicRawImageReader implements ImageReader {
 
                     int nextBitPortion = bitPortion - ((coefficient >>> 16) & 0x1f);
                     int component = componentIndex(col & 3);
-                    int sample = clamp(currentBase[component] + delta, 0, dataMax);
+                    int sample = clamp(currentBase[component] + delta, 0, tag3B2);
                     group[component] = sample;
                     putRawFormat8Sample(raw, rawWidth, rawHeight, leftMargin, destRow, col, gamma(sample));
 
@@ -2132,9 +2334,7 @@ public class PanasonicRawImageReader implements ImageReader {
         }
 
         private void clearBuffer() {
-            for (int i = 0; i < buffer.length; i++) {
-                buffer[i] = 0;
-            }
+            Arrays.fill(buffer, (byte) 0);
         }
 
         private void readIntoBuffer(int bufferOffset, int length) throws IOException {
