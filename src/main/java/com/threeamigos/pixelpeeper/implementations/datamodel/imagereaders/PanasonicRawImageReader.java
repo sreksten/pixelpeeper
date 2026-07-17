@@ -18,21 +18,25 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * A Panasonic RW2 reader for the ImageReader layer.
  *
- * <p>This reader performs a plain RAW decode into a viewable RGB image. It reads
- * RW2/TIFF metadata and Panasonic RAW metadata, decompresses/unpacks the sensor
- * data, crops to the active image area, subtracts black level, normalizes each
- * channel with its Panasonic linearity limit, uses the Panasonic CFA/Bayer
-     * pattern, bilinear-demosaics the mosaic, applies as-shot white balance, applies a
- * model-specific Panasonic camera-to-sRGB matrix, neutralizes near-neutral
- * clipped highlights to avoid purple blown highlights, applies a soft
- * highlight roll-off, applies sRGB gamma, and returns an 8-bit
- * {@link BufferedImage}.</p>
+ * <p>This reader decodes the RW2 sensor data and then renders it following LibRaw's default
+ * {@code dcraw_process} pipeline, so the output matches LibRaw's rendering. It reads RW2/TIFF
+ * metadata and Panasonic RAW metadata, decompresses/unpacks the sensor data (a faithful port of
+ * LibRaw's Panasonic decoders), then applies LibRaw's post-processing: inline per-channel black
+ * subtraction and {@code adjust_maximum}, {@code scale_colors} with the as-shot camera white
+ * balance and highlight clipping, {@code ahd_interpolate} (AHD demosaic), {@code convert_to_rgb}
+ * with a model-specific camera-to-sRGB matrix ({@code cam_xyz_coeff}), and the BT.709 output tone
+ * curve ({@code gamma_curve}). It returns an 8-bit {@link BufferedImage} cropped to the active
+ * sensor area.</p>
  *
- * <p>It deliberately does not use the embedded JPEG preview and does not perform
- * full RAW-development or optical corrections: no chromatic-aberration
- * correction, no lens module corrections, no distortion correction, no
- * perspective correction, no vignetting correction, no sharpening, no denoise,
- * no camera/DxO-style tone curve, contrast, saturation, vibrance, HSL, or local
+ * <p>The emulated LibRaw parameters are: camera/as-shot white balance ({@code use_camera_wb}),
+ * fixed exposure ({@code no_auto_bright}, no histogram auto-brightness), highlight clipping
+ * ({@code highlight == 0}), sRGB output colour ({@code output_color == 1}), 8-bit output
+ * ({@code output_bps == 8}) and the BT.709 gamma ({@code gamm = {0.45, 4.5}}).</p>
+ *
+ * <p>It deliberately does not use the embedded JPEG preview and does not perform optical
+ * corrections beyond LibRaw's default processing: no chromatic-aberration correction, no lens
+ * module corrections, no distortion, perspective or vignetting correction, no sharpening, no
+ * denoise, and no camera/DxO-style tone curve, contrast, saturation, vibrance, HSL, or local
  * contrast rendering.</p>
  */
 public class PanasonicRawImageReader implements ImageReader {
@@ -106,34 +110,34 @@ public class PanasonicRawImageReader implements ImageReader {
     private static final int GREEN = 1;
     private static final int BLUE = 2;
 
-    private static final double HIGHLIGHT_ROLL_OFF_START = 0.90;
-    private static final double SENSOR_CLIP_START = 0.985;
-    private static final int DEAD_SAMPLE_REPAIR_RADIUS = 2;
-    private static final double DEAD_SAMPLE_REPAIR_MIN_NEIGHBOR = 0.15;
-    private static final int RENDER_STRIPE_HEIGHT = 64;
     private static final int MIN_DECODE_UNITS_PER_TASK = 262_144;
-
-    private static final int[][] CARDINAL_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    private static final int[][] DIAGONAL_OFFSETS = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
-    private static final int[][] DIAGONAL_NW_SE_OFFSETS = {{-1, -1}, {1, 1}};
-    private static final int[][] DIAGONAL_NE_SW_OFFSETS = {{-1, 1}, {1, -1}};
-    private static final int[][] HORIZONTAL_OFFSETS = {{0, -1}, {0, 1}};
-    private static final int[][] VERTICAL_OFFSETS = {{-1, 0}, {1, 0}};
-    private static final int[][] HORIZONTAL_TWO_OFFSETS = {{0, -2}, {0, 2}};
-    private static final int[][] VERTICAL_TWO_OFFSETS = {{-2, 0}, {2, 0}};
     private static final int[] BIT_REVERSE_TABLE = buildBitReverseTable();
 
-    private static final double D65_WHITE_X = 0.95047;
-    private static final double D65_WHITE_Y = 1.00000;
-    private static final double D65_WHITE_Z = 1.08883;
-    private static final double LAB_EPSILON = 216.0 / 24389.0;
-    private static final double LAB_KAPPA = 24389.0 / 27.0;
+    // LibRaw dcraw_process defaults emulated here (see LibRaw src/utils/init_close_utils.cpp):
+    //   use_camera_wb = 1 (camera/as-shot WB), no_auto_bright = 1 (fixed exposure),
+    //   highlight = 0 (clip), output_color = 1 (sRGB), output_bps = 8,
+    //   gamm = {0.45, 4.5} (BT.709), user_qual = 3 (AHD), bright = 1.
+    private static final double GAMMA_POWER = 0.45;                 // gamm[0]
+    private static final double GAMMA_TOE_SLOPE = 4.5;              // gamm[1]
+    private static final int GAMMA_LUT_SIZE = 0x10000;
+    private static final int OUTPUT_WHITE = 65535;                  // 16-bit full scale
+    private static final int GAMMA_IMAX = 0x10000;                  // (0x2000<<3)/bright, no_auto_bright
+    private static final double ADJUST_MAXIMUM_THRESHOLD = 0.75;    // LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD
 
-    private static final double[][] SRGB_TO_XYZ = {
+    // LibRaw AHD demosaic tile size (libraw/libraw_const.h LIBRAW_AHD_TILE) and its 6-pixel overlap.
+    private static final int AHD_TILE = 512;
+    private static final int AHD_TILE_OVERLAP = 6;
+    private static final int AHD_BORDER = 5;
+
+    // sRGB(linear) -> XYZ (D65), LibRaw_constants::xyz_rgb.
+    private static final double[][] XYZ_RGB = {
             {0.4124564, 0.3575761, 0.1804375},
             {0.2126729, 0.7151522, 0.0721750},
             {0.0193339, 0.1191920, 0.9503041}
     };
+
+    // LibRaw_constants::d65_white.
+    private static final double[] D65_WHITE = {0.95047, 1.00000, 1.08883};
 
     private static final CameraMatrix DEFAULT_COLOR_MATRIX = matrix("DC-GH5",
             7641, -2336, -605, -3218, 11299, 2187, -485, 1338, 5121);
@@ -556,509 +560,478 @@ public class PanasonicRawImageReader implements ImageReader {
         return raw;
     }
 
+    /**
+     * Renders the decoded Bayer mosaic to an 8-bit sRGB image following LibRaw's default
+     * {@code dcraw_process} pipeline: black subtraction and white-point handling
+     * ({@code raw2image}/{@code adjust_maximum}), camera white balance and per-channel scaling
+     * ({@code scale_colors}), AHD demosaicing ({@code ahd_interpolate}), camera-to-sRGB colour
+     * conversion ({@code convert_to_rgb}), and the BT.709 output tone curve ({@code gamma_curve}).
+     * The emulated parameters are camera/as-shot white balance, highlight clipping, fixed exposure
+     * (no auto-brightness), sRGB output colour and 8-bit output.
+     */
     private BufferedImage render(int[] raw, RawMetadata metadata) throws IOException {
-        BufferedImage image = new BufferedImage(metadata.cropWidth, metadata.cropHeight, BufferedImage.TYPE_INT_RGB);
-        int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-        int stripeCount = (metadata.cropHeight + RENDER_STRIPE_HEIGHT - 1) / RENDER_STRIPE_HEIGHT;
-        runParallelTasks(stripeCount, "Panasonic render task failed.", stripe -> {
-            int startY = stripe * RENDER_STRIPE_HEIGHT;
-            int endY = Math.min(metadata.cropHeight, startY + RENDER_STRIPE_HEIGHT);
-            renderBilinearStripe(raw, metadata, pixels, startY, endY);
-        });
+        int width = metadata.rawWidth;
+        int height = metadata.rawHeight;
+        double[][] rgbCam = metadata.colorMatrix.rgbCam;
 
-        return image;
+        char[] image = scaleColors(raw, metadata, width, height);
+        ahdInterpolate(image, width, height, metadata, rgbCam);
+        char[] curve = buildGammaCurve(GAMMA_POWER, GAMMA_TOE_SLOPE, GAMMA_IMAX);
+        return convertToRgb(image, width, metadata, rgbCam, curve);
     }
 
-    private void renderBilinearStripe(int[] raw, RawMetadata metadata, int[] pixels, int startY, int endY) {
-        double[] cameraRgb = new double[3];
-        double[] linearSrgb = new double[3];
-        double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
+    /**
+     * Port of LibRaw's inline black subtraction ({@code copy_bayer}), {@code adjust_maximum} and
+     * {@code scale_colors}. Produces the 4-plane interleaved image LibRaw's demosaic consumes, with
+     * the single Bayer sample of each site placed in its colour plane (both greens in plane 1) after
+     * per-channel black subtraction and white-balance scaling, clipped to 16-bit range.
+     */
+    private char[] scaleColors(int[] raw, RawMetadata metadata, int width, int height) throws IOException {
+        int redBlack = metadata.blackLevel(RED);
+        int greenBlack = metadata.blackLevel(GREEN);
+        int blueBlack = metadata.blackLevel(BLUE);
+        int minBlack = Math.min(redBlack, Math.min(greenBlack, blueBlack));
 
-        for (int y = startY; y < endY; y++) {
-            int rawRow = metadata.cropTop + y;
-            for (int x = 0; x < metadata.cropWidth; x++) {
-                int rawCol = metadata.cropLeft + x;
-                double sensorClip = clippedHighlightFactor(raw, metadata, rawRow, rawCol);
-                demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
-                neutralizeCameraClippedHighlight(cameraRgb, sensorClip);
-                colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
-                neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
-                applyHighlightRollOff(linearSrgb);
-
-                int red = toByte(clamp(linearSrgb[RED], 0.0, 1.0));
-                int green = toByte(clamp(linearSrgb[GREEN], 0.0, 1.0));
-                int blue = toByte(clamp(linearSrgb[BLUE], 0.0, 1.0));
-                pixels[y * metadata.cropWidth + x] = (red << 16) | (green << 8) | blue;
-            }
-        }
-    }
-
-    private void renderAhdStripe(int[] raw, RawMetadata metadata, int[] pixels, int startY, int endY) {
-        int rawStartRow = metadata.cropTop + startY;
-        int rawEndRow = metadata.cropTop + endY;
-        AhdStripe stripe = new AhdStripe(
-                Math.max(0, rawStartRow - 1),
-                Math.min(metadata.rawHeight, rawEndRow + 1),
-                Math.max(0, metadata.cropLeft - 1),
-                Math.min(metadata.rawWidth, metadata.cropRight + 1));
-        precomputeAhdStripe(raw, metadata, stripe);
-
-        double[] cameraRgb = new double[3];
-        double[] linearSrgb = new double[3];
-        double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
-
-        for (int y = startY; y < endY; y++) {
-            int rawRow = metadata.cropTop + y;
-            for (int x = 0; x < metadata.cropWidth; x++) {
-                int rawCol = metadata.cropLeft + x;
-                double sensorClip = clippedHighlightFactor(raw, metadata, rawRow, rawCol);
-                if (sensorClip <= 0.0 && insideAhdWindow(metadata, rawRow, rawCol)) {
-                    selectAhdRgb(stripe, rawRow, rawCol, cameraRgb);
-                } else {
-                    demosaicBilinear(raw, metadata, rawRow, rawCol, cameraRgb);
-                }
-                neutralizeCameraClippedHighlight(cameraRgb, sensorClip);
-                colorConvert(cameraRgb, cameraToSrgb, linearSrgb);
-                neutralizeClippedHighlight(cameraRgb, linearSrgb, sensorClip);
-                applyHighlightRollOff(linearSrgb);
-
-                int red = toByte(clamp(linearSrgb[RED], 0.0, 1.0));
-                int green = toByte(clamp(linearSrgb[GREEN], 0.0, 1.0));
-                int blue = toByte(clamp(linearSrgb[BLUE], 0.0, 1.0));
-                pixels[y * metadata.cropWidth + x] = (red << 16) | (green << 8) | blue;
-            }
-        }
-    }
-
-    private void precomputeAhdStripe(int[] raw, RawMetadata metadata, AhdStripe stripe) {
-        double[][] cameraToSrgb = metadata.colorMatrix.cameraToSrgb;
-        double[] rgb = new double[3];
-        double[] lab = new double[3];
-
-        for (int row = stripe.rowStart; row < stripe.rowEnd; row++) {
-            for (int col = stripe.colStart; col < stripe.colEnd; col++) {
-                int offset = stripe.offset(row, col);
-                interpolateAhdCandidate(raw, metadata, row, col, true, rgb);
-                stripe.store(stripe.horizontalRgb, offset, rgb);
-                cameraRgbToLab(rgb, cameraToSrgb, lab);
-                stripe.store(stripe.horizontalLab, offset, lab);
-
-                interpolateAhdCandidate(raw, metadata, row, col, false, rgb);
-                stripe.store(stripe.verticalRgb, offset, rgb);
-                cameraRgbToLab(rgb, cameraToSrgb, lab);
-                stripe.store(stripe.verticalLab, offset, lab);
-            }
-        }
-    }
-
-    private void selectAhdRgb(AhdStripe stripe, int row, int col, double[] rgb) {
-        int centerOffset = stripe.offset(row, col);
-        int horizontalHomogeneity = 0;
-        int verticalHomogeneity = 0;
-        for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
-            for (int colOffset = -1; colOffset <= 1; colOffset++) {
-                if (rowOffset == 0 && colOffset == 0) {
-                    continue;
-                }
-                int neighborOffset = stripe.offset(row + rowOffset, col + colOffset);
-                double horizontalDistance = labDistance(stripe.horizontalLab, centerOffset, neighborOffset);
-                double verticalDistance = labDistance(stripe.verticalLab, centerOffset, neighborOffset);
-                if (horizontalDistance < verticalDistance) {
-                    horizontalHomogeneity++;
-                } else if (verticalDistance < horizontalDistance) {
-                    verticalHomogeneity++;
-                }
-            }
-        }
-
-        if (horizontalHomogeneity > verticalHomogeneity) {
-            stripe.copyRgb(stripe.horizontalRgb, centerOffset, rgb);
-        } else if (verticalHomogeneity > horizontalHomogeneity) {
-            stripe.copyRgb(stripe.verticalRgb, centerOffset, rgb);
-        } else {
-            stripe.averageRgb(centerOffset, rgb);
-        }
-    }
-
-    private boolean insideAhdWindow(RawMetadata metadata, int row, int col) {
-        return row >= 2 && row < metadata.rawHeight - 2 && col >= 2 && col < metadata.rawWidth - 2;
-    }
-
-    private void interpolateAhdCandidate(int[] raw, RawMetadata metadata, int row, int col, boolean horizontal,
-                                         double[] rgb) {
-        int channel = bayerChannel(metadata, row, col);
-        double center = sample(raw, metadata, row, col);
-
-        if (channel == RED) {
-            rgb[RED] = center;
-            rgb[GREEN] = interpolateGreenAhd(raw, metadata, row, col, horizontal);
-            rgb[BLUE] = interpolateDiagonalColorAhd(raw, metadata, row, col, BLUE, horizontal, rgb[GREEN]);
-        } else if (channel == BLUE) {
-            rgb[GREEN] = interpolateGreenAhd(raw, metadata, row, col, horizontal);
-            rgb[RED] = interpolateDiagonalColorAhd(raw, metadata, row, col, RED, horizontal, rgb[GREEN]);
-            rgb[BLUE] = center;
-        } else {
-            rgb[RED] = interpolateCardinalColorAhd(raw, metadata, row, col, RED, horizontal, center);
-            rgb[GREEN] = center;
-            rgb[BLUE] = interpolateCardinalColorAhd(raw, metadata, row, col, BLUE, horizontal, center);
-        }
-    }
-
-    private double interpolateGreenAhd(int[] raw, RawMetadata metadata, int row, int col, boolean horizontal) {
-        int[][] greenOffsets = horizontal ? HORIZONTAL_OFFSETS : VERTICAL_OFFSETS;
-        int[][] sameColorOffsets = horizontal ? HORIZONTAL_TWO_OFFSETS : VERTICAL_TWO_OFFSETS;
-        int channel = bayerChannel(metadata, row, col);
-        double green = average(raw, metadata, row, col, GREEN, greenOffsets);
-        double sameColor = averageFromOffsetsOrNaN(raw, metadata, row, col, channel, sameColorOffsets);
-        if (Double.isNaN(sameColor)) {
-            return green;
-        }
-        return Math.max(0.0, green + (sample(raw, metadata, row, col) - sameColor) * 0.5);
-    }
-
-    private double interpolateCardinalColorAhd(int[] raw, RawMetadata metadata, int row, int col, int targetChannel,
-                                              boolean horizontal, double greenCenter) {
-        int[][] primaryOffsets = horizontal ? HORIZONTAL_OFFSETS : VERTICAL_OFFSETS;
-        int[][] fallbackOffsets = horizontal ? VERTICAL_OFFSETS : HORIZONTAL_OFFSETS;
-        double difference = colorDifferenceAverage(raw, metadata, row, col, targetChannel, primaryOffsets);
-        if (Double.isNaN(difference)) {
-            difference = colorDifferenceAverage(raw, metadata, row, col, targetChannel, fallbackOffsets);
-        }
-        if (Double.isNaN(difference)) {
-            return average(raw, metadata, row, col, targetChannel, CARDINAL_OFFSETS);
-        }
-        return Math.max(0.0, greenCenter + difference);
-    }
-
-    private double interpolateDiagonalColorAhd(int[] raw, RawMetadata metadata, int row, int col, int targetChannel,
-                                              boolean horizontal, double greenCenter) {
-        int[][] primaryOffsets = horizontal ? DIAGONAL_NW_SE_OFFSETS : DIAGONAL_NE_SW_OFFSETS;
-        double difference = colorDifferenceAverage(raw, metadata, row, col, targetChannel, primaryOffsets);
-        if (Double.isNaN(difference)) {
-            difference = colorDifferenceAverage(raw, metadata, row, col, targetChannel, DIAGONAL_OFFSETS);
-        }
-        if (Double.isNaN(difference)) {
-            return average(raw, metadata, row, col, targetChannel, DIAGONAL_OFFSETS);
-        }
-        return Math.max(0.0, greenCenter + difference);
-    }
-
-    private double colorDifferenceAverage(int[] raw, RawMetadata metadata, int row, int col, int targetChannel,
-                                          int[][] offsets) {
-        double sum = 0.0;
-        int count = 0;
-        for (int[] offset : offsets) {
-            int sampleRow = row + offset[0];
-            int sampleCol = col + offset[1];
-            if (insideRaw(metadata, sampleRow, sampleCol)
-                    && bayerChannel(metadata, sampleRow, sampleCol) == targetChannel) {
-                sum += sample(raw, metadata, sampleRow, sampleCol) - greenAtSite(raw, metadata, sampleRow, sampleCol);
-                count++;
-            }
-        }
-        return count > 0 ? sum / count : Double.NaN;
-    }
-
-    private double greenAtSite(int[] raw, RawMetadata metadata, int row, int col) {
-        if (bayerChannel(metadata, row, col) == GREEN) {
-            return sample(raw, metadata, row, col);
-        }
-        return average(raw, metadata, row, col, GREEN, CARDINAL_OFFSETS);
-    }
-
-    private double averageFromOffsetsOrNaN(int[] raw, RawMetadata metadata, int row, int col, int targetChannel,
-                                           int[][] offsets) {
-        double sum = 0.0;
-        int count = 0;
-        for (int[] offset : offsets) {
-            int sampleRow = row + offset[0];
-            int sampleCol = col + offset[1];
-            if (insideRaw(metadata, sampleRow, sampleCol)
-                    && bayerChannel(metadata, sampleRow, sampleCol) == targetChannel) {
-                sum += sample(raw, metadata, sampleRow, sampleCol);
-                count++;
-            }
-        }
-        return count > 0 ? sum / count : Double.NaN;
-    }
-
-    private void demosaicBilinear(int[] raw, RawMetadata metadata, int row, int col, double[] rgb) {
-        int channel = bayerChannel(metadata, row, col);
-        double red;
-        double green;
-        double blue;
-
-        if (channel == RED) {
-            red = sample(raw, metadata, row, col);
-            green = average(raw, metadata, row, col, GREEN, CARDINAL_OFFSETS);
-            blue = average(raw, metadata, row, col, BLUE, DIAGONAL_OFFSETS);
-        } else if (channel == BLUE) {
-            red = average(raw, metadata, row, col, RED, DIAGONAL_OFFSETS);
-            green = average(raw, metadata, row, col, GREEN, CARDINAL_OFFSETS);
-            blue = sample(raw, metadata, row, col);
-        } else {
-            green = sample(raw, metadata, row, col);
-            red = average(raw, metadata, row, col, RED, CARDINAL_OFFSETS);
-            blue = average(raw, metadata, row, col, BLUE, CARDINAL_OFFSETS);
-        }
-
-        rgb[RED] = red;
-        rgb[GREEN] = green;
-        rgb[BLUE] = blue;
-    }
-
-    private double average(int[] raw, RawMetadata metadata, int row, int col, int targetChannel, int[][] offsets) {
-        double sum = 0.0;
-        int count = 0;
-
-        for (int[] offset : offsets) {
-            int sampleRow = row + offset[0];
-            int sampleCol = col + offset[1];
-            if (insideRaw(metadata, sampleRow, sampleCol) && bayerChannel(metadata, sampleRow, sampleCol) == targetChannel) {
-                sum += sample(raw, metadata, sampleRow, sampleCol);
-                count++;
-            }
-        }
-
-        if (count == 0) {
-            return nearest(raw, metadata, row, col, targetChannel);
-        }
-        return sum / count;
-    }
-
-    private double nearest(int[] raw, RawMetadata metadata, int row, int col, int targetChannel) {
-        for (int radius = 1; radius <= 3; radius++) {
-            double sum = 0.0;
-            int count = 0;
-            for (int sampleRow = row - radius; sampleRow <= row + radius; sampleRow++) {
-                for (int sampleCol = col - radius; sampleCol <= col + radius; sampleCol++) {
-                    if (insideRaw(metadata, sampleRow, sampleCol) && bayerChannel(metadata, sampleRow, sampleCol) == targetChannel) {
-                        sum += sample(raw, metadata, sampleRow, sampleCol);
-                        count++;
+        // data_maximum: max of the black-subtracted (floored) samples, matching copy_bayer.
+        // Computed as a parallel reduction over row bands (each task writes its own slot).
+        int dataMaxTaskCount = parallelTaskCount(height, 1);
+        int[] dataMaxPerTask = new int[dataMaxTaskCount];
+        runParallelTasks(dataMaxTaskCount, "Panasonic data-maximum task failed.", taskIndex -> {
+            int startRow = taskStart(taskIndex, dataMaxTaskCount, height);
+            int endRow = taskEnd(taskIndex, dataMaxTaskCount, height);
+            int localMaximum = 0;
+            for (int row = startRow; row < endRow; row++) {
+                int base = row * width;
+                for (int col = 0; col < width; col++) {
+                    int value = raw[base + col] - metadata.blackLevel(bayerChannel(metadata, row, col));
+                    if (value > localMaximum) {
+                        localMaximum = value;
                     }
                 }
             }
-            if (count > 0) {
-                return sum / count;
-            }
-        }
-        return sample(raw, metadata, row, col);
-    }
-
-    private double sample(int[] raw, RawMetadata metadata, int row, int col) {
-        int channel = bayerChannel(metadata, row, col);
-        double normalized = repairedNormalizedSample(raw, metadata, row, col, channel);
-        return Math.max(0.0, normalized) * metadata.whiteBalance[channel];
-    }
-
-    private double repairedNormalizedSample(int[] raw, RawMetadata metadata, int row, int col, int channel) {
-        int value = raw[row * metadata.rawWidth + col];
-        int black = metadata.blackLevel(channel);
-        double normalized = normalizedSample(raw, metadata, row, col, channel);
-        if (value > Math.max(1, black / 2)) {
-            return normalized;
-        }
-
-        double sum = 0.0;
-        int count = 0;
-        for (int sampleRow = row - DEAD_SAMPLE_REPAIR_RADIUS; sampleRow <= row + DEAD_SAMPLE_REPAIR_RADIUS; sampleRow++) {
-            for (int sampleCol = col - DEAD_SAMPLE_REPAIR_RADIUS; sampleCol <= col + DEAD_SAMPLE_REPAIR_RADIUS; sampleCol++) {
-                if ((sampleRow == row && sampleCol == col)
-                        || !insideRaw(metadata, sampleRow, sampleCol)
-                        || bayerChannel(metadata, sampleRow, sampleCol) != channel) {
-                    continue;
-                }
-                double neighbor = normalizedSample(raw, metadata, sampleRow, sampleCol, channel);
-                if (neighbor > DEAD_SAMPLE_REPAIR_MIN_NEIGHBOR) {
-                    sum += neighbor;
-                    count++;
-                }
+            dataMaxPerTask[taskIndex] = localMaximum;
+        });
+        int dataMaximum = 0;
+        for (int localMaximum : dataMaxPerTask) {
+            if (localMaximum > dataMaximum) {
+                dataMaximum = localMaximum;
             }
         }
 
-        if (count >= 2) {
-            return sum / count;
+        // maximum -= black (black == minBlack), then adjust_maximum (only lowers, top 25% band).
+        int maximum = ((1 << metadata.bitsPerSample) - 1) - minBlack;
+        if (dataMaximum > 0 && dataMaximum < maximum && dataMaximum > maximum * ADJUST_MAXIMUM_THRESHOLD) {
+            maximum = dataMaximum;
         }
-        return normalized;
-    }
-
-    private double normalizedSample(int[] raw, RawMetadata metadata, int row, int col, int channel) {
-        int black = metadata.blackLevel(channel);
-        int white = metadata.whiteLevel(channel);
-        int range = white - black;
-        if (range <= 0) {
-            return 0.0;
+        if (maximum <= 0) {
+            maximum = 1;
         }
-        return (raw[row * metadata.rawWidth + col] - black) / (double) range;
-    }
 
-    private void colorConvert(double[] cameraRgb, double[][] cameraToSrgb, double[] linearSrgb) {
-        for (int channel = 0; channel < linearSrgb.length; channel++) {
-            linearSrgb[channel] = cameraToSrgb[channel][RED] * cameraRgb[RED]
-                    + cameraToSrgb[channel][GREEN] * cameraRgb[GREEN]
-                    + cameraToSrgb[channel][BLUE] * cameraRgb[BLUE];
+        // Camera (as-shot) white balance: pre_mul == cam_mul, green == 1, pre_mul[3] == pre_mul[1].
+        double[] preMul = {
+                metadata.whiteBalance[RED], metadata.whiteBalance[GREEN], metadata.whiteBalance[BLUE],
+                metadata.whiteBalance[GREEN]
+        };
+        if (preMul[1] == 0) {
+            preMul[1] = 1;
         }
-    }
-
-    private void cameraRgbToLab(double[] cameraRgb, double[][] cameraToSrgb, double[] lab) {
-        double red = Math.max(0.0, cameraToSrgb[RED][RED] * cameraRgb[RED]
-                + cameraToSrgb[RED][GREEN] * cameraRgb[GREEN]
-                + cameraToSrgb[RED][BLUE] * cameraRgb[BLUE]);
-        double green = Math.max(0.0, cameraToSrgb[GREEN][RED] * cameraRgb[RED]
-                + cameraToSrgb[GREEN][GREEN] * cameraRgb[GREEN]
-                + cameraToSrgb[GREEN][BLUE] * cameraRgb[BLUE]);
-        double blue = Math.max(0.0, cameraToSrgb[BLUE][RED] * cameraRgb[RED]
-                + cameraToSrgb[BLUE][GREEN] * cameraRgb[GREEN]
-                + cameraToSrgb[BLUE][BLUE] * cameraRgb[BLUE]);
-
-        double x = (SRGB_TO_XYZ[0][RED] * red + SRGB_TO_XYZ[0][GREEN] * green + SRGB_TO_XYZ[0][BLUE] * blue)
-                / D65_WHITE_X;
-        double y = (SRGB_TO_XYZ[1][RED] * red + SRGB_TO_XYZ[1][GREEN] * green + SRGB_TO_XYZ[1][BLUE] * blue)
-                / D65_WHITE_Y;
-        double z = (SRGB_TO_XYZ[2][RED] * red + SRGB_TO_XYZ[2][GREEN] * green + SRGB_TO_XYZ[2][BLUE] * blue)
-                / D65_WHITE_Z;
-
-        double fx = labPivot(x);
-        double fy = labPivot(y);
-        double fz = labPivot(z);
-        lab[0] = 116.0 * fy - 16.0;
-        lab[1] = 500.0 * (fx - fy);
-        lab[2] = 200.0 * (fy - fz);
-    }
-
-    private double labPivot(double value) {
-        if (value > LAB_EPSILON) {
-            return Math.cbrt(value);
+        if (preMul[3] == 0) {
+            preMul[3] = preMul[1];
         }
-        return (LAB_KAPPA * value + 16.0) / 116.0;
-    }
+        double dmin = Double.MAX_VALUE;
+        for (int c = 0; c < 4; c++) {
+            if (dmin > preMul[c]) {
+                dmin = preMul[c];
+            }
+        }
+        // highlight == 0 (clip): dmax is forced to dmin so the darkest multiplier maps maximum to
+        // full scale and brighter channels clip.
+        double dmax = dmin;
+        double[] scaleMul = new double[4];
+        if (dmax > 0.00001) {
+            for (int c = 0; c < 4; c++) {
+                scaleMul[c] = (preMul[c] / dmax) * (double) OUTPUT_WHITE / maximum;
+            }
+        } else {
+            Arrays.fill(scaleMul, 1.0);
+        }
 
-    private double labDistance(float[] lab, int leftOffset, int rightOffset) {
-        return Math.abs(lab[leftOffset] - lab[rightOffset])
-                + Math.abs(lab[leftOffset + 1] - lab[rightOffset + 1])
-                + Math.abs(lab[leftOffset + 2] - lab[rightOffset + 2]);
-    }
-
-    private double clippedHighlightFactor(int[] raw, RawMetadata metadata, int row, int col) {
-        double[] channelMax = new double[3];
-        for (int rowOffset = -2; rowOffset <= 2; rowOffset++) {
-            int sampleRow = row + rowOffset;
-            for (int colOffset = -2; colOffset <= 2; colOffset++) {
-                int sampleCol = col + colOffset;
-                if (!insideRaw(metadata, sampleRow, sampleCol)) {
-                    continue;
+        long pixelCount = (long) width * height;
+        if (pixelCount * 4L > Integer.MAX_VALUE) {
+            throw new IOException("Panasonic RW2 image is too large to render: " + width + "x" + height);
+        }
+        char[] image = new char[(int) (pixelCount * 4L)];
+        int taskCount = parallelTaskCount(height, 1);
+        runParallelTasks(taskCount, "Panasonic scale-colors task failed.", taskIndex -> {
+            int startRow = taskStart(taskIndex, taskCount, height);
+            int endRow = taskEnd(taskIndex, taskCount, height);
+            for (int row = startRow; row < endRow; row++) {
+                int base = row * width;
+                for (int col = 0; col < width; col++) {
+                    int channel = bayerChannel(metadata, row, col);
+                    int value = raw[base + col] - metadata.blackLevel(channel);
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    int scaled = clip16((int) (value * scaleMul[channel]));
+                    image[(base + col) * 4 + channel] = (char) scaled;
                 }
-                int channel = bayerChannel(metadata, sampleRow, sampleCol);
-                int value = raw[sampleRow * metadata.rawWidth + sampleCol];
-                int black = metadata.blackLevel(channel);
-                int white = metadata.whiteLevel(channel);
-                int range = white - black;
-                if (range <= 0) {
-                    continue;
+            }
+        });
+        return image;
+    }
+
+    /**
+     * Port of LibRaw's AHD demosaic ({@code ahd_interpolate} in src/demosaic/ahd_demosaic.cpp):
+     * fills the R/G/B planes of {@code image} in place. The five-pixel frame is filled by
+     * {@link #borderInterpolate} and the interior is processed in overlapping tiles. Tiles are
+     * distributed across parallel tasks by tile row; per-tile scratch buffers are thread-local.
+     */
+    private void ahdInterpolate(char[] image, int width, int height, RawMetadata metadata, double[][] rgbCam)
+            throws IOException {
+        // cielab initialization: cbrt LUT and xyz_cam = xyz_rgb * rgb_cam / d65_white.
+        float[] cbrt = new float[0x10000];
+        for (int i = 0; i < cbrt.length; i++) {
+            double r = i / 65535.0;
+            cbrt[i] = (float) (r > 0.008856 ? Math.pow(r, 1.0 / 3.0) : 7.787 * r + 16.0 / 116.0);
+        }
+        double[][] xyzCam = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < 3; k++) {
+                    sum += XYZ_RGB[i][k] * rgbCam[k][j];
                 }
-                double normalized = (value - black) / (double) range;
-                channelMax[channel] = Math.max(channelMax[channel], normalized);
+                xyzCam[i][j] = sum / D65_WHITE[i];
             }
         }
 
-        double redClip = clipFactor(channelMax[RED], SENSOR_CLIP_START, 1.0);
-        double greenClip = clipFactor(channelMax[GREEN], SENSOR_CLIP_START, 1.0);
-        double blueClip = clipFactor(channelMax[BLUE], SENSOR_CLIP_START, 1.0);
-        return Math.max(greenClip, Math.min(redClip, blueClip));
-    }
+        borderInterpolate(image, width, height, metadata, AHD_BORDER);
 
-    private double clipFactor(double value, double start, double end) {
-        if (end <= start) {
-            return value >= end ? 1.0 : 0.0;
+        // Enumerate every overlapping tile (top-left corners). Distinct tiles write disjoint image
+        // regions, so they can all run in parallel; tiles are spread round-robin over a pool capped
+        // at the available cores (each thread reuses one set of scratch buffers across its tiles).
+        int step = AHD_TILE - AHD_TILE_OVERLAP;
+        int tileCount = 0;
+        for (int top = 2; top < height - 5; top += step) {
+            for (int left = 2; left < width - 5; left += step) {
+                tileCount++;
+            }
         }
-        return clamp((value - start) / (end - start), 0.0, 1.0);
-    }
-
-    private void neutralizeCameraClippedHighlight(double[] cameraRgb, double sensorClip) {
-        if (sensorClip <= 0.0) {
+        if (tileCount <= 0) {
             return;
         }
-
-        double cameraMin = Math.min(cameraRgb[RED], Math.min(cameraRgb[GREEN], cameraRgb[BLUE]));
-        double cameraMax = Math.max(cameraRgb[RED], Math.max(cameraRgb[GREEN], cameraRgb[BLUE]));
-        if (cameraMax <= 0.0) {
-            return;
+        int[] tileTops = new int[tileCount];
+        int[] tileLefts = new int[tileCount];
+        int index = 0;
+        for (int top = 2; top < height - 5; top += step) {
+            for (int left = 2; left < width - 5; left += step) {
+                tileTops[index] = top;
+                tileLefts[index] = left;
+                index++;
+            }
         }
 
-        // A clipped highlight is neutralized toward neutral (its max channel) when it is either
-        // near-neutral (a blown white carrying only a faint differential-clipping cast) or magenta
-        // (green clipped low while red and blue overshoot, the classic purple blown-highlight). A
-        // genuinely colourful highlight such as a gold specular reflection must be preserved.
-        //
-        // near-neutral: low chroma.
-        // magenta: red and blue both well above green. The green deficit is measured relative to the
-        // brightest channel so that warm highlights, where one channel dwarfs the green deficit
-        // (e.g. gold, R>>B>G), are NOT mistaken for magenta (where R and B sit close together above G).
-        double chroma = (cameraMax - cameraMin) / cameraMax;
-        double greenDeficit = (Math.min(cameraRgb[RED], cameraRgb[BLUE]) - cameraRgb[GREEN]) / cameraMax;
-        double nearNeutral = 1.0 - clipFactor(chroma, 0.15, 0.35);
-        double magenta = clipFactor(greenDeficit, 0.15, 0.30);
-        // A pixel whose brightest channel overshoots far past the white point is genuinely blown: its
-        // colour is a differential-clipping artifact (e.g. the red-tinged fringe ringing a specular
-        // highlight, where red clips ~2x while green pins at the white point). Desaturate it toward
-        // neutral regardless of hue. The gold body proper sits below the white point and is untouched.
-        double blown = clipFactor(cameraMax, 1.10, 1.80);
-        double blend = sensorClip * Math.max(blown, Math.max(nearNeutral, magenta));
-        if (blend <= 0.0) {
-            return;
-        }
+        int totalTiles = tileCount;
+        int taskCount = parallelTaskCount(totalTiles, 1);
+        runParallelTasks(taskCount, "Panasonic AHD interpolation task failed.", taskIndex -> {
+            int directionStride = AHD_TILE * AHD_TILE * 3;
+            char[] tileRgb = new char[2 * directionStride];
+            short[] tileLab = new short[2 * directionStride];
+            byte[] homogeneity = new byte[AHD_TILE * AHD_TILE * 2];
+            for (int tile = taskIndex; tile < totalTiles; tile += taskCount) {
+                int top = tileTops[tile];
+                int left = tileLefts[tile];
+                ahdInterpolateGreen(image, width, height, metadata, top, left, tileRgb);
+                ahdInterpolateRedBlue(image, width, height, metadata, top, left, tileRgb, tileLab, xyzCam, cbrt);
+                ahdBuildHomogeneity(tileLab, top, left, width, height, homogeneity);
+                ahdCombine(image, width, height, top, left, tileRgb, homogeneity);
+            }
+        });
+    }
 
-        for (int channel = 0; channel < cameraRgb.length; channel++) {
-            cameraRgb[channel] = cameraRgb[channel] * (1.0 - blend) + cameraMax * blend;
+    /** LibRaw {@code ahd_interpolate_green_h_and_v}: green interpolation in both directions. */
+    private void ahdInterpolateGreen(char[] image, int width, int height, RawMetadata metadata,
+                                     int top, int left, char[] tileRgb) {
+        int rowStride = width * 4;
+        int directionStride = AHD_TILE * AHD_TILE * 3;
+        int rowLimit = Math.min(top + AHD_TILE, height - 2);
+        int colLimit = Math.min(left + AHD_TILE, width - 2);
+        for (int row = top; row < rowLimit; row++) {
+            int col = left + (bayerChannel(metadata, row, left) & 1);
+            int channel = bayerChannel(metadata, row, col);
+            for (; col < colLimit; col += 2) {
+                int p = (row * width + col) * 4;
+                int center = image[p + channel];
+
+                int greenLeft = image[p - 4 + 1];
+                int greenRight = image[p + 4 + 1];
+                int valueH = ((greenLeft + center + greenRight) * 2 - image[p - 8 + channel] - image[p + 8 + channel]) >> 2;
+
+                int greenUp = image[p - rowStride + 1];
+                int greenDown = image[p + rowStride + 1];
+                int valueV = ((greenUp + center + greenDown) * 2
+                        - image[p - 2 * rowStride + channel] - image[p + 2 * rowStride + channel]) >> 2;
+
+                int tileIndex = ((row - top) * AHD_TILE + (col - left)) * 3;
+                tileRgb[tileIndex + 1] = (char) ulim(valueH, greenLeft, greenRight);
+                tileRgb[directionStride + tileIndex + 1] = (char) ulim(valueV, greenUp, greenDown);
+            }
         }
     }
 
-    private void neutralizeClippedHighlight(double[] cameraRgb, double[] linearSrgb, double sensorClip) {
-        double cameraMin = Math.min(cameraRgb[RED], Math.min(cameraRgb[GREEN], cameraRgb[BLUE]));
-        double cameraMax = Math.max(cameraRgb[RED], Math.max(cameraRgb[GREEN], cameraRgb[BLUE]));
-        double nearNeutralHighlight = clipFactor(cameraMin, 0.80, 1.0);
-        double clippedHighlight = clipFactor(cameraMax, 1.0, 1.25);
-        double cameraBlend = nearNeutralHighlight * clippedHighlight;
-        double linearMax = Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE]));
-        double magentaBias = clipFactor(Math.min(linearSrgb[RED], linearSrgb[BLUE]) - linearSrgb[GREEN], 0.015, 0.07);
-        double sensorBlend = sensorClip * clipFactor(linearMax, 0.70, 0.95) * magentaBias;
-        double blend = Math.max(cameraBlend, sensorBlend);
-
-        if (blend <= 0.0) {
-            return;
-        }
-
-        double neutral = Math.max(0.0, linearMax);
-        for (int channel = 0; channel < linearSrgb.length; channel++) {
-            linearSrgb[channel] = linearSrgb[channel] * (1.0 - blend) + neutral * blend;
+    /**
+     * LibRaw {@code ahd_interpolate_r_and_b_and_convert_to_cielab}: interpolates the remaining two
+     * colours for both directions and converts each candidate to CIE Lab.
+     */
+    private void ahdInterpolateRedBlue(char[] image, int width, int height, RawMetadata metadata,
+                                       int top, int left, char[] tileRgb, short[] tileLab,
+                                       double[][] xyzCam, float[] cbrt) {
+        int rowStride = width * 4;
+        int directionStride = AHD_TILE * AHD_TILE * 3;
+        int tileRowStride = AHD_TILE * 3;
+        int rowLimit = Math.min(top + AHD_TILE - 1, height - 3);
+        int colLimit = Math.min(left + AHD_TILE - 1, width - 3);
+        for (int direction = 0; direction < 2; direction++) {
+            int dirBase = direction * directionStride;
+            for (int row = top + 1; row < rowLimit; row++) {
+                for (int col = left + 1; col < colLimit; col++) {
+                    int p = (row * width + col) * 4;
+                    int rix = dirBase + ((row - top) * AHD_TILE + (col - left)) * 3;
+                    int channel = 2 - bayerChannel(metadata, row, col);
+                    int value;
+                    if (channel == 1) {
+                        channel = bayerChannel(metadata, row + 1, col);
+                        int other = 2 - channel;
+                        value = image[p + 1] + ((image[p - 4 + other] + image[p + 4 + other]
+                                - tileRgb[rix - 3 + 1] - tileRgb[rix + 3 + 1]) >> 1);
+                        tileRgb[rix + other] = (char) clip16(value);
+                        value = image[p + 1] + ((image[p - rowStride + channel] + image[p + rowStride + channel]
+                                - tileRgb[rix - tileRowStride + 1] - tileRgb[rix + tileRowStride + 1]) >> 1);
+                    } else {
+                        int above = p - rowStride;
+                        int below = p + rowStride;
+                        value = tileRgb[rix + 1] + ((image[above - 4 + channel] + image[above + 4 + channel]
+                                + image[below - 4 + channel] + image[below + 4 + channel]
+                                - tileRgb[rix - tileRowStride - 3 + 1] - tileRgb[rix - tileRowStride + 3 + 1]
+                                - tileRgb[rix + tileRowStride - 3 + 1] - tileRgb[rix + tileRowStride + 3 + 1] + 1) >> 2);
+                    }
+                    tileRgb[rix + channel] = (char) clip16(value);
+                    channel = bayerChannel(metadata, row, col);
+                    tileRgb[rix + channel] = image[p + channel];
+                    cielab(tileRgb, rix, tileLab, rix, xyzCam, cbrt);
+                }
+            }
         }
     }
 
-    private void applyHighlightRollOff(double[] linearSrgb) {
-        double max = Math.max(linearSrgb[RED], Math.max(linearSrgb[GREEN], linearSrgb[BLUE]));
-        if (max <= HIGHLIGHT_ROLL_OFF_START) {
-            return;
+    /** LibRaw {@code cielab}: converts a camera-RGB triple to scaled CIE Lab shorts. */
+    private void cielab(char[] tileRgb, int rgbIndex, short[] tileLab, int labIndex, double[][] xyzCam, float[] cbrt) {
+        double x = 0.5;
+        double y = 0.5;
+        double z = 0.5;
+        for (int c = 0; c < 3; c++) {
+            int value = tileRgb[rgbIndex + c];
+            x += xyzCam[0][c] * value;
+            y += xyzCam[1][c] * value;
+            z += xyzCam[2][c] * value;
         }
+        double fx = cbrt[clip16((int) x)];
+        double fy = cbrt[clip16((int) y)];
+        double fz = cbrt[clip16((int) z)];
+        tileLab[labIndex] = (short) (64 * (116 * fy - 16));
+        tileLab[labIndex + 1] = (short) (64 * 500 * (fx - fy));
+        tileLab[labIndex + 2] = (short) (64 * 200 * (fy - fz));
+    }
 
-        double compressedMax = compressHighlight(max);
-        double scale = compressedMax / max;
-        for (int channel = 0; channel < linearSrgb.length; channel++) {
-            linearSrgb[channel] *= scale;
+    /** LibRaw {@code ahd_interpolate_build_homogeneity_map}. */
+    private void ahdBuildHomogeneity(short[] tileLab, int top, int left, int width, int height, byte[] homogeneity) {
+        Arrays.fill(homogeneity, (byte) 0);
+        int directionStride = AHD_TILE * AHD_TILE * 3;
+        int tileRowStride = AHD_TILE * 3;
+        int[] neighborOffsets = {-3, 3, -tileRowStride, tileRowStride};
+        int[] lDiff = new int[8];
+        int[] abDiff = new int[8];
+        int rowLimit = Math.min(top + AHD_TILE - 2, height - 4);
+        int colLimit = Math.min(left + AHD_TILE - 2, width - 4);
+        for (int row = top + 2; row < rowLimit; row++) {
+            int tr = row - top;
+            for (int col = left + 2; col < colLimit; col++) {
+                int tc = col - left;
+                int tileOffset = (tr * AHD_TILE + tc) * 3;
+                for (int direction = 0; direction < 2; direction++) {
+                    int lix = direction * directionStride + tileOffset;
+                    for (int i = 0; i < 4; i++) {
+                        int adjacent = lix + neighborOffsets[i];
+                        lDiff[direction * 4 + i] = Math.abs(tileLab[lix] - tileLab[adjacent]);
+                        int da = tileLab[lix + 1] - tileLab[adjacent + 1];
+                        int db = tileLab[lix + 2] - tileLab[adjacent + 2];
+                        abDiff[direction * 4 + i] = da * da + db * db;
+                    }
+                }
+                int leps = Math.min(Math.max(lDiff[0], lDiff[1]), Math.max(lDiff[6], lDiff[7]));
+                int abeps = Math.min(Math.max(abDiff[0], abDiff[1]), Math.max(abDiff[6], abDiff[7]));
+                for (int direction = 0; direction < 2; direction++) {
+                    int homogeneous = 0;
+                    for (int i = 0; i < 4; i++) {
+                        if (lDiff[direction * 4 + i] <= leps && abDiff[direction * 4 + i] <= abeps) {
+                            homogeneous++;
+                        }
+                    }
+                    homogeneity[(tr * AHD_TILE + tc) * 2 + direction] = (byte) homogeneous;
+                }
+            }
         }
     }
 
-    private double compressHighlight(double value) {
-        if (value <= HIGHLIGHT_ROLL_OFF_START) {
-            return value;
+    /** LibRaw {@code ahd_interpolate_combine_homogeneous_pixels}: writes the chosen RGB into image. */
+    private void ahdCombine(char[] image, int width, int height, int top, int left,
+                            char[] tileRgb, byte[] homogeneity) {
+        int directionStride = AHD_TILE * AHD_TILE * 3;
+        int rowLimit = Math.min(top + AHD_TILE - 3, height - 5);
+        int colLimit = Math.min(left + AHD_TILE - 3, width - 5);
+        for (int row = top + 3; row < rowLimit; row++) {
+            int tr = row - top;
+            for (int col = left + 3; col < colLimit; col++) {
+                int tc = col - left;
+                int hm0 = 0;
+                int hm1 = 0;
+                for (int i = tr - 1; i <= tr + 1; i++) {
+                    for (int j = tc - 1; j <= tc + 1; j++) {
+                        int base = (i * AHD_TILE + j) * 2;
+                        hm0 += homogeneity[base];
+                        hm1 += homogeneity[base + 1];
+                    }
+                }
+                int p = (row * width + col) * 4;
+                int tileOffset = (tr * AHD_TILE + tc) * 3;
+                if (hm0 != hm1) {
+                    int source = (hm1 > hm0 ? directionStride : 0) + tileOffset;
+                    image[p] = tileRgb[source];
+                    image[p + 1] = tileRgb[source + 1];
+                    image[p + 2] = tileRgb[source + 2];
+                } else {
+                    int h = tileOffset;
+                    int v = directionStride + tileOffset;
+                    image[p] = (char) ((tileRgb[h] + tileRgb[v]) >> 1);
+                    image[p + 1] = (char) ((tileRgb[h + 1] + tileRgb[v + 1]) >> 1);
+                    image[p + 2] = (char) ((tileRgb[h + 2] + tileRgb[v + 2]) >> 1);
+                }
+            }
         }
-        double shoulder = 1.0 - HIGHLIGHT_ROLL_OFF_START;
-        double excess = value - HIGHLIGHT_ROLL_OFF_START;
-        return HIGHLIGHT_ROLL_OFF_START + shoulder * excess / (excess + shoulder);
     }
 
-    private int toByte(double linear) {
-        double gamma = linear <= 0.0031308 ? 12.92 * linear : 1.055 * Math.pow(linear, 1.0 / 2.4) - 0.055;
-        return clamp((int) Math.round(gamma * 255.0), 0, 255);
+    /** LibRaw {@code border_interpolate}: fills the outer frame by averaging same-colour neighbours. */
+    private void borderInterpolate(char[] image, int width, int height, RawMetadata metadata, int border) {
+        int[] sum = new int[8];
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (col == border && row >= border && row < height - border) {
+                    col = width - border;
+                }
+                Arrays.fill(sum, 0);
+                for (int y = row - 1; y <= row + 1; y++) {
+                    for (int x = col - 1; x <= col + 1; x++) {
+                        if (y >= 0 && y < height && x >= 0 && x < width) {
+                            int f = bayerChannel(metadata, y, x);
+                            sum[f] += image[(y * width + x) * 4 + f];
+                            sum[f + 4]++;
+                        }
+                    }
+                }
+                int f = bayerChannel(metadata, row, col);
+                for (int c = 0; c < 3; c++) {
+                    if (c != f && sum[c + 4] != 0) {
+                        image[(row * width + col) * 4 + c] = (char) (sum[c] / sum[c + 4]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Port of LibRaw's {@code gamma_curve} (src/utils/curves.cpp) for the forward tone curve
+     * (mode 2). Builds the 0x10000-entry 16-bit lookup table for the BT.709 curve; {@code imax}
+     * is the input value mapped to full scale (65536 with no auto-brightness and bright == 1).
+     */
+    private char[] buildGammaCurve(double power, double toeSlope, int imax) {
+        double[] g = new double[5];
+        double[] bnd = {0.0, 0.0};
+        g[0] = power;
+        g[1] = toeSlope;
+        bnd[g[1] >= 1 ? 1 : 0] = 1.0;
+        if (g[1] != 0 && (g[1] - 1) * (g[0] - 1) <= 0) {
+            for (int i = 0; i < 48; i++) {
+                g[2] = (bnd[0] + bnd[1]) / 2;
+                if (g[0] != 0) {
+                    bnd[((Math.pow(g[2] / g[1], -g[0]) - 1) / g[0] - 1 / g[2]) > -1 ? 1 : 0] = g[2];
+                } else {
+                    bnd[(g[2] / Math.exp(1 - 1 / g[2]) < g[1]) ? 1 : 0] = g[2];
+                }
+            }
+            g[3] = g[2] / g[1];
+            if (g[0] != 0) {
+                g[4] = g[2] * (1 / g[0] - 1);
+            }
+        }
+
+        char[] curve = new char[GAMMA_LUT_SIZE];
+        for (int i = 0; i < GAMMA_LUT_SIZE; i++) {
+            curve[i] = (char) 0xffff;
+            double r = (double) i / imax;
+            if (r < 1) {
+                double value = r < g[3]
+                        ? r * g[1]
+                        : (g[0] != 0 ? Math.pow(r, g[0]) * (1 + g[4]) - g[4] : Math.log(r) * g[2] + 1);
+                curve[i] = (char) clip16((int) (0x10000 * value));
+            }
+        }
+        return curve;
+    }
+
+    /**
+     * Port of LibRaw's {@code convert_to_rgb} (sRGB output, so out_cam == rgb_cam) followed by the
+     * 8-bit tone-curve output ({@code curve[value] >> 8}). Only the active crop is emitted.
+     */
+    private BufferedImage convertToRgb(char[] image, int width, RawMetadata metadata,
+                                       double[][] rgbCam, char[] curve) throws IOException {
+        BufferedImage output = new BufferedImage(metadata.cropWidth, metadata.cropHeight,
+                BufferedImage.TYPE_INT_RGB);
+        int[] pixels = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
+        int taskCount = parallelTaskCount(metadata.cropHeight, 1);
+        runParallelTasks(taskCount, "Panasonic convert-to-rgb task failed.", taskIndex -> {
+            int startY = taskStart(taskIndex, taskCount, metadata.cropHeight);
+            int endY = taskEnd(taskIndex, taskCount, metadata.cropHeight);
+            for (int y = startY; y < endY; y++) {
+                int rawRow = metadata.cropTop + y;
+                int destBase = y * metadata.cropWidth;
+                for (int x = 0; x < metadata.cropWidth; x++) {
+                    int p = (rawRow * width + metadata.cropLeft + x) * 4;
+                    int r = image[p];
+                    int g = image[p + 1];
+                    int b = image[p + 2];
+                    int red = clip16((int) (rgbCam[0][0] * r + rgbCam[0][1] * g + rgbCam[0][2] * b));
+                    int green = clip16((int) (rgbCam[1][0] * r + rgbCam[1][1] * g + rgbCam[1][2] * b));
+                    int blue = clip16((int) (rgbCam[2][0] * r + rgbCam[2][1] * g + rgbCam[2][2] * b));
+                    int r8 = curve[red] >> 8;
+                    int g8 = curve[green] >> 8;
+                    int b8 = curve[blue] >> 8;
+                    pixels[destBase + x] = (r8 << 16) | (g8 << 8) | b8;
+                }
+            }
+        });
+        return output;
+    }
+
+    private static int clip16(int value) {
+        return value < 0 ? 0 : (value > 65535 ? 65535 : value);
+    }
+
+    private static int ulim(int value, int bound1, int bound2) {
+        if (bound1 < bound2) {
+            return Math.max(bound1, Math.min(value, bound2));
+        }
+        return Math.max(bound2, Math.min(value, bound1));
     }
 
     private int bayerChannel(RawMetadata metadata, int row, int col) {
@@ -1217,64 +1190,105 @@ public class PanasonicRawImageReader implements ImageReader {
         return !((next >= 'A' && next <= 'Z') || (next >= '0' && next <= '9'));
     }
 
-    private static double[][] convertAdobeColorMatrix(int[] adobeColorMatrix) {
+    /**
+     * Port of LibRaw's {@code cam_xyz_coeff} (src/utils/utils_dcraw.cpp): converts the Adobe
+     * camera-to-XYZ matrix (integers scaled by 10000) into the camera-to-sRGB(linear) matrix
+     * {@code rgb_cam} used by both the colour conversion and the AHD Lab transform. The daylight
+     * {@code pre_mul} row sums LibRaw derives here are not needed because this reader uses the
+     * as-shot camera white balance.
+     */
+    private static double[][] camXyzCoeff(int[] adobeColorMatrix) {
         if (adobeColorMatrix.length != 9) {
             throw new IllegalArgumentException("Panasonic color matrices must contain 9 values.");
         }
 
         double[][] camXyz = new double[3][3];
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                camXyz[row][col] = adobeColorMatrix[row * 3 + col] / 10000.0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                camXyz[i][j] = adobeColorMatrix[i * 3 + j] / 10000.0;
             }
         }
 
-        double[][] camRgb = multiply3x3(camXyz, SRGB_TO_XYZ);
-        for (int row = 0; row < 3; row++) {
-            double rowSum = camRgb[row][RED] + camRgb[row][GREEN] + camRgb[row][BLUE];
-            if (Math.abs(rowSum) < 0.00001) {
-                throw new IllegalArgumentException("Panasonic color matrix has a zero row sum.");
-            }
-            for (int col = 0; col < 3; col++) {
-                camRgb[row][col] /= rowSum;
+        // cam_rgb = cam_xyz * xyz_rgb
+        double[][] camRgb = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < 3; k++) {
+                    sum += camXyz[i][k] * XYZ_RGB[k][j];
+                }
+                camRgb[i][j] = sum;
             }
         }
 
-        return invert3x3(camRgb);
-    }
-
-    private static double[][] multiply3x3(double[][] left, double[][] right) {
-        double[][] result = new double[3][3];
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                for (int index = 0; index < 3; index++) {
-                    result[row][col] += left[row][index] * right[index][col];
+        // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1).
+        for (int i = 0; i < 3; i++) {
+            double num = camRgb[i][0] + camRgb[i][1] + camRgb[i][2];
+            if (num > 0.00001) {
+                for (int j = 0; j < 3; j++) {
+                    camRgb[i][j] /= num;
+                }
+            } else {
+                for (int j = 0; j < 3; j++) {
+                    camRgb[i][j] = 0.0;
                 }
             }
         }
-        return result;
+
+        double[][] inverse = pseudoinverse(camRgb);
+        double[][] rgbCam = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                rgbCam[i][j] = inverse[j][i];
+            }
+        }
+        return rgbCam;
     }
 
-    private static double[][] invert3x3(double[][] matrix) {
-        double a = matrix[0][0];
-        double b = matrix[0][1];
-        double c = matrix[0][2];
-        double d = matrix[1][0];
-        double e = matrix[1][1];
-        double f = matrix[1][2];
-        double g = matrix[2][0];
-        double h = matrix[2][1];
-        double i = matrix[2][2];
-        double determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
-        if (Math.abs(determinant) < 0.00000001) {
-            throw new IllegalArgumentException("Panasonic color matrix is not invertible.");
+    /**
+     * Port of LibRaw's {@code pseudoinverse} (src/utils/utils_dcraw.cpp) for a 3x3 input.
+     * Returns the Moore-Penrose pseudoinverse (here the ordinary inverse) as a 3x3 matrix.
+     */
+    private static double[][] pseudoinverse(double[][] in) {
+        double[][] work = new double[3][6];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 6; j++) {
+                work[i][j] = (j == i + 3) ? 1.0 : 0.0;
+            }
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    work[i][j] += in[k][i] * in[k][j];
+                }
+            }
         }
-
-        return new double[][]{
-                {(e * i - f * h) / determinant, (c * h - b * i) / determinant, (b * f - c * e) / determinant},
-                {(f * g - d * i) / determinant, (a * i - c * g) / determinant, (c * d - a * f) / determinant},
-                {(d * h - e * g) / determinant, (b * g - a * h) / determinant, (a * e - b * d) / determinant}
-        };
+        for (int i = 0; i < 3; i++) {
+            double num = work[i][i];
+            for (int j = 0; j < 6; j++) {
+                if (Math.abs(num) > 0.00001) {
+                    work[i][j] /= num;
+                }
+            }
+            for (int k = 0; k < 3; k++) {
+                if (k == i) {
+                    continue;
+                }
+                num = work[k][i];
+                for (int j = 0; j < 6; j++) {
+                    work[k][j] -= work[i][j] * num;
+                }
+            }
+        }
+        double[][] out = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < 3; k++) {
+                    sum += work[j][k + 3] * in[i][k];
+                }
+                out[i][j] = sum;
+            }
+        }
+        return out;
     }
 
     private interface ParallelTask {
@@ -1282,65 +1296,17 @@ public class PanasonicRawImageReader implements ImageReader {
         void run(int taskIndex) throws Exception;
     }
 
-    private static class AhdStripe {
-
-        private final int rowStart;
-        private final int rowEnd;
-        private final int colStart;
-        private final int colEnd;
-        private final int width;
-        private final float[] horizontalRgb;
-        private final float[] verticalRgb;
-        private final float[] horizontalLab;
-        private final float[] verticalLab;
-
-        private AhdStripe(int rowStart, int rowEnd, int colStart, int colEnd) {
-            this.rowStart = rowStart;
-            this.rowEnd = rowEnd;
-            this.colStart = colStart;
-            this.colEnd = colEnd;
-            this.width = colEnd - colStart;
-            int values = (rowEnd - rowStart) * width * 3;
-            this.horizontalRgb = new float[values];
-            this.verticalRgb = new float[values];
-            this.horizontalLab = new float[values];
-            this.verticalLab = new float[values];
-        }
-
-        private int offset(int row, int col) {
-            return ((row - rowStart) * width + (col - colStart)) * 3;
-        }
-
-        private void store(float[] target, int offset, double[] values) {
-            target[offset] = (float) values[RED];
-            target[offset + GREEN] = (float) values[GREEN];
-            target[offset + BLUE] = (float) values[BLUE];
-        }
-
-        private void copyRgb(float[] source, int offset, double[] target) {
-            target[RED] = source[offset];
-            target[GREEN] = source[offset + GREEN];
-            target[BLUE] = source[offset + BLUE];
-        }
-
-        private void averageRgb(int offset, double[] target) {
-            target[RED] = (horizontalRgb[offset] + verticalRgb[offset]) * 0.5;
-            target[GREEN] = (horizontalRgb[offset + GREEN] + verticalRgb[offset + GREEN]) * 0.5;
-            target[BLUE] = (horizontalRgb[offset + BLUE] + verticalRgb[offset + BLUE]) * 0.5;
-        }
-    }
-
     private static class CameraMatrix {
 
         private final String[] modelPrefixes;
-        private final double[][] cameraToSrgb;
+        private final double[][] rgbCam;
 
         private CameraMatrix(String[] modelPrefixes, int[] adobeColorMatrix) {
             this.modelPrefixes = new String[modelPrefixes.length];
             for (int i = 0; i < modelPrefixes.length; i++) {
                 this.modelPrefixes[i] = normalizeModel(modelPrefixes[i]);
             }
-            this.cameraToSrgb = convertAdobeColorMatrix(adobeColorMatrix);
+            this.rgbCam = camXyzCoeff(adobeColorMatrix);
         }
 
         private boolean matches(String normalizedModel) {
