@@ -3,7 +3,6 @@ package com.threeamigos.pixelpeeper.implementations.datamodel.imagereaders;
 import com.threeamigos.pixelpeeper.interfaces.datamodel.ImageReader;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -27,17 +26,13 @@ import java.util.Locale;
  * ({@code DefaultCropAbsolute} from Canon SensorInfo) and returns an 8-bit {@link BufferedImage}.</p>
  *
  * <p>The emulated LibRaw parameters mirror the Panasonic reader: camera/as-shot white balance,
- * fixed exposure (no auto-brightness), highlight clipping, sRGB output, 8-bit output and BT.709
+ * fixed exposure (no auto-brightness), highlight clipping, sRGB output, 8-bit output, and BT.709
  * gamma. It does not use the embedded JPEG preview and performs no optical corrections beyond
  * LibRaw's default processing (no CA/distortion/vignetting correction, sharpening, denoise, or
  * camera JPEG tone curve). This class handles CR3/CRX only; older Canon CRW/CR2 files need their
  * own container/RAW decoder.</p>
  */
 public class CanonCr3RawImageReader extends AbstractRawImageReader implements ImageReader {
-
-    private static final int RED = 0;
-    private static final int GREEN = 1;
-    private static final int BLUE = 2;
 
     private static final int TILE_RIGHT = 1;
     private static final int TILE_LEFT = 2;
@@ -73,26 +68,11 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             0x46, 0x2b, 0x6a, 0x48
     };
 
-    // LibRaw dcraw_process defaults emulated here (see PanasonicRawImageReader): camera/as-shot WB,
-    // no auto-brightness (fixed exposure), highlight clip, sRGB output, 8-bit, BT.709 gamma, AHD.
-    private static final double GAMMA_POWER = 0.45;                 // gamm[0]
-    private static final double GAMMA_TOE_SLOPE = 4.5;             // gamm[1]
-    private static final int OUTPUT_WHITE = 65535;
-    private static final int GAMMA_IMAX = 0x10000;                  // (0x2000<<3)/bright, no_auto_bright
-    private static final double ADJUST_MAXIMUM_THRESHOLD = 0.75;    // LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD
-
-    private static final int AHD_TILE = 512;                       // LIBRAW_AHD_TILE
-    private static final int AHD_TILE_OVERLAP = 6;
-    private static final int AHD_BORDER = 5;
-
-    // LibRaw_constants::d65_white.
-    private static final double[] D65_WHITE = {0.95047, 1.00000, 1.08883};
-
     private static final CameraMatrix DEFAULT_COLOR_MATRIX = matrix("EOS RP",
             8608, -2097, -1178, -5425, 13265, 2383, -1149, 2238, 5680);
 
     // Canon CR3-era camera-to-XYZ matrices (LibRaw src/tables/colordata.cpp, integers /10000).
-    // "Mark II"/"Mark III" and longer variants precede their bases so prefix matching resolves the
+    // "Mark II"/"Mark III" and longer variants precede their bases, so prefix matching resolves the
     // most specific model first. EOS R5 C shares the EOS R5 matrix (matched via the "EOS R5" prefix).
     private static final CameraMatrix[] CANON_COLOR_MATRICES = {
             matrix("EOS-1D X Mark III", 8971, -2022, -1242, -5405, 13249, 2380, -1280, 2483, 6072),
@@ -130,7 +110,11 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         CanonColorMetadata colorMetadata = new CanonMetadataReader(data).read(parser.ctmdOffset, parser.ctmdSize);
         int[] raw = new CrxDecoder(data, track).decode();
         colorMetadata.finish(raw, track.header);
-        return new LibRawRenderer(raw, track.header, colorMetadata).render();
+        CrxHeader header = track.header;
+        return new LibRawRenderer(raw, header.fullWidth, header.fullHeight, header.bitsPerSample,
+                cfaLayoutToPattern(header.cfaLayout), colorMetadata.blackLevel, colorMetadata.whiteBalance,
+                colorMetadata.colorMatrix.rgbCam, colorMetadata.activeLeft, colorMetadata.activeTop,
+                colorMetadata.activeWidth, colorMetadata.activeHeight).render();
     }
 
     private static final class CanonMetadataReader {
@@ -160,7 +144,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
          * scan is bounded to the sample and {@link #parseCanonTiff} validates each candidate, so a
          * spurious header match cannot corrupt metadata.
          */
-        private void parseCtmd(long ctmdOffset, long ctmdSize) throws IOException {
+        private void parseCtmd(long ctmdOffset, long ctmdSize) {
             if (ctmdOffset < 0 || ctmdSize <= 8 || ctmdOffset > data.length - ctmdSize) {
                 return;
             }
@@ -291,7 +275,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
 
         /**
          * Parses Canon MakerNote ColorData (tag 0x4001, LibRaw src/metadata/canon.cpp). Reads the
-         * as-shot white balance (cam_mul), per-channel black level and specular white level at the
+         * as-shot white balance (cam_mul), per-channel black level, and specular white level at the
          * ColorData-version offsets keyed by record length. Values are 16-bit words at
          * {@code save1 + wordOffset*2}, in RGGB order remapped to R-G-B-G2 via {@code RGGB_2_RGBG}.
          */
@@ -380,7 +364,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             return readUnsignedShort(data, (int) offset, littleEndian);
         }
 
-        private String ascii(int offset, long count) throws IOException {
+        private String ascii(int offset, long count) {
             if (offset < 0 || offset >= data.length) {
                 return "";
             }
@@ -430,14 +414,13 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
 
     /**
      * Canon CR3 processing metadata, mirroring the LibRaw fields fed into dcraw_process: per-channel
-     * black level and hard-clip maximum, as-shot camera white balance, the model colour matrix, and
+     * black level and hard-clip maximum, as-shot camera white balance, the model color matrix, and
      * the active-area crop from SensorInfo.
      */
     private static final class CanonColorMetadata {
 
         private String model;
         private final int[] blackLevel = {0, 0, 0};            // R, G, B (per-channel)
-        private int maximum;                                    // hard clip = (1<<bps)-1
         private int specularWhiteLevel;                         // LibRaw linear_max (informational)
         private final float[] camMul = {0f, 0f, 0f, 0f};       // as-shot WB, R-G-B-G2
         private final double[] whiteBalance = {1.0, 1.0, 1.0}; // green-normalized multipliers
@@ -458,7 +441,8 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
 
         private void finish(int[] raw, CrxHeader header) {
             colorMatrix = findColorMatrix(model);
-            maximum = (1 << header.bitsPerSample) - 1;
+            // hard clip = (1<<bps)-1
+            int maximum = (1 << header.bitsPerSample) - 1;
 
             if (!hasColorData) {
                 // Fallback only (real CR3 files always carry ColorData): a conservative black guess.
@@ -489,10 +473,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
                 activeWidth = fullWidth;
                 activeHeight = fullHeight;
             }
-        }
-
-        private int blackLevel(int channel) {
-            return blackLevel[channel];
         }
     }
 
@@ -882,7 +862,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
 
             int pixelCount = checkedPixelCount(rawWidth, rawHeight);
             int[] raw = new int[pixelCount];
-            image = new CrxImage(header, raw, rawWidth, rawHeight, planeWidth, planeHeight,
+            image = new CrxImage(header, raw, rawHeight, planeWidth, planeHeight,
                     track.mediaOffset + header.mdatHeaderSize, track.mediaSize);
 
             byte[] mdatHeader = copyRange(data, track.mediaOffset, header.mdatHeaderSize);
@@ -1542,15 +1522,13 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         }
 
         private void clearLine(int[] line) {
-            for (int i = 0; i < line.length; i++) {
-                line[i] = 0;
-            }
+            Arrays.fill(line, 0);
         }
 
         private void convertPlaneLine(int plane, int imageRow, int imageCol, int[] line, int lineLength)
                 throws IOException {
             if (image.encType == 3) {
-                // Copy decoded plane row into the intermediate plane buffer; the RGGB colour transform
+                // Copy decoded plane row into the intermediate plane buffer; the RGGB color transform
                 // runs later in finalizePlaneLineE3.
                 int planeSize = image.planeWidth * image.planeHeight;
                 int base = plane * planeSize + image.planeWidth * imageRow + imageCol;
@@ -1595,7 +1573,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             int p2 = p1 + planeSize;
             int p3 = p2 + planeSize;
             int[] pb = image.planeBuf;
-            long median = ((long) (1 << (image.medianBits - 1))) << 10;
+            long median = 1L << (image.medianBits - 1) << 10;
             int maxVal = (1 << image.medianBits) - 1;
             int rawLineOffset = 4 * image.planeWidth * imageRow;
             int[] po = image.planeOffsets;
@@ -1699,12 +1677,11 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             int qpHeight = (tile.height >> 1) + (tile.height & 1);
             int totalQP = qpHeight * qpWidth;
             int[] qpTable = new int[totalQP + 2 * (qpWidth + 2)];
-            int lineBase = totalQP;
             int curElem = 0;
             int kParam = 0;
             for (int qpRow = 0; qpRow < qpHeight; qpRow++) {
-                int line0 = (qpRow & 1) != 0 ? lineBase + qpWidth + 2 : lineBase;
-                int line1 = (qpRow & 1) != 0 ? lineBase : lineBase + qpWidth + 2;
+                int line0 = (qpRow & 1) != 0 ? totalQP + qpWidth + 2 : totalQP;
+                int line1 = (qpRow & 1) != 0 ? totalQP : totalQP + qpWidth + 2;
                 if (qpRow != 0) {
                     kParam = crxDecodeGolombNormal(bs, qpWidth, qpTable, line0, line1, kParam);
                 } else {
@@ -2056,7 +2033,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             }
         }
 
-        private void crxIdwt53FilterTransform(CrxPlaneComponent comp, int level) throws IOException {
+        private void crxIdwt53FilterTransform(CrxPlaneComponent comp, int level) {
             CrxWaveletTransform w = comp.wavelet[level];
             if (w.curH != 0) {
                 return;
@@ -2116,7 +2093,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
                             lineBufL0[l0 + 1] = band1[b1] + lineBufL0[l0];
                         }
                     }
-                    lineBufL0 = w.lineBuf[0];
                     int[] lineBufL1 = w.lineBuf[1];
                     for (int i = 0; i < w.width; i++) {
                         int delta = lineBufL0[i] - ((lineBufL1[i] + 1) >> 1);
@@ -2216,7 +2192,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
                     lineBufL1[l1 + 1] = lineBufL1[l1] + band3[b3];
                 }
             }
-            lineBufL0 = w.lineBuf[0];
             lineBufL1 = w.lineBuf[1];
             int[] lineBufL2 = w.lineBuf[2];
             for (int i = 0; i < w.width; i++) {
@@ -2357,7 +2332,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
 
         private final CrxHeader header;
         private final int[] raw;
-        private final int rawWidth;
         private final int rawHeight;
         private final int planeWidth;
         private final int planeHeight;
@@ -2378,11 +2352,10 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         private int tileRows;
         private CrxTile[] tiles;
 
-        private CrxImage(CrxHeader header, int[] raw, int rawWidth, int rawHeight,
+        private CrxImage(CrxHeader header, int[] raw, int rawHeight,
                          int planeWidth, int planeHeight, long mdatOffset, long mdatSize) {
             this.header = header;
             this.raw = raw;
-            this.rawWidth = rawWidth;
             this.rawHeight = rawHeight;
             this.planeWidth = planeWidth;
             this.planeHeight = planeHeight;
@@ -2401,8 +2374,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         private static int[] planeOffsets(int cfaLayout, int planeWidth) {
             int rowSize = 2 * planeWidth;
             switch (cfaLayout) {
-                case 0:
-                    return new int[]{0, 1, rowSize, rowSize + 1};
                 case 1:
                     return new int[]{1, 0, rowSize + 1, rowSize};
                 case 2:
@@ -2548,7 +2519,7 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
             }
 
             int localBitsLeft = bitsLeft;
-            long nextData = 0;
+            long nextData;
             while (true) {
                 while (offset + 4 <= end) {
                     nextData = readUnsignedInt(data, offset);
@@ -2625,408 +2596,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         }
     }
 
-
-    /**
-     * Renders the decoded Bayer mosaic to an 8-bit sRGB image following LibRaw's default
-     * {@code dcraw_process} pipeline (a direct copy of the pipeline in PanasonicRawImageReader):
-     * per-channel black subtraction and {@code adjust_maximum}, {@code scale_colors} with the
-     * as-shot camera white balance and highlight clipping, AHD demosaicing, camera-to-sRGB colour
-     * conversion, and the BT.709 output tone curve. Only the active crop is emitted.
-     */
-    private static final class LibRawRenderer {
-
-        private final int[] raw;
-        private final int width;
-        private final int height;
-        private final int bitsPerSample;
-        private final int cfaLayout;
-        private final int[] blackLevel;
-        private final double[] whiteBalance;
-        private final double[][] rgbCam;
-        private final int cropLeft;
-        private final int cropTop;
-        private final int cropWidth;
-        private final int cropHeight;
-
-        private LibRawRenderer(int[] raw, CrxHeader header, CanonColorMetadata color) {
-            this.raw = raw;
-            this.width = header.fullWidth;
-            this.height = header.fullHeight;
-            this.bitsPerSample = header.bitsPerSample;
-            this.cfaLayout = header.cfaLayout;
-            this.blackLevel = color.blackLevel;
-            this.whiteBalance = color.whiteBalance;
-            this.rgbCam = color.colorMatrix.rgbCam;
-            this.cropLeft = color.activeLeft;
-            this.cropTop = color.activeTop;
-            this.cropWidth = color.activeWidth;
-            this.cropHeight = color.activeHeight;
-        }
-
-        private BufferedImage render() throws IOException {
-            char[] image = scaleColors();
-            ahdInterpolate(image);
-            char[] curve = buildGammaCurve(GAMMA_POWER, GAMMA_TOE_SLOPE, GAMMA_IMAX);
-            return convertToRgb(image, curve);
-        }
-
-        /** LibRaw copy_bayer + adjust_maximum + scale_colors: builds the 4-plane interleaved image. */
-        private char[] scaleColors() throws IOException {
-            int minBlack = Math.min(blackLevel[RED], Math.min(blackLevel[GREEN], blackLevel[BLUE]));
-
-            int dataMaxTaskCount = parallelTaskCount(height, 1);
-            int[] dataMaxPerTask = new int[dataMaxTaskCount];
-            runParallelTasks(dataMaxTaskCount, "Canon data-maximum task failed.", taskIndex -> {
-                int startRow = taskStart(taskIndex, dataMaxTaskCount, height);
-                int endRow = taskEnd(taskIndex, dataMaxTaskCount, height);
-                int localMaximum = 0;
-                for (int row = startRow; row < endRow; row++) {
-                    int base = row * width;
-                    for (int col = 0; col < width; col++) {
-                        int value = raw[base + col] - blackLevel[bayerChannel(cfaLayout, row, col)];
-                        if (value > localMaximum) {
-                            localMaximum = value;
-                        }
-                    }
-                }
-                dataMaxPerTask[taskIndex] = localMaximum;
-            });
-            int dataMaximum = 0;
-            for (int localMaximum : dataMaxPerTask) {
-                if (localMaximum > dataMaximum) {
-                    dataMaximum = localMaximum;
-                }
-            }
-
-            int maximum = ((1 << bitsPerSample) - 1) - minBlack;
-            if (dataMaximum > 0 && dataMaximum < maximum && dataMaximum > maximum * ADJUST_MAXIMUM_THRESHOLD) {
-                maximum = dataMaximum;
-            }
-            if (maximum <= 0) {
-                maximum = 1;
-            }
-
-            double[] preMul = {whiteBalance[RED], whiteBalance[GREEN], whiteBalance[BLUE], whiteBalance[GREEN]};
-            if (preMul[1] == 0) {
-                preMul[1] = 1;
-            }
-            if (preMul[3] == 0) {
-                preMul[3] = preMul[1];
-            }
-            double dmin = Double.MAX_VALUE;
-            for (int c = 0; c < 4; c++) {
-                if (dmin > preMul[c]) {
-                    dmin = preMul[c];
-                }
-            }
-            double dmax = dmin; // highlight == 0 (clip)
-            double[] scaleMul = new double[4];
-            if (dmax > 0.00001) {
-                for (int c = 0; c < 4; c++) {
-                    scaleMul[c] = (preMul[c] / dmax) * (double) OUTPUT_WHITE / maximum;
-                }
-            } else {
-                Arrays.fill(scaleMul, 1.0);
-            }
-
-            long pixelCount = (long) width * height;
-            if (pixelCount * 4L > Integer.MAX_VALUE) {
-                throw new IOException("Canon CR3 image is too large to render: " + width + "x" + height);
-            }
-            char[] image = new char[(int) (pixelCount * 4L)];
-            int taskCount = parallelTaskCount(height, 1);
-            runParallelTasks(taskCount, "Canon scale-colors task failed.", taskIndex -> {
-                int startRow = taskStart(taskIndex, taskCount, height);
-                int endRow = taskEnd(taskIndex, taskCount, height);
-                for (int row = startRow; row < endRow; row++) {
-                    int base = row * width;
-                    for (int col = 0; col < width; col++) {
-                        int channel = bayerChannel(cfaLayout, row, col);
-                        int value = raw[base + col] - blackLevel[channel];
-                        if (value < 0) {
-                            value = 0;
-                        }
-                        image[(base + col) * 4 + channel] = (char) clip16((int) (value * scaleMul[channel]));
-                    }
-                }
-            });
-            return image;
-        }
-
-        /** LibRaw ahd_interpolate: fills R/G/B planes in place (tiled, parallel, core-capped). */
-        private void ahdInterpolate(char[] image) throws IOException {
-            float[] cbrt = new float[0x10000];
-            for (int i = 0; i < cbrt.length; i++) {
-                double r = i / 65535.0;
-                cbrt[i] = (float) (r > 0.008856 ? Math.pow(r, 1.0 / 3.0) : 7.787 * r + 16.0 / 116.0);
-            }
-            double[][] xyzCam = new double[3][3];
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    double sum = 0.0;
-                    for (int k = 0; k < 3; k++) {
-                        sum += XYZ_RGB[i][k] * rgbCam[k][j];
-                    }
-                    xyzCam[i][j] = sum / D65_WHITE[i];
-                }
-            }
-
-            borderInterpolate(image, AHD_BORDER);
-
-            int step = AHD_TILE - AHD_TILE_OVERLAP;
-            int tileCount = 0;
-            for (int top = 2; top < height - 5; top += step) {
-                for (int left = 2; left < width - 5; left += step) {
-                    tileCount++;
-                }
-            }
-            if (tileCount <= 0) {
-                return;
-            }
-            int[] tileTops = new int[tileCount];
-            int[] tileLefts = new int[tileCount];
-            int index = 0;
-            for (int top = 2; top < height - 5; top += step) {
-                for (int left = 2; left < width - 5; left += step) {
-                    tileTops[index] = top;
-                    tileLefts[index] = left;
-                    index++;
-                }
-            }
-
-            int totalTiles = tileCount;
-            int taskCount = parallelTaskCount(totalTiles, 1);
-            runParallelTasks(taskCount, "Canon AHD interpolation task failed.", taskIndex -> {
-                int directionStride = AHD_TILE * AHD_TILE * 3;
-                char[] tileRgb = new char[2 * directionStride];
-                short[] tileLab = new short[2 * directionStride];
-                byte[] homogeneity = new byte[AHD_TILE * AHD_TILE * 2];
-                for (int tile = taskIndex; tile < totalTiles; tile += taskCount) {
-                    int top = tileTops[tile];
-                    int left = tileLefts[tile];
-                    ahdInterpolateGreen(image, top, left, tileRgb);
-                    ahdInterpolateRedBlue(image, top, left, tileRgb, tileLab, xyzCam, cbrt);
-                    ahdBuildHomogeneity(tileLab, top, left, homogeneity);
-                    ahdCombine(image, top, left, tileRgb, homogeneity);
-                }
-            });
-        }
-
-        private void ahdInterpolateGreen(char[] image, int top, int left, char[] tileRgb) {
-            int rowStride = width * 4;
-            int directionStride = AHD_TILE * AHD_TILE * 3;
-            int rowLimit = Math.min(top + AHD_TILE, height - 2);
-            int colLimit = Math.min(left + AHD_TILE, width - 2);
-            for (int row = top; row < rowLimit; row++) {
-                int col = left + (bayerChannel(cfaLayout, row, left) & 1);
-                int channel = bayerChannel(cfaLayout, row, col);
-                for (; col < colLimit; col += 2) {
-                    int p = (row * width + col) * 4;
-                    int center = image[p + channel];
-                    int greenLeft = image[p - 4 + 1];
-                    int greenRight = image[p + 4 + 1];
-                    int valueH = ((greenLeft + center + greenRight) * 2 - image[p - 8 + channel] - image[p + 8 + channel]) >> 2;
-                    int greenUp = image[p - rowStride + 1];
-                    int greenDown = image[p + rowStride + 1];
-                    int valueV = ((greenUp + center + greenDown) * 2
-                            - image[p - 2 * rowStride + channel] - image[p + 2 * rowStride + channel]) >> 2;
-                    int tileIndex = ((row - top) * AHD_TILE + (col - left)) * 3;
-                    tileRgb[tileIndex + 1] = (char) ulim(valueH, greenLeft, greenRight);
-                    tileRgb[directionStride + tileIndex + 1] = (char) ulim(valueV, greenUp, greenDown);
-                }
-            }
-        }
-
-        private void ahdInterpolateRedBlue(char[] image, int top, int left, char[] tileRgb, short[] tileLab,
-                                           double[][] xyzCam, float[] cbrt) {
-            int rowStride = width * 4;
-            int directionStride = AHD_TILE * AHD_TILE * 3;
-            int tileRowStride = AHD_TILE * 3;
-            int rowLimit = Math.min(top + AHD_TILE - 1, height - 3);
-            int colLimit = Math.min(left + AHD_TILE - 1, width - 3);
-            for (int direction = 0; direction < 2; direction++) {
-                int dirBase = direction * directionStride;
-                for (int row = top + 1; row < rowLimit; row++) {
-                    for (int col = left + 1; col < colLimit; col++) {
-                        int p = (row * width + col) * 4;
-                        int rix = dirBase + ((row - top) * AHD_TILE + (col - left)) * 3;
-                        int channel = 2 - bayerChannel(cfaLayout, row, col);
-                        int value;
-                        if (channel == 1) {
-                            channel = bayerChannel(cfaLayout, row + 1, col);
-                            int other = 2 - channel;
-                            value = image[p + 1] + ((image[p - 4 + other] + image[p + 4 + other]
-                                    - tileRgb[rix - 3 + 1] - tileRgb[rix + 3 + 1]) >> 1);
-                            tileRgb[rix + other] = (char) clip16(value);
-                            value = image[p + 1] + ((image[p - rowStride + channel] + image[p + rowStride + channel]
-                                    - tileRgb[rix - tileRowStride + 1] - tileRgb[rix + tileRowStride + 1]) >> 1);
-                        } else {
-                            int above = p - rowStride;
-                            int below = p + rowStride;
-                            value = tileRgb[rix + 1] + ((image[above - 4 + channel] + image[above + 4 + channel]
-                                    + image[below - 4 + channel] + image[below + 4 + channel]
-                                    - tileRgb[rix - tileRowStride - 3 + 1] - tileRgb[rix - tileRowStride + 3 + 1]
-                                    - tileRgb[rix + tileRowStride - 3 + 1] - tileRgb[rix + tileRowStride + 3 + 1] + 1) >> 2);
-                        }
-                        tileRgb[rix + channel] = (char) clip16(value);
-                        channel = bayerChannel(cfaLayout, row, col);
-                        tileRgb[rix + channel] = image[p + channel];
-                        cielab(tileRgb, rix, tileLab, rix, xyzCam, cbrt);
-                    }
-                }
-            }
-        }
-
-        private void cielab(char[] tileRgb, int rgbIndex, short[] tileLab, int labIndex,
-                            double[][] xyzCam, float[] cbrt) {
-            double x = 0.5;
-            double y = 0.5;
-            double z = 0.5;
-            for (int c = 0; c < 3; c++) {
-                int value = tileRgb[rgbIndex + c];
-                x += xyzCam[0][c] * value;
-                y += xyzCam[1][c] * value;
-                z += xyzCam[2][c] * value;
-            }
-            double fx = cbrt[clip16((int) x)];
-            double fy = cbrt[clip16((int) y)];
-            double fz = cbrt[clip16((int) z)];
-            tileLab[labIndex] = (short) (64 * (116 * fy - 16));
-            tileLab[labIndex + 1] = (short) (64 * 500 * (fx - fy));
-            tileLab[labIndex + 2] = (short) (64 * 200 * (fy - fz));
-        }
-
-        private void ahdBuildHomogeneity(short[] tileLab, int top, int left, byte[] homogeneity) {
-            Arrays.fill(homogeneity, (byte) 0);
-            int directionStride = AHD_TILE * AHD_TILE * 3;
-            int tileRowStride = AHD_TILE * 3;
-            int[] neighborOffsets = {-3, 3, -tileRowStride, tileRowStride};
-            int[] lDiff = new int[8];
-            int[] abDiff = new int[8];
-            int rowLimit = Math.min(top + AHD_TILE - 2, height - 4);
-            int colLimit = Math.min(left + AHD_TILE - 2, width - 4);
-            for (int row = top + 2; row < rowLimit; row++) {
-                int tr = row - top;
-                for (int col = left + 2; col < colLimit; col++) {
-                    int tc = col - left;
-                    int tileOffset = (tr * AHD_TILE + tc) * 3;
-                    for (int direction = 0; direction < 2; direction++) {
-                        int lix = direction * directionStride + tileOffset;
-                        for (int i = 0; i < 4; i++) {
-                            int adjacent = lix + neighborOffsets[i];
-                            lDiff[direction * 4 + i] = Math.abs(tileLab[lix] - tileLab[adjacent]);
-                            int da = tileLab[lix + 1] - tileLab[adjacent + 1];
-                            int db = tileLab[lix + 2] - tileLab[adjacent + 2];
-                            abDiff[direction * 4 + i] = da * da + db * db;
-                        }
-                    }
-                    int leps = Math.min(Math.max(lDiff[0], lDiff[1]), Math.max(lDiff[6], lDiff[7]));
-                    int abeps = Math.min(Math.max(abDiff[0], abDiff[1]), Math.max(abDiff[6], abDiff[7]));
-                    for (int direction = 0; direction < 2; direction++) {
-                        int homogeneous = 0;
-                        for (int i = 0; i < 4; i++) {
-                            if (lDiff[direction * 4 + i] <= leps && abDiff[direction * 4 + i] <= abeps) {
-                                homogeneous++;
-                            }
-                        }
-                        homogeneity[(tr * AHD_TILE + tc) * 2 + direction] = (byte) homogeneous;
-                    }
-                }
-            }
-        }
-
-        private void ahdCombine(char[] image, int top, int left, char[] tileRgb, byte[] homogeneity) {
-            int directionStride = AHD_TILE * AHD_TILE * 3;
-            int rowLimit = Math.min(top + AHD_TILE - 3, height - 5);
-            int colLimit = Math.min(left + AHD_TILE - 3, width - 5);
-            for (int row = top + 3; row < rowLimit; row++) {
-                int tr = row - top;
-                for (int col = left + 3; col < colLimit; col++) {
-                    int tc = col - left;
-                    int hm0 = 0;
-                    int hm1 = 0;
-                    for (int i = tr - 1; i <= tr + 1; i++) {
-                        for (int j = tc - 1; j <= tc + 1; j++) {
-                            int base = (i * AHD_TILE + j) * 2;
-                            hm0 += homogeneity[base];
-                            hm1 += homogeneity[base + 1];
-                        }
-                    }
-                    int p = (row * width + col) * 4;
-                    int tileOffset = (tr * AHD_TILE + tc) * 3;
-                    if (hm0 != hm1) {
-                        int source = (hm1 > hm0 ? directionStride : 0) + tileOffset;
-                        image[p] = tileRgb[source];
-                        image[p + 1] = tileRgb[source + 1];
-                        image[p + 2] = tileRgb[source + 2];
-                    } else {
-                        int h = tileOffset;
-                        int v = directionStride + tileOffset;
-                        image[p] = (char) ((tileRgb[h] + tileRgb[v]) >> 1);
-                        image[p + 1] = (char) ((tileRgb[h + 1] + tileRgb[v + 1]) >> 1);
-                        image[p + 2] = (char) ((tileRgb[h + 2] + tileRgb[v + 2]) >> 1);
-                    }
-                }
-            }
-        }
-
-        private void borderInterpolate(char[] image, int border) {
-            int[] sum = new int[8];
-            for (int row = 0; row < height; row++) {
-                for (int col = 0; col < width; col++) {
-                    if (col == border && row >= border && row < height - border) {
-                        col = width - border;
-                    }
-                    Arrays.fill(sum, 0);
-                    for (int y = row - 1; y <= row + 1; y++) {
-                        for (int x = col - 1; x <= col + 1; x++) {
-                            if (y >= 0 && y < height && x >= 0 && x < width) {
-                                int f = bayerChannel(cfaLayout, y, x);
-                                sum[f] += image[(y * width + x) * 4 + f];
-                                sum[f + 4]++;
-                            }
-                        }
-                    }
-                    int f = bayerChannel(cfaLayout, row, col);
-                    for (int c = 0; c < 3; c++) {
-                        if (c != f && sum[c + 4] != 0) {
-                            image[(row * width + col) * 4 + c] = (char) (sum[c] / sum[c + 4]);
-                        }
-                    }
-                }
-            }
-        }
-
-        private BufferedImage convertToRgb(char[] image, char[] curve) throws IOException {
-            BufferedImage output = new BufferedImage(cropWidth, cropHeight, BufferedImage.TYPE_INT_RGB);
-            int[] pixels = ((DataBufferInt) output.getRaster().getDataBuffer()).getData();
-            int taskCount = parallelTaskCount(cropHeight, 1);
-            runParallelTasks(taskCount, "Canon convert-to-rgb task failed.", taskIndex -> {
-                int startY = taskStart(taskIndex, taskCount, cropHeight);
-                int endY = taskEnd(taskIndex, taskCount, cropHeight);
-                for (int y = startY; y < endY; y++) {
-                    int rawRow = cropTop + y;
-                    int destBase = y * cropWidth;
-                    for (int x = 0; x < cropWidth; x++) {
-                        int p = (rawRow * width + cropLeft + x) * 4;
-                        int r = image[p];
-                        int g = image[p + 1];
-                        int b = image[p + 2];
-                        int red = clip16((int) (rgbCam[0][0] * r + rgbCam[0][1] * g + rgbCam[0][2] * b));
-                        int green = clip16((int) (rgbCam[1][0] * r + rgbCam[1][1] * g + rgbCam[1][2] * b));
-                        int blue = clip16((int) (rgbCam[2][0] * r + rgbCam[2][1] * g + rgbCam[2][2] * b));
-                        int r8 = curve[red] >> 8;
-                        int g8 = curve[green] >> 8;
-                        int b8 = curve[blue] >> 8;
-                        pixels[destBase + x] = (r8 << 16) | (g8 << 8) | b8;
-                    }
-                }
-            });
-            return output;
-        }
-    }
-
-    /** Port of LibRaw's gamma_curve (forward tone curve, mode 2): BT.709 16-bit LUT. */
     private static int rggb2rgbg(int index) {
         return index ^ (index >> 1);
     }
@@ -3094,20 +2663,22 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         return character;
     }
 
-    private static int bayerChannel(int cfaLayout, int row, int col) {
-        boolean evenRow = (row & 1) == 0;
-        boolean evenCol = (col & 1) == 0;
+    /**
+     * Normalizes a Canon CRX {@code cfaLayout} (0..3) into the 4-entry Bayer pattern the shared
+     * {@link LibRawRenderer} consumes (indexed by {@code ((row & 1) << 1) | (col & 1)}):
+     * 0=RGGB, 1=GRBG, 2=GBRG, 3=BGGR.
+     */
+    private static int[] cfaLayoutToPattern(int cfaLayout) {
         switch (cfaLayout) {
-            case 0:
-                return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
             case 1:
-                return evenRow ? (evenCol ? GREEN : RED) : (evenCol ? BLUE : GREEN);
+                return new int[]{GREEN, RED, BLUE, GREEN};      // GRBG
             case 2:
-                return evenRow ? (evenCol ? GREEN : BLUE) : (evenCol ? RED : GREEN);
+                return new int[]{GREEN, BLUE, RED, GREEN};      // GBRG
             case 3:
-                return evenRow ? (evenCol ? BLUE : GREEN) : (evenCol ? GREEN : RED);
+                return new int[]{BLUE, GREEN, GREEN, RED};      // BGGR
+            case 0:
             default:
-                return evenRow ? (evenCol ? RED : GREEN) : (evenCol ? GREEN : BLUE);
+                return new int[]{RED, GREEN, GREEN, BLUE};      // RGGB
         }
     }
 
@@ -3138,20 +2709,6 @@ public class CanonCr3RawImageReader extends AbstractRawImageReader implements Im
         byte[] copy = new byte[length];
         System.arraycopy(data, intOffset, copy, 0, length);
         return copy;
-    }
-
-    private static int checkedPixelCount(int width, int height) throws IOException {
-        long pixelCount = (long) width * height;
-        if (pixelCount <= 0 || pixelCount > Integer.MAX_VALUE) {
-            throw new IOException("Invalid Canon CR3 raw dimensions: " + width + "x" + height);
-        }
-        return (int) pixelCount;
-    }
-
-    private static void ensureAvailable(byte[] data, int offset, int length) throws EOFException {
-        if (offset < 0 || length < 0 || offset > data.length - length) {
-            throw new EOFException("Unexpected end of Canon CR3 data.");
-        }
     }
 
     private static int readUnsignedShort(byte[] data, int offset) throws EOFException {
